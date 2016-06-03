@@ -19,7 +19,7 @@ OSC_Server::OSC_Server(int osc_port) {
     cout << "listening on port " << PORT << endl;
     receiver.setup(PORT);
     
-	current_msg_string = 0;
+    current_msg_string = 0;
     ofBackground(30, 30, 130);
 }
 

@@ -20,6 +20,16 @@ o.memSize_(2e6); // 2GB of RAM
 o.numOutputBusChannels = 4;
 
 
+//_OSC
+~osc = { |msg, time, addr|
+    if(msg[0] != '/status.reply') {
+        "time: % sender: %\nmessage: %\n".postf(time, addr, msg);
+    }
+};
+thisProcess.addOSCRecvFunc(~osc);
+OSCFunc.trace(true);
+
+
 s.waitForBoot({
 
 	/**************************************************************************************************/
