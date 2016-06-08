@@ -13,60 +13,59 @@
 OSC_Server::OSC_Server(int osc_port) {
     PORT = osc_port;
     
-    temperature = 0;
-    vibration = 0;
+    temperature = 0.0;
+    vibration = 0.0;
     
     cout << "listening on port " << PORT << endl;
     receiver.setup(PORT);
     
     current_msg_string = 0;
-    ofBackground(30, 30, 130);
 }
 
 
 //--------------------------------------------------------------
-OSC_Server::update(void) {
+void OSC_Server::update(void) {
 	// hide old messages
-	for(int i = 0; i < NUM_MSG_STRINGS; i++){
-		if(timers[i] < ofGetElapsedTimef()){
+	for(int i = 0; i < NUM_MSG_STRINGS; i++) {
+		if(timers[i] < ofGetElapsedTimef()) {
 			msg_strings[i] = "";
 		}
 	}
 
 	// check for waiting messages
-	while(receiver.hasWaitingMessages()){
+	while(receiver.hasWaitingMessages()) {
 		// get the next message
 		ofxOscMessage m;
 		receiver.getNextMessage(m);
         
         // check for temperature sensor
-		if(m.getAddress() == "/sensors/temperature"){
+		if(m.getAddress() == "/sensors/temperature") {
             temperature = m.getArgAsInt32(0);
 		}
 		// check for piezo sensor
-		if(m.getAddress() == "/sensors/piezo"){
+		if(m.getAddress() == "/sensors/piezo") {
             vibration = m.getArgAsInt32(0);
 		}
-		else{
+		else {
 			// unrecognized message: display on the bottom of the screen
 			string msg_string;
 			msg_string = m.getAddress();
 			msg_string += ": ";
-			for(int i = 0; i < m.getNumArgs(); i++){
+			for(int i = 0; i < m.getNumArgs(); i++) {
 				// get the argument type
 				msg_string += m.getArgTypeName(i);
 				msg_string += ":";
-				// display the argument - make sure we get the right type
+				// display the argument
 				if(m.getArgType(i) == OFXOSC_TYPE_INT32){
 					msg_string += ofToString(m.getArgAsInt32(i));
 				}
-				else if(m.getArgType(i) == OFXOSC_TYPE_FLOAT){
-					msg_string += ofToString(m.getArgAsFloat(i));
+				else if(m.getArgType(i) == OFXOSC_TYPE_FLOAT) {
+                    msg_string += ofToString(m.getArgAsFloat(i));
 				}
-				else if(m.getArgType(i) == OFXOSC_TYPE_STRING){
+				else if(m.getArgType(i) == OFXOSC_TYPE_STRING) {
 					msg_string += m.getArgAsString(i);
 				}
-				else{
+				else {
 					msg_string += "unknown";
 				}
 			}
@@ -79,3 +78,6 @@ OSC_Server::update(void) {
 		}
 	}
 }
+
+
+//--------------------------------------------------------------

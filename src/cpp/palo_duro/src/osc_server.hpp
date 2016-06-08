@@ -17,6 +17,9 @@
 
 class OSC_Server {
 public:
+        OSC_Server(int);
+        void update(void);
+    
 		ofTrueTypeFont font;
 		ofxOscReceiver receiver;
 
