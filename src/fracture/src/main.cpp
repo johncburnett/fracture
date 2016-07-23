@@ -1,3 +1,9 @@
+/*
+ * palo_duro/src/fracture/src/main.cpp
+ *
+ * John Burnett + Sage Jenson (c) 2016
+ */
+
 #include "ofMain.h"
 #include "ofApp.h"
 #include "main.h"

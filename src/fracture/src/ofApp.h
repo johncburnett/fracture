@@ -1,3 +1,9 @@
+/*
+ * palo_duro/src/fracture/src/ofApp.h
+ *
+ * John Burnett + Sage Jenson (c) 2016
+ */
+
 #pragma once
 
 #include "ofMain.h"

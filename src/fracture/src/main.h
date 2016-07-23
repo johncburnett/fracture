@@ -1,10 +1,8 @@
-//
-//  main.h
-//  fracture
-//
-//  Created by John Burnett on 7/23/16.
-//
-//
+/*
+ * palo_duro/src/fracture/src/main.h
+ *
+ * John Burnett + Sage Jenson (c) 2016
+ */
 
 #ifndef main_h
 #define main_h
@@ -43,6 +41,9 @@ struct edge {
     int n;
     vector<struct node> nodes;
 };
+
+// three image set categories
+struct category object, horizon, texture;
 
 // pointers to all categories, nodes, edges, and shaders
 vector<struct category *> categories;
