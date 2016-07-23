@@ -20,10 +20,11 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
+    
 
 	ofImage img1;
 	ofImage img2;
-    ofFbo fbo1, fbo2, fbo3;
+    ofFbo fbo1, fbo2, fbo3, fbo4, fbo5;
 	ofShader shader;
     
     int w, h;

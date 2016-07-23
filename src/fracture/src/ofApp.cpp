@@ -1,3 +1,4 @@
+#include "main.h"
 #include "ofApp.h"
 
 //--------------------------------------------------------------
@@ -44,7 +45,7 @@ void ofApp::draw(){
     ofTexture tex2 = fbo2.getTexture();
 
     fbo3.begin();
-	ofClear(0, 0, 0, 1); // we clear the fbo.
+	ofClear(0, 0, 0, 1);
     
     shader.begin();
     

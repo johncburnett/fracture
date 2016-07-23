@@ -1,13 +1,29 @@
 #include "ofMain.h"
 #include "ofApp.h"
+#include "main.h"
 
 //========================================================================
 int main( ){
-	ofSetupOpenGL(1024,768,OF_WINDOW);			// <-------- setup the GL context
-
-	// this kicks off the running of my app
-	// can be OF_WINDOW or OF_FULLSCREEN
-	// pass in width and height too:
+	ofSetupOpenGL(1024,768,OF_WINDOW);
 	ofRunApp(new ofApp());
+}
 
+//========================================================================
+void directories_to_categories(char *dir_name) {
+    ;
+}
+
+//========================================================================
+struct composite_fbo gen_composite_image(struct node, ofShader) {
+    ;
+}
+
+//========================================================================
+void interpolate(struct composite_fbo, struct edge, float amount) {
+    ;
+}
+
+//========================================================================
+struct node traverse_edge(struct node, struct edge) {
+    ;
 }
