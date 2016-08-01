@@ -26,6 +26,10 @@ Image::Image(const char *fname) {
     fbo.end();
 }
 
+Image::Image(ofFbo f) {
+    fbo = f;
+}
+
 void Image::display(void) {
     fbo.draw(0, 0);
 }
@@ -39,23 +43,34 @@ void Transform::draw(void) {
     fbo.draw(0, 0);
 }
 
+ofFbo Transform::get_fbo(void) {
+    return fbo;
+}
+
+Image *Transform::to_image(void) {
+    return new Image(fbo);
+}
+
 //========================================================================
-Smear::Smear(Image *i1, Image *i2, float x, float y) {
+Smear::Smear(Image *i1, Image *i2, float xi, float yi, float init_dx, float init_dy) {
     shader.load("shadersGL2/smear");
     img1 = i1;
     img2 = i2;
-    x_scale = x;
-    y_scale = y;
+    x_scale = xi;
+    y_scale = yi;
+    dx = init_dx;
+    dy = init_dy;
     fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
-    
 }
 
 void Smear::update(void) {
-//    x_scjale++;
-    y_scale++;
+    x_scale += dx;
+    y_scale += dy;
+    
+    process_image();
 }
 
-void Smear::draw() {
+void Smear::process_image(void) {
     ofTexture tex0 = img1->fbo.getTexture();
     ofTexture tex1 = img2->fbo.getTexture();
 
@@ -81,5 +96,4 @@ void Smear::draw() {
         shader.end();
     
     fbo.end();
-    fbo.draw(0, 0);
 }

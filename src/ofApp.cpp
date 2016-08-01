@@ -12,7 +12,7 @@ void ofApp::setup(){
     
     img1 = new Image("img/stone.jpg");
     img2 = new Image("img/emory.jpg");
-    smear = new Smear(img1, img2, 0, 0);
+    smear = new Smear(img1, img2, 0, 0, 0, 1);
     
     // initialize audio server
     int bufferSize = 256;
