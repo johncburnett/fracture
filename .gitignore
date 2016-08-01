@@ -1,6 +1,2 @@
-src/fracture/lib
-*.app
 .DS_Store
-.swp
-.swo
 *.jpg
