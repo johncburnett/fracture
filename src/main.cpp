@@ -89,6 +89,11 @@ Smear::Smear(Image *i1, Image *i2, float xi, float yi, float init_dx, float init
     fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
 }
 
+void Smear::update_delta(float new_dx, float new_dy){
+    dx = new_dx;
+    dy = new_dy;
+}
+
 void Smear::update(void) {
     x_scale += dx;
     y_scale += dy;
@@ -294,7 +299,14 @@ Twirl::Twirl(Image *img, float s) {
     img1 = img;
     scale = s;
     fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
+    center = ofVec2f(0,0);
 }
+
+void Twirl::set_center(float new_x, float new_y){
+    center.x = new_x;
+    center.y = new_y;
+}
+
 
 void Twirl::update(void) {
     process_image();
@@ -313,7 +325,7 @@ void Twirl::process_image(void) {
             shader.setUniform1i("width", WIDTH);
             shader.setUniform1i("height", HEIGHT);
             shader.setUniform1i("time", ofGetFrameNum());
-    
+            shader.setUniform2f("center", center.x, center.y);
             draw_quad();
     
         shader.end();

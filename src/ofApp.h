@@ -44,7 +44,7 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 
-    Image *img1, *img2, *img3, *img4;
+    Image *img0, *img1, *img2, *img3, *img4;
     Smear *smear;
     Smear *landslide;
     ShadowMask *mask;

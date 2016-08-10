@@ -25,11 +25,13 @@
 void ofApp::setup(){
     ofSetFrameRate(30);
     
-    img1 = new Image("img/rock.jpg");
+    img0 = new Image("img/emory.jpg");
+    img1 = new Image("img/water.jpg");
     img2 = new Image("img/rock_b.jpg");
     img3 = new Image("img/rock_v.jpg");
     img4 = new Image("img/sludge.jpg");
     
+    /*
     invert = new Invert(img1, 1.0);
     invert->process_image();
     Image *i = new Image(invert->fbo);
@@ -43,31 +45,26 @@ void ofApp::setup(){
     heat = new HeatDistort(img1);
     
     c = 0;
+     */
+
+    twirl = new Twirl(img1, 0.5);
+    twirl->process_image();
     
     // initialize audio server
     int bufferSize = 256;
     audio.assign(bufferSize, 0.0);
     soundStream.setup(this, 0, 1, 44100, bufferSize, 2);
-    soundStream.start();
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    noise_mask->update();
-    
-    smear->y_scale = c;
-    smear->update();
-    
-    heat->update();
-    
-    c += 8;
+    twirl->set_center(ofGetMouseX(), ofGetMouseY());
+    twirl->process_image();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-//    heat->draw();
-    noise_mask->draw();
-    smear->draw();
+    twirl->draw();
 }
 
 //--------------------------------------------------------------
