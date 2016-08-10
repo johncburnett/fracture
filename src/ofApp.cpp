@@ -10,26 +10,48 @@
 void ofApp::setup(){
     ofSetFrameRate(30);
     
-    img1 = new Image("img/stone.jpg");
-    img2 = new Image("img/emory.jpg");
-    smear = new Smear(img1, img2, 0, 0, 0, 1);
+    img1 = new Image("img/rock.jpg");
+    img2 = new Image("img/rock_b.jpg");
+    img3 = new Image("img/rock_v.jpg");
+    img4 = new Image("img/sludge.jpg");
+    
+    invert = new Invert(img1, 1.0);
+    invert->process_image();
+    Image *i = new Image(invert->fbo);
+    
+    noise_mask = new NoiseMask(img1, img2);
+    
+    mask = new ShadowMask(noise_mask->to_image(), 0.4);
+    mask->process_image();
+    smear = new Smear(mask->to_image(), img3, 0, 0, 0 ,1);
+    
+    heat = new HeatDistort(img1);
+    
+    c = 0;
     
     // initialize audio server
     int bufferSize = 256;
     audio.assign(bufferSize, 0.0);
     soundStream.setup(this, 0, 1, 44100, bufferSize, 2);
-    soundStream.stop();
+    soundStream.start();
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    noise_mask->update();
+    
+    smear->y_scale = c;
     smear->update();
     
-	vol = ofMap(smoothedVol, 0.0, 0.17, 0.0, 1.0, true);
+    heat->update();
+    
+    c += 8;
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+//    heat->draw();
+    noise_mask->draw();
     smear->draw();
 }
 

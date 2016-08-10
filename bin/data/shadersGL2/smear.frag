@@ -26,7 +26,7 @@ void main() {
     if(p1[0] < 0 || p1[0] >= w || p1[1] < 0 || p1[1] >= h) {
         color = color_t1;
     } else {
-        color = texture2DRect(tex0, p1);
+        color = vec4(texture2DRect(tex0, p1).rgb, 0.5);
     }
     gl_FragColor = color;
 }

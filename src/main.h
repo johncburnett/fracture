@@ -15,6 +15,7 @@
 #include <vector>
 using namespace std;
 
+//========================================================================
 class Image {
     public:
         ofImage img;
@@ -28,6 +29,7 @@ class Image {
         ofFbo getFbo(void);
 };
 
+//========================================================================
 class Transform {
     public:
         ofFbo fbo;
@@ -42,8 +44,10 @@ class Transform {
         void draw(void);
         ofFbo get_fbo(void);
         Image *to_image(void);
+        void draw_quad(void);
 };
 
+//========================================================================
 class Smear : public virtual Transform {
     public:
         ofShader shader;
@@ -53,14 +57,112 @@ class Smear : public virtual Transform {
         Smear(Image *, Image *, float, float, float, float);
         ~Smear(void);
     
-        void set_img1(Image);
-        void set_img2(Image);
-        
         // virtual methods
-        void process_image(void);
         void update(void);
+        void process_image(void);
 };
 
+//========================================================================
+class ShadowMask : public virtual Transform {
+    public:
+        ofShader shader;
+        float threshold;
+        
+        ShadowMask(Image *, float);
+        ~ShadowMask(void);
+    
+        void update();
+        void process_image(void);
+};
+
+//========================================================================
+class Invert : public virtual Transform {
+public:
+    ofShader shader;
+    float scale;
+    
+    Invert(Image *, float);
+    ~Invert(void);
+    
+    void update();
+    void process_image();
+};
+
+//========================================================================
+class Grayscale: public virtual Transform {
+public:
+    ofShader shader;
+    float scale;
+    
+    Grayscale(Image *, float);
+    ~Grayscale(void);
+    
+    void update();
+    void process_image();
+};
+
+//========================================================================
+class ColorMap : public virtual Transform {
+public:
+    ofShader shader;
+    float scale;
+    ofImage processed;
+    
+    ColorMap(Image *, Image *);
+    ~ColorMap(void);
+    
+    void update();
+    void process_image();
+};
+
+//========================================================================
+class Twirl: public virtual Transform {
+public:
+    ofShader shader;
+    float scale;
+    
+    Twirl(Image *, float s);
+    ~Twirl(void);
+    
+    void update();
+    void process_image();
+};
+
+//========================================================================
+class NoiseMask: public virtual Transform {
+public:
+    ofShader shader;
+    ofImage noise;
+    int x0, y0;
+    float frequency;
+    float time;
+    
+    NoiseMask(Image *, Image *);
+    ~NoiseMask(void);
+    
+    void update();
+    void process_image();
+};
+
+//========================================================================
+class HeatDistort: public virtual Transform {
+public:
+    ofShader shader;
+    ofImage noise;
+    int x0, y0;
+    float frequency;
+    float time;
+    float distort;
+    float rise;
+    
+    HeatDistort(Image *);
+    ~HeatDistort(void);
+    
+    void update();
+    void process_image();
+};
+
+//========================================================================
 class Graph {
     struct node *root;
     vector<struct node *> nodes;
@@ -78,5 +180,10 @@ struct edge {
     Transform *transform;
     struct node *destination;
 };
+
+//========================================================================
+//_Utilities
+double mean(vector<double> A);
+double std_dev(vector<double> A);
 
 #endif /* main_h */

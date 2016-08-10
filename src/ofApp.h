@@ -16,7 +16,7 @@ class ofApp : public ofBaseApp{
 		void update();
 		void draw();
 
-    void audioIn(float *input, int buffersize, int nChannels);
+        void audioIn(float *input, int buffersize, int nChannels);
 		void keyPressed(int key);
 		void keyReleased(int key);
 		void mouseMoved(int x, int y );
@@ -29,8 +29,18 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 
-    Image *img1, *img2;
+    Image *img1, *img2, *img3, *img4;
     Smear *smear;
+    Smear *landslide;
+    ShadowMask *mask;
+    Invert *invert;
+    ColorMap *color_map;
+    Twirl *twirl;
+    NoiseMask *noise_mask;
+    HeatDistort *heat;
+    
+    ofFbo fbo;
+    int c, d;
     
     // audio server
     ofSoundStream soundStream;
