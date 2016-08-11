@@ -25,8 +25,8 @@
 void ofApp::setup(){
     ofSetFrameRate(30);
     
-    img0 = new Image("img/emory.jpg");
-    img1 = new Image("img/water.jpg");
+    img0 = new Image("img/IMG_1734.png");
+    img0_heat = new Image("img/IMG_1734_heat_map.png");
     img2 = new Image("img/rock_b.jpg");
     img3 = new Image("img/rock_v.jpg");
     img4 = new Image("img/sludge.jpg");
@@ -45,10 +45,14 @@ void ofApp::setup(){
     heat = new HeatDistort(img1);
     
     c = 0;
-     */
-
+    */
+    
+    /*
     twirl = new Twirl(img1, 0.5);
     twirl->process_image();
+    */
+    
+    heat = new HeatDistort(img0, img0_heat);
     
     // initialize audio server
     int bufferSize = 256;
@@ -58,13 +62,13 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    twirl->set_center(ofGetMouseX(), ofGetMouseY());
-    twirl->process_image();
+    heat->update();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    twirl->draw();
+    ofSetWindowTitle("FPS: " + ofToString(ofGetFrameRate()));
+    heat->draw();
 }
 
 //--------------------------------------------------------------

@@ -45,6 +45,7 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 
     Image *img0, *img1, *img2, *img3, *img4;
+    Image *img0_heat;
     Smear *smear;
     Smear *landslide;
     ShadowMask *mask;

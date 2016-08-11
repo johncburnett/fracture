@@ -1,5 +1,6 @@
 .DS_Store
 *.jpg
+*.png
 *.app
 fracture.xcodeproj/*
 project.xcworkspace/*

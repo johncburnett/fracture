@@ -4,25 +4,24 @@ uniform sampler2DRect tex0;
 uniform sampler2DRect tex1;
 
 uniform int time;
-uniform float distort;
-uniform float rise;
+uniform vec2 mouse;
 
 varying vec2 texCoordVarying;
 
 void main() {
     vec4 color = texture2DRect(tex0, texCoordVarying);
     vec2 coord = texCoordVarying.st;
-    coord.t -= time * rise * 100;
     
-    vec4 value = texture2DRect(tex1, coord);
-    vec2 offset = value.xy;
+    vec4 heat = texture2DRect(tex1, coord);
     
-    // [0, 1] => [-1, 1]
-    offset -= vec2(0.5f, 0.5f);
-    offset *= 2.0f;
-    offset *= distort;
+    vec2 distort_coord = vec2(0,0);
     
-    offset *= (1.0f - texCoordVarying.y); // taper
-    vec2 distort_coord = texCoordVarying.st + offset;
-    gl_FragColor = color * texture2DRect(tex0, distort_coord);
+    if (1.0 != heat.r){
+        distort_coord = texCoordVarying.st + (vec2(0, 100)/(-30.0*heat.r));
+        gl_FragColor = texture2DRect(tex0, distort_coord)*(1.0-heat.r) +
+            (color*heat.r);
+    } else {
+        gl_FragColor = color;
+    }
+
 }

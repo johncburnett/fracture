@@ -219,14 +219,14 @@ public:
 class HeatDistort: public virtual Transform {
 public:
     ofShader shader;
-    ofImage noise;
     int x0, y0;
+    Image * img1, * img2;
     float frequency;
     float time;
     float distort;
     float rise;
     
-    HeatDistort(Image *);
+    HeatDistort(Image *, Image *);
     ~HeatDistort(void);
     
     void update();

@@ -390,42 +390,30 @@ void NoiseMask::process_image(void) {
 }
 
 //========================================================================
-HeatDistort::HeatDistort(Image *i1) {
+HeatDistort::HeatDistort(Image *i1, Image *i2) {
     shader.load("shadersGL2/heat");
     img1 = i1;
+    img2 = i2;
     x0 = y0 = 0;
     frequency = 40.0f;
     time = 0.0f;
     distort = 0.05f;
     rise = 0.8f;
-    noise.allocate(WIDTH, HEIGHT, OF_IMAGE_GRAYSCALE);
+    //noise.allocate(WIDTH, HEIGHT, OF_IMAGE_GRAYSCALE);
     fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
     update();
+    
 }
 
 void HeatDistort::update(void) {
     process_image();
-    
-    ofPixelsRef pixels = noise.getPixels();
-    
-    int tmpIndex = 0;
-    for( int y = 0; y < noise.getHeight(); y++ ) {
-        for( int x = 0; x < noise.getWidth(); x++ ) {
-            float tmpNoise = ofNoise( (x0 + x) / frequency, (y0 + y) / frequency, time/100.0 );
-            
-            pixels[tmpIndex] = tmpNoise * 255.0f;
-            tmpIndex++;
-        }
-    }
-    
-    noise.update();
-    
-    process_image();
 }
 
 void HeatDistort::process_image(void) {
-    ofTexture tex0 = img1->fbo.getTexture();;
-    ofTexture tex1 = noise.getTexture();
+    ofTexture tex0 = img1->fbo.getTexture();
+    
+    //TO DO: optimize to grayscale
+    ofTexture tex1 = img2->fbo.getTexture();
     time = ofGetElapsedTimef();
     
     fbo.begin();
@@ -436,8 +424,7 @@ void HeatDistort::process_image(void) {
     shader.setUniformTexture("tex0", tex0, 0);
     shader.setUniformTexture("tex1", tex1, 1);
     shader.setUniform1i("time", time);
-    shader.setUniform1f("distort", distort);
-    shader.setUniform1f("rise", rise);
+    shader.setUniform2f("mouse", ofGetMouseX(), ofGetMouseY());
     
     draw_quad();
     
