@@ -20,7 +20,7 @@ void main (void) {
     vec2 tc = uv;
     tc -= center;
     float dist = length(tc);
-    float percent = pow(0.98, dist*scale);
+    float percent = pow(0.93, dist*scale);
     float theta = percent * percent * angle * 8;
     float s = sin(theta);
     float c = cos(theta);

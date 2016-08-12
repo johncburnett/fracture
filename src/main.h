@@ -234,6 +234,22 @@ public:
 };
 
 //========================================================================
+/*
+ * NoiseMaker generates various types of noise
+ * Currently working on this...
+ */
+class NoiseMaker: public virtual Transform {
+public:
+    ofShader shader;
+    
+    NoiseMaker(void);
+    ~NoiseMaker(void);
+    
+    void update();
+    void process_image();
+};
+
+//========================================================================
 class Graph {
     struct node *root;
     vector<struct node *> nodes;

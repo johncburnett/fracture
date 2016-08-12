@@ -44,7 +44,7 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 
-    Image *img0, *img1, *img2, *img3, *img4;
+    Image *img0, *img1, *img2, *img3, *img4, *i;
     Image *img0_heat;
     Smear *smear;
     Smear *landslide;
@@ -54,6 +54,7 @@ class ofApp : public ofBaseApp{
     Twirl *twirl;
     NoiseMask *noise_mask;
     HeatDistort *heat;
+    NoiseMaker *nm;
     
     ofFbo fbo;
     int c, d;

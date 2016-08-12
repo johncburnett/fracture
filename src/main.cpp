@@ -309,6 +309,7 @@ void Twirl::set_center(float new_x, float new_y){
 
 
 void Twirl::update(void) {
+    set_center(ofGetMouseX(), ofGetMouseY());
     process_image();
 }
 
@@ -418,20 +419,41 @@ void HeatDistort::process_image(void) {
     
     fbo.begin();
     ofClear(0, 0, 0, 1);
-    
     shader.begin();
     
     shader.setUniformTexture("tex0", tex0, 0);
     shader.setUniformTexture("tex1", tex1, 1);
-    shader.setUniform1i("time", time);
+    shader.setUniform1f("time", time);
     shader.setUniform2f("mouse", ofGetMouseX(), ofGetMouseY());
     
     draw_quad();
-    
     shader.end();
-    
     fbo.end();
 }
+
+//========================================================================
+NoiseMaker::NoiseMaker(void){
+    shader.load("shadersGL2/noise");
+    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
+    update();
+}
+
+void NoiseMaker::update(void){
+    process_image();
+}
+
+void NoiseMaker::process_image(void){
+    fbo.begin();
+    ofClear(0,0,0,1);
+    shader.begin();
+    shader.setUniform1f("time", ofGetElapsedTimef());
+    draw_quad();
+    shader.end();
+    fbo.end();
+    
+}
+
+
 
 //========================================================================
 //_Utilities
