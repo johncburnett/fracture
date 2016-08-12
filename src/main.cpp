@@ -353,53 +353,29 @@ NoiseMask::NoiseMask(Image *i1, Image *i2) {
     shader.load("shadersGL2/noise_mask");
     img1 = i1;
     img2 = i2;
-    x0 = y0 = 0;
-    frequency = 500.0f;
-    time = 0.0f;
-    noise.allocate(WIDTH, HEIGHT, OF_IMAGE_GRAYSCALE);
     fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
-    update();
 }
 
 void NoiseMask::update(void) {
-    time = ofGetElapsedTimef() * 0.5;
-    
-    ofPixelsRef pixels = noise.getPixels();
-    
-    int tmpIndex = 0;
-    for( int y = 0; y < noise.getHeight(); y++ ) {
-        for( int x = 0; x < noise.getWidth(); x++ ) {
-            float tmpNoise = ofNoise( (x0 + x) / frequency, (y0 + y) / frequency, time );
-            
-            pixels[tmpIndex] = tmpNoise * 255.0f;
-            tmpIndex++;
-        }
-    }
-    
-    noise.update();
-    
     process_image();
 }
 
 void NoiseMask::process_image(void) {
     ofTexture tex0 = img1->fbo.getTexture();;
     ofTexture tex1 = img2->fbo.getTexture();
-    ofTexture tex2 = noise.getTexture();
     
     fbo.begin();
     ofClear(0, 0, 0, 1);
     
-    shader.begin();
+        shader.begin();
+        
+            shader.setUniformTexture("tex0", tex0, 0);
+            shader.setUniformTexture("tex1", tex1, 1);
+            shader.setUniform1f("time", ofGetElapsedTimef());
     
-    shader.setUniformTexture("tex0", tex0, 0);
-    shader.setUniformTexture("tex1", tex1, 1);
-    shader.setUniformTexture("noise", tex2, 2);
-    shader.setUniform1i("width", WIDTH);
-    shader.setUniform1i("height", HEIGHT);
-    
-    draw_quad();
-    
-    shader.end();
+            draw_quad();
+        
+        shader.end();
     
     fbo.end();
 }
@@ -414,7 +390,6 @@ HeatDistort::HeatDistort(Image *i1, Image *i2) {
     time = 0.0f;
     distort = 0.05f;
     rise = 0.8f;
-    //noise.allocate(WIDTH, HEIGHT, OF_IMAGE_GRAYSCALE);
     fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
     update();
     
@@ -433,15 +408,18 @@ void HeatDistort::process_image(void) {
     
     fbo.begin();
     ofClear(0, 0, 0, 1);
-    shader.begin();
     
-    shader.setUniformTexture("tex0", tex0, 0);
-    shader.setUniformTexture("tex1", tex1, 1);
-    shader.setUniform1f("time", time);
-    shader.setUniform2f("mouse", ofGetMouseX(), ofGetMouseY());
+        shader.begin();
+        
+            shader.setUniformTexture("tex0", tex0, 0);
+            shader.setUniformTexture("tex1", tex1, 1);
+            shader.setUniform1f("time", time);
+            shader.setUniform2f("mouse", ofGetMouseX(), ofGetMouseY());
+            
+            draw_quad();
+        
+        shader.end();
     
-    draw_quad();
-    shader.end();
     fbo.end();
 }
 
@@ -459,10 +437,15 @@ void NoiseMaker::update(void){
 void NoiseMaker::process_image(void){
     fbo.begin();
     ofClear(0,0,0,1);
-    shader.begin();
-    shader.setUniform1f("time", ofGetElapsedTimef());
-    draw_quad();
-    shader.end();
+    
+        shader.begin();
+        
+            shader.setUniform1f("time", ofGetElapsedTimef());
+            
+            draw_quad();
+        
+        shader.end();
+    
     fbo.end();
     
 }

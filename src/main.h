@@ -217,8 +217,6 @@ public:
 class NoiseMask : public virtual Transform {
 public:
     ofShader shader;
-    ofImage noise;
-    int x0, y0;
     float frequency;
     float time;
     

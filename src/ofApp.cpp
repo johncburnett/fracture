@@ -32,12 +32,13 @@ void ofApp::setup(){
     noise_mask = new NoiseMask(img0, img1);
     smear = new Smear(img0, img2, 0, 0, 0, 1);
     mask = new ShadowMask(img0, 0.2);
+    heat = new HeatDistort(img2, img2);
     
     stream0 = new Stream();
     stream0->add_transform(noise_mask);
     
     stream1 = new Stream();
-    stream1->add_transform(mask);
+    stream1->add_transform(heat);
     stream1->add_transform(smear);
     
     kernel = new Kernel();

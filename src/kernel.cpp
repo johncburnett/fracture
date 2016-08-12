@@ -44,7 +44,6 @@ void Stream::evaluate(void) {
 }
 
 void Stream::draw(void) {
-//    nodes[num_nodes-1].transform->draw();
     fbo.draw(0, 0);
 }
 
