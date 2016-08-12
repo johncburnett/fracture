@@ -255,25 +255,52 @@ public:
 };
 
 //========================================================================
-/*
- * NoiseMaker generates various types of noise
- * Currently working on this...
- */
-class NoiseMaker: public virtual Transform {
-public:
+class NoiseMaker : public virtual Transform {
     ofShader shader;
     
     NoiseMaker(void);
     ~NoiseMaker(void);
     
-    void update();
-    void process_image();
+    // virtual methods
+    void update(void);
+    void process_image(void);
 };
 
 //========================================================================
-class Graph {
-    struct node *root;
-    vector<struct node *> nodes;
+class Stream {
+public:
+    ofFbo fbo;
+    int num_nodes;
+    vector<struct node> nodes;
+    
+    Stream(void);
+    ~Stream(void);
+    
+    void add_transform(Transform *);
+    
+    void evaluate(void);
+    void draw(void);
+};
+
+class Kernel {
+public:
+    int num_streams;
+    int current_frame;
+    int num_frames;
+    ofFbo fbo;
+    vector<Stream *> streams;
+    vector<struct frame> frames;
+    
+    Kernel(void);
+    ~Kernel(void);
+    
+    void add_stream(Stream *, int frame_index);
+    void add_frame(bool retain_fbos);
+    ofFbo get_stream_fbo(int frame_index, int stream_index);
+    ofFbo get_frame_fbo(int frame_index);
+    
+    void traverse_edge(void);
+    void next_frame(void);
     
     void update(void);
     void draw(void);

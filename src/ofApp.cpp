@@ -25,11 +25,9 @@
 void ofApp::setup(){
     ofSetFrameRate(30);
     
-    img0 = new Image("img/IMG_2242.jpg");
-    img0_heat = new Image("img/IMG_2242_mask.jpg");
-    img2 = new Image("img/IMG_3006.jpg");
-    img3 = new Image("img/rock_v.jpg");
-    img4 = new Image("img/sludge.jpg");
+    img0 = new Image("img/rock.jpg");
+    img1 = new Image("img/rock_b.jpg");
+    img2 = new Image("img/rock_v.jpg");
     
     noise_mask = new NoiseMask(img0, img1);
     smear = new Smear(img0, img2, 0, 0, 0, 1);
@@ -42,12 +40,9 @@ void ofApp::setup(){
     stream1->add_transform(mask);
     stream1->add_transform(smear);
     
-    heat = new HeatDistort(img1);
-    
-    c = 0;
-    */
-    
-    nm = new NoiseMaker();
+    kernel = new Kernel();
+    kernel->add_stream(stream0, 0);
+    kernel->add_stream(stream1, 0);
     
     // initialize audio server
     int bufferSize = 256;
@@ -57,13 +52,13 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    nm->update();
+    kernel->update();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
     ofSetWindowTitle("FPS: " + ofToString(ofGetFrameRate()));
-    nm->draw();
+    kernel->draw();
 }
 
 //--------------------------------------------------------------
