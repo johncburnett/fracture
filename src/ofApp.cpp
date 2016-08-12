@@ -3,7 +3,7 @@
  *
  * fracture
  * Copyright (C) 2016 - epistrata (John Burnett + Sage Jenson)
- * <http://epistrata.xyz/>
+ * <http://www.epistrata.xyz/>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "ofApp.h"
@@ -25,34 +25,24 @@
 void ofApp::setup(){
     ofSetFrameRate(30);
     
-    img0 = new Image("img/IMG_1734.png");
-    img0_heat = new Image("img/IMG_1734_heat_map.png");
-    img2 = new Image("img/rock_b.jpg");
-    img3 = new Image("img/rock_v.jpg");
-    img4 = new Image("img/sludge.jpg");
+    img0 = new Image("img/rock.jpg");
+    img1 = new Image("img/rock_b.jpg");
+    img2 = new Image("img/rock_v.jpg");
     
-    /*
-    invert = new Invert(img1, 1.0);
-    invert->process_image();
-    Image *i = new Image(invert->fbo);
+    noise_mask = new NoiseMask(img0, img1);
+    smear = new Smear(img0, img2, 0, 0, 0, 1);
+    mask = new ShadowMask(img0, 0.2);
     
-    noise_mask = new NoiseMask(img1, img2);
+    stream0 = new Stream();
+    stream0->add_transform(noise_mask);
     
-    mask = new ShadowMask(noise_mask->to_image(), 0.4);
-    mask->process_image();
-    smear = new Smear(mask->to_image(), img3, 0, 0, 0 ,1);
+    stream1 = new Stream();
+    stream1->add_transform(mask);
+    stream1->add_transform(smear);
     
-    heat = new HeatDistort(img1);
-    
-    c = 0;
-    */
-    
-    /*
-    twirl = new Twirl(img1, 0.5);
-    twirl->process_image();
-    */
-    
-    heat = new HeatDistort(img0, img0_heat);
+    kernel = new Kernel();
+    kernel->add_stream(stream0, 0);
+    kernel->add_stream(stream1, 0);
     
     // initialize audio server
     int bufferSize = 256;
@@ -62,13 +52,13 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    heat->update();
+    kernel->update();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
     ofSetWindowTitle("FPS: " + ofToString(ofGetFrameRate()));
-    heat->draw();
+    kernel->draw();
 }
 
 //--------------------------------------------------------------

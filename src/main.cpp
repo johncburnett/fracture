@@ -3,7 +3,7 @@
  *
  * fracture
  * Copyright (C) 2016 - epistrata (John Burnett + Sage Jenson)
- * <http://epistrata.xyz/>
+ * <http://www.epistrata.xyz/>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,11 +12,11 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <math.h>
@@ -75,6 +75,20 @@ void Transform::draw_quad(void) {
 	glTexCoord2f(WIDTH, HEIGHT); glVertex3f(WIDTH, HEIGHT, 0);
 	glTexCoord2f(0, HEIGHT);  glVertex3f(0, HEIGHT, 0);
 	glEnd();
+}
+
+//========================================================================
+DisplayImage::DisplayImage(Image *i1) {
+    img1 = i1;
+    fbo = img1->fbo;
+}
+
+void DisplayImage::update(void) {
+    process_image();
+}
+
+void DisplayImage::process_image(void) {
+    fbo.draw(0, 0);
 }
 
 //========================================================================
