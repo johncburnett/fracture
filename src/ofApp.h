@@ -3,7 +3,7 @@
  *
  * fracture
  * Copyright (C) 2016 - epistrata (John Burnett + Sage Jenson)
- * <http://epistrata.xyz/>
+ * <http://www.epistrata.xyz/>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -55,6 +55,10 @@ class ofApp : public ofBaseApp{
     NoiseMask *noise_mask;
     HeatDistort *heat;
     NoiseMaker *nm;
+    
+    Stream *stream0;
+    Stream *stream1;
+    Kernel *kernel;
     
     ofFbo fbo;
     int c, d;
