@@ -44,9 +44,8 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 
-    Image *img0, *img1, *img2;
+    Image *img0, *img1, *img2, *img3, *img4;
     Smear *smear;
-    Smear *landslide;
     ShadowMask *mask;
     Invert *invert;
     ColorMap *color_map;
@@ -57,6 +56,8 @@ class ofApp : public ofBaseApp{
     
     Stream *stream0;
     Stream *stream1;
+    Stream *stream2;
+    Stream *stream3;
     Kernel *kernel;
     
     ofFbo fbo;

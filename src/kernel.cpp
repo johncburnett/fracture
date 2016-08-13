@@ -49,19 +49,23 @@ void Stream::draw(void) {
 
 //========================================================================
 Kernel::Kernel(void) {
-    num_streams = 0;
     current_frame = 0;
-    num_frames = 0;
+    num_frames = 1;
+    start_time = 0.0f;
+    target_time = 5.0f;
+    loop = false;
     frames.push_back(frame());
+    frames[0].t = 5.0f;
 }
 
 void Kernel::add_stream(Stream *S, int frame_index) {
     frames[frame_index].streams.push_back(S);
-    num_streams++;
+    frames[frame_index].n++;
 }
 
-void Kernel::add_frame(bool retain_prev) {
+void Kernel::add_frame(float l) {
     frames.push_back(frame());
+    frames[num_frames].t = l;
     num_frames++;
 }
 
@@ -78,22 +82,38 @@ ofFbo Kernel::get_frame_fbo(int frame_index) {
     return fbo;
 }
 
-void Kernel::traverse_edge(void) {
-    // TODO: implement 0->1 traversal of transformations
+void Kernel::set_frame_length(int frame_index, float l) {
+    frames[frame_index].t = l;
 }
 
-void Kernel::next_frame(void) {
-    current_frame++;
+void Kernel::toggle_loop(bool val) {
+    loop = val;
 }
 
 void Kernel::update(void) {
-    for(int i = 0; i < num_streams; i++) {
+    float time = ofGetElapsedTimef();
+    
+    if(loop) {
+        if(time - start_time >= target_time) {
+            current_frame = (current_frame + 1) % num_frames;
+            start_time = time;
+            target_time = frames[current_frame].t;
+        }
+    } else {
+        if((time - start_time >= target_time) && current_frame < num_frames-1) {
+            current_frame++;
+            start_time = time;
+            target_time = frames[current_frame].t;
+        }
+    }
+    
+    for(int i = 0; i < frames[current_frame].n; i++) {
         frames[current_frame].streams[i]->evaluate();
     }
 }
 
 void Kernel::draw(void) {
-    for(int i = 0; i < num_streams; i++) {
+    for(int i = 0; i < frames[current_frame].n; i++) {
         frames[current_frame].streams[i]->draw();
     }
 }

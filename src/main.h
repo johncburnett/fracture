@@ -282,23 +282,23 @@ public:
 
 class Kernel {
 public:
-    int num_streams;
     int current_frame;
     int num_frames;
+    float start_time;
+    float target_time;
+    bool loop;
     ofFbo fbo;
-    vector<Stream *> streams;
     vector<struct frame> frames;
     
     Kernel(void);
     ~Kernel(void);
     
     void add_stream(Stream *, int frame_index);
-    void add_frame(bool retain_fbos);
+    void add_frame(float l);
     ofFbo get_stream_fbo(int frame_index, int stream_index);
     ofFbo get_frame_fbo(int frame_index);
-    
-    void traverse_edge(void);
-    void next_frame(void);
+    void set_frame_length(int frame_index, float l);
+    void toggle_loop(bool);
     
     void update(void);
     void draw(void);
@@ -306,17 +306,12 @@ public:
 
 struct node {
     Transform *transform;
-    vector<struct edge *> edges;
-};
-
-struct edge {
-    float t;
-    struct node *destination;
 };
 
 struct frame {
     vector<Stream *> streams;
     int n;
+    int t;
 };
 
 //========================================================================

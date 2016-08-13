@@ -28,22 +28,40 @@ void ofApp::setup(){
     img0 = new Image("img/rock.jpg");
     img1 = new Image("img/rock_b.jpg");
     img2 = new Image("img/rock_v.jpg");
-    
+    img3 = new Image("img/emory.jpg");
+    img4 = new Image("img/stone.jpg");
+
     noise_mask = new NoiseMask(img0, img1);
-    smear = new Smear(img0, img2, 0, 0, 0, 1);
+    smear = new Smear(img0, img2, 0, 0, 0, 8);
     mask = new ShadowMask(img0, 0.2);
     heat = new HeatDistort(img2, img2);
-    
+    twirl = new Twirl(img3, 4.0);
+    heat = new HeatDistort(img4, img3);
+
     stream0 = new Stream();
     stream0->add_transform(noise_mask);
-    
+
     stream1 = new Stream();
     stream1->add_transform(heat);
     stream1->add_transform(smear);
     
+    stream2 = new Stream();
+    stream2->add_transform(twirl);
+    
+    stream3 = new Stream();
+    stream3->add_transform(heat);
+
     kernel = new Kernel();
     kernel->add_stream(stream0, 0);
     kernel->add_stream(stream1, 0);
+    
+    kernel->add_frame(5.0f);
+    kernel->add_stream(stream2, 1);
+    
+    kernel->add_frame(5.0f);
+    kernel->add_stream(stream3, 2);
+    
+    kernel->toggle_loop(true);
     
     // initialize audio server
     int bufferSize = 256;
