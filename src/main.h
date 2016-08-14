@@ -300,7 +300,7 @@ public:
     void add_frame(float l);
     ofFbo get_stream_fbo(int frame_index, int stream_index);
     ofFbo get_frame_fbo(int frame_index);
-    Image *get_frame_image(int frame_index);
+    void get_frame_image(int frame_index);
     void set_frame_length(int frame_index, float l);
     void toggle_loop(bool);
     

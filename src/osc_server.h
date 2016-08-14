@@ -40,7 +40,7 @@ public:
     string msg_strings[NUM_MSG_STRINGS];
     float timers[NUM_MSG_STRINGS];
     
-    int temperature, vibration;
+    int temperature, vibration, pulse;
     int PORT;
 };
 

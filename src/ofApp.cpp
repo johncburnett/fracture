@@ -36,23 +36,23 @@ void ofApp::setup(){
     noise_mask = new NoiseMask(img0, img1);
     smear0 = new Smear(img0, img2, 0, 0, 0, 8);
     mask = new ShadowMask(img0, 0.2);
-    heat = new HeatDistort(img2, img2);
+    heat0 = new HeatDistort(img2, img2);
+    heat1 = new HeatDistort(img4, img3);
     twirl = new Twirl(img3, 0.2);
-    heat = new HeatDistort(img4, img3);
     smear1 = new Smear(img5, img0, 0, 0, 0, 2);
 
     stream0 = new Stream();
     stream0->add_transform(noise_mask);
 
     stream1 = new Stream();
-    stream1->add_transform(heat);
+    stream1->add_transform(heat0);
     stream1->add_transform(smear0);
     
     stream2 = new Stream();
     stream2->add_transform(twirl);
     
     stream3 = new Stream();
-    stream3->add_transform(heat);
+    stream3->add_transform(heat1);
     
     stream4 = new Stream();
     stream4->add_transform(smear1);

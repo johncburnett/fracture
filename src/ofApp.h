@@ -51,7 +51,7 @@ class ofApp : public ofBaseApp{
     ColorMap *color_map;
     Twirl *twirl;
     NoiseMask *noise_mask;
-    HeatDistort *heat;
+    HeatDistort *heat0, *heat1;
     NoiseMaker *nm;
     
     Stream *stream0;

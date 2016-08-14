@@ -44,6 +44,7 @@ void Stream::evaluate(void) {
     for(int i = 1; i < num_nodes; i++) {
 //        delete nodes[i].transform->img1;
         nodes[i].transform->img1 = new Image(fbo);
+//        nodes[i].transform->img1->fbo = fbo;
         nodes[i].transform->update();
         fbo = *nodes[i].transform->fbo;
     }
@@ -87,14 +88,14 @@ ofFbo Kernel::get_frame_fbo(int frame_index) {
     return fbo;
 }
 
-Image *Kernel::get_frame_image(int frame_index) {
+void Kernel::get_frame_image(int frame_index) {
     fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
     fbo.begin();
     ofClear(0, 0, 0, 1);
     draw();
     fbo.end();
+    delete img;
     img = new Image(fbo);
-    return img;
 }
 
 void Kernel::set_frame_length(int frame_index, float l) {

@@ -55,8 +55,11 @@ void OSC_Server::update(void) {
             temperature = m.getArgAsInt32(0);
         }
         // check for piezo sensor
-        if(m.getAddress() == "/sensors/piezo") {
+        else if(m.getAddress() == "/sensors/piezo") {
             vibration = m.getArgAsInt32(0);
+        }
+        else if(m.getAddress() == "/sc/pulse") {
+            pulse = m.getArgAsInt32(0);
         }
         else {
             // unrecognized message: display on the bottom of the screen
