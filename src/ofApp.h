@@ -44,8 +44,8 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 
-    Image *img0, *img1, *img2, *img3, *img4;
-    Smear *smear;
+    Image *img0, *img1, *img2, *img3, *img4, *img5;
+    Smear *smear0, *smear1;
     ShadowMask *mask;
     Invert *invert;
     ColorMap *color_map;
@@ -58,10 +58,8 @@ class ofApp : public ofBaseApp{
     Stream *stream1;
     Stream *stream2;
     Stream *stream3;
+    Stream *stream4;
     Kernel *kernel;
-    
-    ofFbo fbo;
-    int c, d;
     
     // audio server
     ofSoundStream soundStream;

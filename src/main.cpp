@@ -33,8 +33,8 @@ int main( ){
 //========================================================================
 Image::Image(const char *fname) {
     img.load(fname);
-    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
     img.resize(WIDTH, HEIGHT);
+    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
     
     // write img to fbo
     fbo.begin();
@@ -45,6 +45,11 @@ Image::Image(const char *fname) {
 
 Image::Image(ofFbo f) {
     fbo = f;
+    img.clear();
+}
+
+Image::~Image(void) {
+    fbo.clear();
 }
 
 void Image::display(void) {
@@ -57,15 +62,19 @@ ofFbo Image::getFbo(void) {
 
 //========================================================================
 void Transform::draw(void) {
-    fbo.draw(0, 0);
+    fbo->draw(0, 0);
 }
 
 ofFbo Transform::get_fbo(void) {
-    return fbo;
+    return *fbo;
+}
+
+void Transform::set_fbo(ofFbo *f) {
+    fbo = f;
 }
 
 Image *Transform::to_image(void) {
-    return new Image(fbo);
+    return new Image(*fbo);
 }
 
 void Transform::draw_quad(void) {
@@ -80,7 +89,7 @@ void Transform::draw_quad(void) {
 //========================================================================
 DisplayImage::DisplayImage(Image *i1) {
     img1 = i1;
-    fbo = img1->fbo;
+    *fbo = img1->fbo;
 }
 
 void DisplayImage::update(void) {
@@ -88,7 +97,7 @@ void DisplayImage::update(void) {
 }
 
 void DisplayImage::process_image(void) {
-    fbo.draw(0, 0);
+    fbo->draw(0, 0);
 }
 
 //========================================================================
@@ -100,7 +109,6 @@ Smear::Smear(Image *i1, Image *i2, float xi, float yi, float init_dx, float init
     y_scale = yi;
     dx = init_dx;
     dy = init_dy;
-    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
 }
 
 void Smear::update_delta(float new_dx, float new_dy){
@@ -119,7 +127,7 @@ void Smear::process_image(void) {
     ofTexture tex0 = img1->fbo.getTexture();
     ofTexture tex1 = img2->fbo.getTexture();
 
-    fbo.begin();
+    fbo->begin();
 	ofClear(0, 0, 0, 1);
     
         shader.begin();
@@ -135,7 +143,7 @@ void Smear::process_image(void) {
     
         shader.end();
     
-    fbo.end();
+    fbo->end();
 }
 
 //========================================================================
@@ -143,7 +151,6 @@ Invert::Invert(Image *img, float t) {
     shader.load("shadersGL2/invert");
     img1 = img;
     scale = t;
-    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
 }
 
 void Invert::update(void) {
@@ -153,7 +160,7 @@ void Invert::update(void) {
 void Invert::process_image(void) {
     ofTexture tex0 = img1->fbo.getTexture();
     
-    fbo.begin();
+    fbo->begin();
     ofClear(0, 0, 0, 1);
     
         shader.begin();
@@ -165,14 +172,13 @@ void Invert::process_image(void) {
     
         shader.end();
     
-    fbo.end();
+    fbo->end();
 }
 //========================================================================
 Grayscale::Grayscale(Image *img, float t) {
     shader.load("shadersGL2/bw");
     img1 = img;
     scale = t;
-    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
 }
 
 void Grayscale::update(void) {
@@ -182,7 +188,7 @@ void Grayscale::update(void) {
 void Grayscale::process_image(void) {
     ofTexture tex0 = img1->fbo.getTexture();
     
-    fbo.begin();
+    fbo->begin();
     ofClear(0, 0, 0, 1);
     
         shader.begin();
@@ -194,7 +200,7 @@ void Grayscale::process_image(void) {
     
         shader.end();
     
-    fbo.end();
+    fbo->end();
 }
 
 //========================================================================
@@ -202,7 +208,6 @@ ShadowMask::ShadowMask(Image *img, float t) {
     shader.load("shadersGL2/shadow_mask");
     img1 = img;
     threshold = t;
-    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
 }
 
 void ShadowMask::update(void) {
@@ -212,7 +217,7 @@ void ShadowMask::update(void) {
 void ShadowMask::process_image(void) {
     ofTexture tex0 = img1->fbo.getTexture();
     
-    fbo.begin();
+    fbo->begin();
     ofClear(0, 0, 0, 1);
     
         shader.begin();
@@ -224,7 +229,7 @@ void ShadowMask::process_image(void) {
     
         shader.end();
     
-    fbo.end();
+    fbo->end();
 }
 
 //========================================================================
@@ -232,7 +237,6 @@ ColorMap::ColorMap(Image *source, Image *target) {
     shader.load("shadersGL2/color_map");
     img1 = source;
     img2 = target;
-    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
     processed.allocate(WIDTH, HEIGHT, OF_IMAGE_COLOR);
 }
 
@@ -301,10 +305,10 @@ void ColorMap::process_image(void) {
     }
     processed.update();
     
-    fbo.begin();
+    fbo->begin();
     ofClear(0, 0, 0, 1);
     processed.draw(0, 0);
-    fbo.end();
+    fbo->end();
 }
 
 //========================================================================
@@ -312,7 +316,6 @@ Twirl::Twirl(Image *img, float s) {
     shader.load("shadersGL2/twirl");
     img1 = img;
     scale = s;
-    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
     center = ofVec2f(0,0);
 }
 
@@ -330,7 +333,7 @@ void Twirl::update(void) {
 void Twirl::process_image(void) {
     ofTexture tex0 = img1->fbo.getTexture();
     
-    fbo.begin();
+    fbo->begin();
     ofClear(0, 0, 0, 1);
     
         shader.begin();
@@ -345,7 +348,7 @@ void Twirl::process_image(void) {
     
         shader.end();
     
-    fbo.end();
+    fbo->end();
 }
 
 //========================================================================
@@ -353,7 +356,6 @@ NoiseMask::NoiseMask(Image *i1, Image *i2) {
     shader.load("shadersGL2/noise_mask");
     img1 = i1;
     img2 = i2;
-    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
 }
 
 void NoiseMask::update(void) {
@@ -361,10 +363,10 @@ void NoiseMask::update(void) {
 }
 
 void NoiseMask::process_image(void) {
-    ofTexture tex0 = img1->fbo.getTexture();;
+    ofTexture tex0 = img1->fbo.getTexture();
     ofTexture tex1 = img2->fbo.getTexture();
     
-    fbo.begin();
+    fbo->begin();
     ofClear(0, 0, 0, 1);
     
         shader.begin();
@@ -377,7 +379,7 @@ void NoiseMask::process_image(void) {
         
         shader.end();
     
-    fbo.end();
+    fbo->end();
 }
 
 //========================================================================
@@ -390,8 +392,6 @@ HeatDistort::HeatDistort(Image *i1, Image *i2) {
     time = 0.0f;
     distort = 0.05f;
     rise = 0.8f;
-    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
-    update();
     
 }
 
@@ -406,7 +406,7 @@ void HeatDistort::process_image(void) {
     ofTexture tex1 = img2->fbo.getTexture();
     time = ofGetElapsedTimef();
     
-    fbo.begin();
+    fbo->begin();
     ofClear(0, 0, 0, 1);
     
         shader.begin();
@@ -420,13 +420,12 @@ void HeatDistort::process_image(void) {
         
         shader.end();
     
-    fbo.end();
+    fbo->end();
 }
 
 //========================================================================
 NoiseMaker::NoiseMaker(void){
     shader.load("shadersGL2/noise");
-    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
     update();
 }
 
@@ -435,7 +434,7 @@ void NoiseMaker::update(void){
 }
 
 void NoiseMaker::process_image(void){
-    fbo.begin();
+    fbo->begin();
     ofClear(0,0,0,1);
     
         shader.begin();
@@ -446,7 +445,7 @@ void NoiseMaker::process_image(void){
         
         shader.end();
     
-    fbo.end();
+    fbo->end();
     
 }
 
