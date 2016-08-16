@@ -34,9 +34,14 @@ o = s.options;
 o.memSize_(2e6); // 2GB of RAM
 o.numOutputBusChannels = 4;
 
+//_Buffers
+~cwd = thisProcess.nowExecutingPath.dirname +/+ "samples";
+~b1 = Buffer.read(s, ~cwd +/+ "");
 
 //_OSC
-~osc = { |msg, time, addr|
+~osc = NetAddr.new("127.0.0.1", 7771);
+
+~osc_recieve = { |msg, time, addr|
 	if(msg[0] != '/status.reply') {
 		"time: % sender: %\nmessage: %\n".postf(time, addr, msg);
 	}
@@ -59,6 +64,9 @@ s.waitForBoot({
 
 	/**************************************************************************************************/
 	//_Synths
+
+	//--------------------------------------------------------------
+	//_Processing
 
 	SynthDef(\Input,{ |amp = 1.0|
 		var in, mix;
@@ -114,6 +122,40 @@ s.waitForBoot({
 	}).load(s);
 
 	//--------------------------------------------------------------
+	//_Sampling
+
+	SynthDef(\sampler, { |bufnum=0, rate=1, pan=0, amp=0.8|
+		var in = Pan2.ar(
+			PlayBuf.ar(1, bufnum, rate, doneAction:2),
+			pan
+		);
+		Out.ar(20, in * amp);
+	}).load(s);
+
+
+	SynthDef(\vGrain, { |bufnum=0, startPos=0.0, amp=0.3, dur=0.4, rate=1.0, vary=0.2, scale=1.0|
+		var in, grains, mix;
+
+		in = PlayBuf.ar(1, bufnum, loop:1) * (1.0 - scale) * 0.5;
+
+		grains = Array.fill(2, {
+			Array.fill(8, {
+				PlayBuf.ar(
+					1,
+					bufnum,
+					BufRateScale.kr(bufnum) * ((Rand(0.0, 1.0)*vary) + 0.5) * rate,
+					1,
+					BufFrames.ir(bufnum)*startPos,
+					1,
+				) * (EnvGen.kr(Env.perc(0.01, dur * ((Rand(0.0, 1.0)*vary) + 0.5)).circle)-0.001) * scale;
+			});
+		});
+
+		mix = (in + grains) * amp;
+		Out.ar(20, mix);
+	}).load(s);
+
+	//--------------------------------------------------------------
 	//_Rhythm
 
 	SynthDef(\snd, { |f1=44, f2=90, pan=0, amp=0.8|
@@ -125,8 +167,9 @@ s.waitForBoot({
 			snd * EnvGen.ar(Env([0, 1, 0.6, 0], [0.0001, 0.4, 0.01]), doneAction:2),
 			pan
 		);
-		Out.ar(0, snd * amp);
+		Out.ar(20, snd * amp);
 	}).load(s);
+
 
 	SynthDef(\bass, { |f1=52.8, f2=740, amp=0.8|
 		var bass, env, mix;
@@ -136,8 +179,9 @@ s.waitForBoot({
 		doneAction:2
 		)!2;
 		mix = bass * env * amp;
-		Out.ar(0, mix);
+		Out.ar(20, mix);
 	}).load(s);
+
 
 	SynthDef(\hNoise, { |amp=0.8|
 		var hNoise, env, mix;
@@ -148,7 +192,21 @@ s.waitForBoot({
 		)!2;
 		env = EnvGen.ar(Env([0, 0.002, 0.002, 0], [0.001, 0.2, 0.001]), doneAction:2);
 		mix = hNoise * env * amp;
-		Out.ar(0, mix);
+		Out.ar(20, mix);
+	}).load(s);
+
+
+	SynthDef(\click, { |amp=0.8|
+		var click, env, mix;
+		env = EnvGen.ar(Env([0, 1, 0], [0.001, 0.001]), doneAction:2);
+		click = BPF.ar(
+			PinkNoise.ar(Decay.ar(env, 0.001 * LFNoise1.ar(4).abs)),
+			15000,
+			0.9,
+			25 * LFNoise1.ar(8).range(0, 1)
+		).fold(-1, 1)!2;
+		mix = click * amp;
+		Out.ar(20, mix);
 	}).load(s);
 
 	//--------------------------------------------------------------
@@ -160,6 +218,11 @@ s.waitForBoot({
 		mix = in * amp;
 		Out.ar(0, mix);
 	}).load(s);
+
+
+	/**************************************************************************************************/
+	//_Functions
+
 
 
 	/**************************************************************************************************/
