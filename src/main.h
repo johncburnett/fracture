@@ -22,8 +22,13 @@
 #ifndef main_h
 #define main_h
 
+/*
 #define WIDTH 1920
 #define HEIGHT 1080
+*/
+
+#define WIDTH 2880
+#define HEIGHT 1620
 
 #include "ofMain.h"
 
@@ -231,7 +236,6 @@ public:
 //========================================================================
 /*
  * HeatDistort uses a depth map to distort an image
- * Currently working on this...
  *
  */
 class HeatDistort : public virtual Transform {
@@ -265,6 +269,67 @@ class NoiseMaker : public virtual Transform {
 };
 
 //========================================================================
+class Swarm : public virtual Transform {
+public:
+    ofFbo particleFbo;
+    ofShader updateShader, drawShader;
+    ofVboMesh mesh, quadMesh;
+    float opacity;
+    
+    Image * source;
+    
+    // dim of particle location texture
+    int w, h;
+
+    Swarm(Image *);
+    ~Swarm(void);
+    
+    void createFbo(void);
+    void createMesh(void);
+    void createPoints(void);
+    void setOpacity(float);
+    
+    // virtual methods
+    void update(void);
+    void process_image(void);
+};
+
+//========================================================================
+class Particle {
+public:
+    ofVec2f location, original_location;
+    ofColor color, bg_color;
+    float d;
+    
+    Particle(float, float, float, ofColor, ofColor);
+    
+    void reset_location(void);
+    void up(void);
+    void draw_original(void);
+    void draw(void);
+};
+
+//========================================================================
+class Disintegrate : public virtual Transform {
+public:
+    ofTexture color;
+    ofVboMesh mesh, quadMesh;
+    vector<Particle*> particles;
+    
+    Image *source, *mask, *delta;
+    
+    Disintegrate(Image *, Image *, Image *);
+    ~Disintegrate(void);
+    
+    void create_particles(void);
+    bool in_bounds(Particle *);
+    
+    // virtual methods
+    void update(void);
+    void process_image(void);
+};
+
+//========================================================================
 class Stream {
 public:
     ofFbo fbo;
@@ -280,6 +345,7 @@ public:
     void draw(void);
 };
 
+//========================================================================
 class Kernel {
 public:
     int current_frame;

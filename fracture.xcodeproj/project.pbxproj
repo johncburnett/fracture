@@ -110,8 +110,8 @@
 				E4B69E1D0A3A1BDC003C02F2 /* main.cpp */,
 				E4B69E1F0A3A1BDC003C02F2 /* ofApp.h */,
 				E4B69E1E0A3A1BDC003C02F2 /* ofApp.cpp */,
-				527EBAF91D4FC53800798B06 /* main.h */,
 				522553841D5BFB59000924F1 /* kernel.cpp */,
+				527EBAF91D4FC53800798B06 /* main.h */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;

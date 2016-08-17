@@ -45,23 +45,27 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 
     Image *img0, *img1, *img2, *img3, *img4;
-    Smear *smear;
-    ShadowMask *mask;
-    Invert *invert;
-    ColorMap *color_map;
+    Swarm *swarm;
     Twirl *twirl;
-    NoiseMask *noise_mask;
-    HeatDistort *heat;
-    NoiseMaker *nm;
+    Disintegrate *dis;
+//    ShadowMask *mask;
+//    Invert *invert;
+//    ColorMap *color_map;
+//    Twirl *twirl;
+//    NoiseMask *noise_mask;
+//    HeatDistort *heat;
+//    NoiseMaker *nm;
     
-    Stream *stream0;
-    Stream *stream1;
-    Stream *stream2;
-    Stream *stream3;
-    Kernel *kernel;
+//    Stream *stream0;
+//    Stream *stream1;
+//    Stream *stream2;
+//    Stream *stream3;
+//    Kernel *kernel;
     
     ofFbo fbo;
     int c, d;
+    
+    ofEasyCam cam;
     
     // audio server
     ofSoundStream soundStream;

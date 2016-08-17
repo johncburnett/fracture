@@ -451,6 +451,234 @@ void NoiseMaker::process_image(void){
 }
 
 //========================================================================
+Swarm::Swarm(Image * in){
+    
+    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
+    opacity = 0.0;
+    
+    //initialize the particle texture
+    w = 700;
+    h = 700;
+    
+    source = in;
+    createFbo();
+    createMesh();
+    
+    // shaders
+    updateShader.load("shadersGL2/updateShader");
+    drawShader.load("shadersGL2/drawShader");
+    
+    
+    createPoints();
+
+}
+
+void Swarm::setOpacity(float op_in){
+    opacity = op_in;
+}
+
+void Swarm::createFbo(){
+    ofFbo::Settings s;
+    s.internalformat = GL_RGBA32F_ARB;
+    s.textureTarget = GL_TEXTURE_RECTANGLE_ARB;
+    s.minFilter = GL_NEAREST;
+    s.maxFilter = GL_NEAREST;
+    s.wrapModeHorizontal = GL_CLAMP;
+    s.wrapModeVertical = GL_CLAMP;
+    s.width = w;
+    s.height = h;
+    particleFbo.allocate(s);
+}
+
+void Swarm::createMesh(){
+    mesh.clear();
+    for (int y = 0; y < h; ++y)
+    {
+        for (int x = 0; x < w; ++x)
+        {
+            mesh.addVertex(ofVec3f(0,0));
+            mesh.addTexCoord(ofVec2f(x, y));
+        }
+    }
+    
+    mesh.setMode(OF_PRIMITIVE_POINTS);
+    
+    
+    quadMesh.addVertex(ofVec3f(-1.f, -1.f, 0.f));
+    quadMesh.addVertex(ofVec3f(1.f, -1.f, 0.f));
+    quadMesh.addVertex(ofVec3f(1.f, 1.f, 0.f));
+    quadMesh.addVertex(ofVec3f(-1.f, 1.f, 0.f));
+    
+    quadMesh.addTexCoord(ofVec2f(0.f, 0.f));
+    quadMesh.addTexCoord(ofVec2f(w, 0.f));
+    quadMesh.addTexCoord(ofVec2f(w, h));
+    quadMesh.addTexCoord(ofVec2f(0.f, h));
+    
+    quadMesh.addIndex(0);
+    quadMesh.addIndex(1);
+    quadMesh.addIndex(2);
+    quadMesh.addIndex(0);
+    quadMesh.addIndex(2);
+    quadMesh.addIndex(3);
+    
+    quadMesh.setMode(OF_PRIMITIVE_TRIANGLES);
+}
+
+void Swarm::createPoints(){
+    float* particlePosns = new float[w * h * 4];
+    for (unsigned y = 0; y < h; ++y)
+    {
+        for (unsigned x = 0; x < w; ++x)
+        {
+            //ofVec2f location = getLocation(mask);
+            unsigned idx = y * w + x;
+            particlePosns[idx * 4] = ofRandom(ofGetWidth()); // particle x
+            particlePosns[idx * 4 + 1] = ofRandom(ofGetHeight()); // particle y
+            particlePosns[idx * 4 + 2] = ofRandom(0, 0); // particle z
+            particlePosns[idx * 4 + 3] = 0.f; // dummy
+        }
+    }
+    
+    particleFbo.getTexture().bind();
+    glTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, w, h, GL_RGBA, GL_FLOAT, particlePosns);
+    particleFbo.getTexture().unbind();
+    
+    delete[] particlePosns;
+}
+
+void Swarm::update(){
+
+    // Update the positions of the particles
+    particleFbo.begin();
+    glPushAttrib(GL_ENABLE_BIT);
+    glViewport(0, 0, w, h);
+    glDisable(GL_BLEND);
+    Image * lol;
+    
+    updateShader.begin();
+    updateShader.setUniform3f("mouse", ofGetMouseX(), ofGetMouseY(), 0.0);
+    updateShader.setUniform1f("radiusSquared", 200.0);
+    updateShader.setUniform1f("elapsed", ofGetElapsedTimef());
+    updateShader.setUniform2f("dim", ofGetWidth(), ofGetHeight());
+    updateShader.setUniformTexture("tex0", particleFbo.getTexture(), 0);
+    updateShader.setUniformTexture("velocities", source->fbo.getTexture(), 1);
+    quadMesh.draw();
+    updateShader.end();
+    
+    glPopAttrib();
+    particleFbo.end();
+    
+    // Draw the image to ofFbo fbo
+    process_image();
+}
+
+void Swarm::process_image(){
+    fbo.begin();
+    ofClear(0,0,0,1);
+
+    ofEnableBlendMode(OF_BLENDMODE_ADD);
+    drawShader.begin();
+    drawShader.setUniformTexture("tex1", source->fbo.getTexture(), 10);
+    drawShader.setUniform1f("mouseX", opacity);
+    mesh.draw();
+    drawShader.end();
+    //source->display();
+    ofDisableBlendMode();
+    
+    fbo.end();
+}
+
+//========================================================================
+Particle::Particle(float x, float y, float _d, ofColor c, ofColor bg){
+    original_location.x = x;
+    original_location.y = y;
+    reset_location();
+    color = c;
+    bg_color = bg;
+    d = _d;
+}
+
+void Particle::reset_location(){
+    location.x = original_location.x;
+    location.y = original_location.y;
+}
+
+void Particle::up(){
+    location.y -= d;
+}
+
+void Particle::draw_original(){
+    ofSetColor(bg_color);
+    ofDrawRectangle(original_location.x, original_location.y, 1,1);
+}
+
+void Particle::draw(){
+    ofSetColor(color);
+    //ofDrawLine(location.x, location.y, original_location.x, original_location.y);
+    ofDrawRectangle(location.x, location.y, 1, 1);
+}
+
+//========================================================================
+Disintegrate::Disintegrate(Image * _source, Image * _mask, Image * _delta){
+    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
+    source = _source;
+    mask = _mask;
+    delta = _delta;
+    
+    create_particles();
+}
+
+void Disintegrate::create_particles(){
+    for (int j = 0; j < mask->img.getHeight(); j++){
+        for (int i = 0; i < mask->img.getWidth(); i++){
+            float d = delta->img.getColor(i, j).getLightness();
+            if (d > 0.0){
+                ofColor c =  source->img.getColor(i, j);
+                ofColor o = mask->img.getColor(i,j);
+                if (d < 250.0){
+                    d = max(0.f, ofRandom(-200, d));
+                }
+                Particle * p = new Particle((float)i, (float)j, d/255.0, c, o);
+                particles.push_back(p);
+            }
+        }
+    }
+}
+
+bool Disintegrate::in_bounds(Particle * p){
+    //return (p->location.x >= 0 and p->location.x < WIDTH and p->location.y >= 0 and p->location.y < HEIGHT);
+    return (abs(p->location.y - p->original_location.y) < 100.0);
+}
+
+void Disintegrate::update(){
+    // Update the positions of the particles
+    for (Particle * p : particles){
+        if (p->location.y < ofGetMouseY())
+            p->up();
+        if (not in_bounds(p)){
+            p->reset_location();
+        }
+    }
+    
+    // Draw the image to ofFbo fbo
+    process_image();
+}
+
+void Disintegrate::process_image(){
+    fbo.begin();
+    ofClear(0,0,0,0);
+    source->display();
+    for (Particle *p: particles){
+        p->draw_original();
+    }
+    for (Particle *p: particles){
+        p->draw();
+    }
+    fbo.end();
+}
+
+
+//========================================================================
 //_Utilities
 
 double mean(vector<double> A) {
