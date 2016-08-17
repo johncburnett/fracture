@@ -1,6 +1,6 @@
 (
 /*
-* fracture/src/sc/audio.sc
+* fracture/src/sc/audio.scd
 *
 * fracture
 * Copyright (C) 2016 - epistrata (John Burnett + Sage Jenson)
@@ -27,28 +27,28 @@
 ~width = 1000;
 ~height = 600;
 
-
 //_Server
 s = Server.local;
 o = s.options;
+o.sampleRate_(96e3);
 o.memSize_(2e6); // 2GB of RAM
 o.numOutputBusChannels = 4;
 
 //_Buffers
 ~cwd = thisProcess.nowExecutingPath.dirname +/+ "samples";
-~b1 = Buffer.read(s, ~cwd +/+ "");
+~b1 = Buffer.read(s, ~cwd +/+ "1.wav");
+~b2 = Buffer.read(s, ~cwd +/+ "2.wav");
+~b3 = Buffer.read(s, ~cwd +/+ "3.wav");
 
 //_OSC
 ~osc = NetAddr.new("127.0.0.1", 7771);
-
 ~osc_recieve = { |msg, time, addr|
 	if(msg[0] != '/status.reply') {
 		"time: % sender: %\nmessage: %\n".postf(time, addr, msg);
 	}
 };
-thisProcess.addOSCRecvFunc(~osc);
-OSCFunc.trace(true);
-
+// thisProcess.addOSCRecvFunc(~osc);
+// OSCFunc.trace(true);
 
 //_Utility
 ~scale = { |x, inputMin, inputMax, outputMin, outputMax|
@@ -126,7 +126,7 @@ s.waitForBoot({
 
 	SynthDef(\sampler, { |bufnum=0, rate=1, pan=0, amp=0.8|
 		var in = Pan2.ar(
-			PlayBuf.ar(1, bufnum, rate, doneAction:2),
+			PlayBuf.ar(1, bufnum, rate, 1, doneAction:2),
 			pan
 		);
 		Out.ar(20, in * amp);
@@ -178,25 +178,25 @@ s.waitForBoot({
 			[0, 0.2, 0.1]),
 		doneAction:2
 		)!2;
-		mix = bass * env * amp;
+		mix = bass * env * amp * 5;
 		Out.ar(20, mix);
 	}).load(s);
 
 
 	SynthDef(\hNoise, { |amp=0.8|
 		var hNoise, env, mix;
+		env = EnvGen.ar(Env([0, 1.0, 0], [0.0005, 0.01]), doneAction:2);
 		hNoise = BPF.ar(
-			WhiteNoise.ar(Decay2.ar(LFNoise1.ar(8, 0.5, 0.5), 0.02, 0.1) * 0.05),
+			WhiteNoise.ar(Decay2.ar(env * LFNoise1.ar(8, 0.5, 0.5), 0.02, 0.1) * 0.05),
 			TRand.ar(12000, 15000, 1),
 			0.9
 		)!2;
-		env = EnvGen.ar(Env([0, 0.002, 0.002, 0], [0.001, 0.2, 0.001]), doneAction:2);
-		mix = hNoise * env * amp;
+		mix = hNoise * amp;
 		Out.ar(20, mix);
 	}).load(s);
 
 
-	SynthDef(\click, { |amp=0.8|
+	SynthDef(\click, { |pan=0, amp=0.8|
 		var click, env, mix;
 		env = EnvGen.ar(Env([0, 1, 0], [0.001, 0.001]), doneAction:2);
 		click = BPF.ar(
@@ -204,7 +204,8 @@ s.waitForBoot({
 			15000,
 			0.9,
 			25 * LFNoise1.ar(8).range(0, 1)
-		).fold(-1, 1)!2;
+		).fold(-1, 1);
+		click = Pan2.ar(click, pan);
 		mix = click * amp;
 		Out.ar(20, mix);
 	}).load(s);
@@ -215,22 +216,58 @@ s.waitForBoot({
 	SynthDef(\Mixer,{ |amp = 1.0|
 		var in, mix;
 		in = In.ar(20, 2);
-		mix = in * amp;
+		mix = Limiter.ar(MidEQ.ar(in, 15000, 0.7, 8)) * amp;
 		Out.ar(0, mix);
 	}).load(s);
 
+	~mix = Synth(\Mixer);
 
 	/**************************************************************************************************/
-	//_Functions
+	//_Sequencing
 
+	TempoClock.default.tempo = 120/60;
+
+	p = Pbind(
+		\instrument, \click,
+		\dur, Prand([Pseq((1/4)!4), Pseq([1/8, 1/8, 1/8])], inf),
+		\pan, Pseq([-1, 0, 1], inf)
+	).play;
+
+	p = Pbind(
+		\instrument, \snd,
+		\dur, Prand([Pseq((1/2)!4), Pseq([1/4, 1/4, 1/4])], inf),
+		\pan, Pseq([-1, 0, 1], inf)
+	).play;
+
+	p = Pbind(
+		\instrument, \bass,
+		\dur, Prand([1/2, 1, 3/2, 3/4], inf),
+		\pan, Pseq([-1, 0, 1], inf)
+	).play;
+
+	p = Pbind(
+		\instrument, \hNoise,
+		\dur, Prand([Pseq((1)!4), Pseq([1/2, 1/2, 1/2])], inf),
+		\pan, Pseq([-1, 0, 1], inf)
+	).play;
+
+	p = Pbind(
+		\instrument, \sampler,
+		\bufnum, Pseq([~b1.bufnum, ~b2.bufnum], inf),
+		\dur, Prand([1/2, 1, 3/2, 3/4], inf),
+		\pan, Pseq([-1, 0, 1], inf)
+	).play;
+
+	~f1 = Routine({
+		;
+	});
 
 
 	/**************************************************************************************************/
 	//_Main
 
-	~mix = Synth(\Mixer);
-	~proc = Synth(\Process);
-	~input = Synth(\Input);
+	// ~proc = Synth(\Process);
+	// ~input = Synth(\Input);
 
 	//_OSC
 	OSCdef.new(
@@ -240,6 +277,7 @@ s.waitForBoot({
 		},
 		'sensors/temperature'
 	);
+
 	OSCdef.new(
 		\piezo, { |msg, time, addr, port|
 			~proc.set(\amp, msg[1]);
