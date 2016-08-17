@@ -25,7 +25,7 @@
 void ofApp::setup(){
     ofSetFrameRate(30);
     ofBackground(0);
-    img0 = new Image("img/disintegrate/img.jpg");
+    img0 = new Image("img/emory.jpg");
     img1 = new Image("img/stone.jpg");
     img2 = new Image("img/bw.jpg");
     img3 = new Image("img/emory.jpg");

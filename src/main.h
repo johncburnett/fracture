@@ -48,7 +48,10 @@ public:
     
     Image(const char *);
     Image(ofFbo);
+    Image(ofFbo *);
     ~Image(void);
+    
+    void overwrite_fbo(ofFbo *);
     
     void display(void);
     ofFbo getFbo(void);

@@ -3,6 +3,7 @@
 *.png
 *.app
 *.wav
+*.aiff
 fracture.xcodeproj/*
 project.xcworkspace/*
 xcuserdata/

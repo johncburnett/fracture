@@ -48,6 +48,18 @@ Image::Image(ofFbo f) {
     img.clear();
 }
 
+Image::Image(ofFbo *f) {
+    fbo = *f;
+    img.clear();
+}
+
+void Image::overwrite_fbo(ofFbo *f) {
+    fbo.begin();
+    ofSetColor(255);
+    f->draw(0, 0);
+    fbo.end();
+}
+
 Image::~Image(void) {
     fbo.clear();
 }

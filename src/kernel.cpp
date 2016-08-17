@@ -40,13 +40,9 @@ void Stream::set_init_img(Image *img) {
 
 void Stream::evaluate(void) {
     nodes[0].transform->update();
-    fbo = *nodes[0].transform->fbo;
     for(int i = 1; i < num_nodes; i++) {
-//        delete nodes[i].transform->img1;
-        nodes[i].transform->img1 = new Image(fbo);
-//        nodes[i].transform->img1->fbo = fbo;
+        nodes[i].transform->img1->overwrite_fbo(&fbo);
         nodes[i].transform->update();
-        fbo = *nodes[i].transform->fbo;
     }
 }
 

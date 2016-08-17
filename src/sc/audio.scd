@@ -20,8 +20,6 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/**************************************************************************************************/
-//_Init
 
 //_GUI
 ~width = 1000;
@@ -34,33 +32,41 @@ o.sampleRate_(96e3);
 o.memSize_(2e6); // 2GB of RAM
 o.numOutputBusChannels = 4;
 
-//_Buffers
-~cwd = thisProcess.nowExecutingPath.dirname +/+ "samples";
-~b1 = Buffer.read(s, ~cwd +/+ "1.wav");
-~b2 = Buffer.read(s, ~cwd +/+ "2.wav");
-~b3 = Buffer.read(s, ~cwd +/+ "3.wav");
-
-//_OSC
-~osc = NetAddr.new("127.0.0.1", 7771);
-~osc_recieve = { |msg, time, addr|
-	if(msg[0] != '/status.reply') {
-		"time: % sender: %\nmessage: %\n".postf(time, addr, msg);
-	}
-};
-// thisProcess.addOSCRecvFunc(~osc);
-// OSCFunc.trace(true);
-
-//_Utility
-~scale = { |x, inputMin, inputMax, outputMin, outputMax|
-	var numer, denom, scaled;
-	numer = (outputMax-outputMin) * (x-inputMin);
-	denom = inputMax - inputMin;
-	scaled = (numer / denom) + outputMin;
-	scaled;
-};
-
 
 s.waitForBoot({
+
+	/**************************************************************************************************/
+	//_Init
+
+	//_Buffers
+	~cwd = thisProcess.nowExecutingPath.dirname +/+ "samples";
+	~b1 = Buffer.read(s, ~cwd +/+ "1.wav");
+	~b2 = Buffer.read(s, ~cwd +/+ "2.wav");
+	~b3 = Buffer.read(s, ~cwd +/+ "3.wav");
+	~b4 = Buffer.read(s, ~cwd +/+ "machine_drone.wav");
+	~b5 = Buffer.read(s, ~cwd +/+ "boiling.wav");
+	~b6 = Buffer.read(s, ~cwd +/+ "foam.aiff");
+
+	s.sync;
+
+	//_OSC
+	~osc = NetAddr.new("127.0.0.1", 7771);
+	~osc_recieve = { |msg, time, addr|
+		if(msg[0] != '/status.reply') {
+			"time: % sender: %\nmessage: %\n".postf(time, addr, msg);
+		}
+	};
+	// thisProcess.addOSCRecvFunc(~osc);
+	// OSCFunc.trace(true);
+
+	//_Utility
+	~scale = { |x, inputMin, inputMax, outputMin, outputMax|
+		var numer, denom, scaled;
+		numer = (outputMax-outputMin) * (x-inputMin);
+		denom = inputMax - inputMin;
+		scaled = (numer / denom) + outputMin;
+		scaled;
+	};
 
 	/**************************************************************************************************/
 	//_Synths
@@ -76,7 +82,7 @@ s.waitForBoot({
 	}).load(s);
 
 
-	SynthDef(\Process,{ |amp = 1.0, mod_scale = 1.0|
+	SynthDef(\process,{ |amp = 1.0, mod_scale = 0.2|
 		var in, d1, d2, pan, mix;
 
 		in = In.ar(10, 2);
@@ -116,7 +122,7 @@ s.waitForBoot({
 		pan = LinLin.kr(SinOsc.kr(0.125), -1.0, 1.0, -0.6, 0.6);
 		d1 = Pan2.ar(d1, pan);
 		d2 = Pan2.ar(d2, -1.0*pan);
-		mix = ([d1, d2] + (in*0.3)) * amp;
+		mix = ([d1, d2]*4) * amp;
 
 		Out.ar(20, mix);
 	}).load(s);
@@ -124,12 +130,27 @@ s.waitForBoot({
 	//--------------------------------------------------------------
 	//_Sampling
 
-	SynthDef(\sampler, { |bufnum=0, rate=1, pan=0, amp=0.8|
-		var in = Pan2.ar(
+	SynthDef(\sampler_1ch, { |bufnum=0, rate=1, pan=0, amp=0.8|
+		var in, mix;
+		in = Pan2.ar(
 			PlayBuf.ar(1, bufnum, rate, 1, doneAction:2),
 			pan
 		);
-		Out.ar(20, in * amp);
+		mix = in * amp;
+		Out.ar(10, in);
+		// Out.ar(20, mix);
+	}).load(s);
+
+
+	SynthDef(\sampler_2ch, { |bufnum=0, rate=1, pan=0, n, amp=0.8|
+		var in, mix;
+		in = Pan2.ar(
+			PlayBuf.ar(2, bufnum, rate, 1, doneAction:2),
+			pan
+		);
+		mix = in * amp;
+		Out.ar(10, in);
+		// Out.ar(20, mix);
 	}).load(s);
 
 
@@ -213,19 +234,17 @@ s.waitForBoot({
 	//--------------------------------------------------------------
 	//_Mixer
 
-	SynthDef(\Mixer,{ |amp = 1.0|
+	SynthDef(\mixer,{ |amp = 1.0|
 		var in, mix;
 		in = In.ar(20, 2);
 		mix = Limiter.ar(MidEQ.ar(in, 15000, 0.7, 8)) * amp;
 		Out.ar(0, mix);
 	}).load(s);
 
-	~mix = Synth(\Mixer);
-
 	/**************************************************************************************************/
 	//_Sequencing
 
-	TempoClock.default.tempo = 120/60;
+	TempoClock.default.tempo = 100/60;
 
 	p = Pbind(
 		\instrument, \click,
@@ -236,37 +255,38 @@ s.waitForBoot({
 	p = Pbind(
 		\instrument, \snd,
 		\dur, Prand([Pseq((1/2)!4), Pseq([1/4, 1/4, 1/4])], inf),
-		\pan, Pseq([-1, 0, 1], inf)
+		\pan, Prand([-1, 0, 1], inf)
 	).play;
 
 	p = Pbind(
 		\instrument, \bass,
 		\dur, Prand([1/2, 1, 3/2, 3/4], inf),
 		\pan, Pseq([-1, 0, 1], inf)
-	).play;
+	);
 
 	p = Pbind(
 		\instrument, \hNoise,
 		\dur, Prand([Pseq((1)!4), Pseq([1/2, 1/2, 1/2])], inf),
 		\pan, Pseq([-1, 0, 1], inf)
-	).play;
+	);
 
 	p = Pbind(
-		\instrument, \sampler,
+		\instrument, \sampler_1ch,
 		\bufnum, Pseq([~b1.bufnum, ~b2.bufnum], inf),
 		\dur, Prand([1/2, 1, 3/2, 3/4], inf),
 		\pan, Pseq([-1, 0, 1], inf)
-	).play;
+	);
 
 	~f1 = Routine({
-		;
+		1.wait;
 	});
-
 
 	/**************************************************************************************************/
 	//_Main
 
-	// ~proc = Synth(\Process);
+	~mix = Synth(\mixer);
+	~proc = Synth(\process);
+	~drone = Synth(\sampler_2ch, [\bufnum, ~b4.bufnum]);
 	// ~input = Synth(\Input);
 
 	//_OSC
@@ -284,7 +304,6 @@ s.waitForBoot({
 		},
 		'sensors/sensors'
 	);
-
 
 	/**************************************************************************************************/
 	//_GUI
