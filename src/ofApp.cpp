@@ -33,9 +33,9 @@ void ofApp::setup(){
     
     
     // initialize audio server
-    int bufferSize = 256;
-    audio.assign(bufferSize, 0.0);
-    soundStream.setup(this, 0, 1, 44100, bufferSize, 2);
+//    int bufferSize = 256;
+//    audio.assign(bufferSize, 0.0);
+//    soundStream.setup(this, 0, 1, 44100, bufferSize, 2);
 }
 
 //--------------------------------------------------------------
@@ -67,7 +67,6 @@ void ofApp::audioIn(float * input, int bufferSize, int nChannels){
 	smoothedVol *= 0.93;
 	smoothedVol += 0.07 * curVol;
 	bufferCounter++;
-	
 }
 
 //--------------------------------------------------------------

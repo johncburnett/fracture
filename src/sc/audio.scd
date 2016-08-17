@@ -1,8 +1,23 @@
 (
-/**
+/*
+* fracture/src/sc/audio.sc
 *
-* palo_duro - John Burnett + Sage Jenson (c)2016
+* fracture
+* Copyright (C) 2016 - epistrata (John Burnett + Sage Jenson)
+* <http://www.epistrata.xyz/>
 *
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /**************************************************************************************************/
@@ -19,12 +34,17 @@ o = s.options;
 o.memSize_(2e6); // 2GB of RAM
 o.numOutputBusChannels = 4;
 
+//_Buffers
+~cwd = thisProcess.nowExecutingPath.dirname +/+ "samples";
+~b1 = Buffer.read(s, ~cwd +/+ "");
 
 //_OSC
-~osc = { |msg, time, addr|
-    if(msg[0] != '/status.reply') {
-        "time: % sender: %\nmessage: %\n".postf(time, addr, msg);
-    }
+~osc = NetAddr.new("127.0.0.1", 7771);
+
+~osc_recieve = { |msg, time, addr|
+	if(msg[0] != '/status.reply') {
+		"time: % sender: %\nmessage: %\n".postf(time, addr, msg);
+	}
 };
 thisProcess.addOSCRecvFunc(~osc);
 OSCFunc.trace(true);
@@ -45,6 +65,9 @@ s.waitForBoot({
 	/**************************************************************************************************/
 	//_Synths
 
+	//--------------------------------------------------------------
+	//_Processing
+
 	SynthDef(\Input,{ |amp = 1.0|
 		var in, mix;
 		in = SoundIn.ar(0)!2;
@@ -63,7 +86,12 @@ s.waitForBoot({
 				CombC.ar(
 					in[0],
 					15.0,
-					LinLin.kr( SinOsc.kr(rrand(1/16, 1/32) * mod_scale), -1.0, 1.0, rrand(4.0, 6.0), rrand(8.0, 12.0) ),
+					LinLin.kr(
+						SinOsc.kr(rrand(1/16, 1/32) * mod_scale),
+						-1.0,
+						1.0,
+						rrand(4.0, 6.0),
+						rrand(8.0, 12.0) ),
 					10),
 				rrand(200, 10000),
 				0.3)
@@ -74,7 +102,12 @@ s.waitForBoot({
 				CombC.ar(
 					in[1],
 					15.0,
-					LinLin.kr( SinOsc.kr(rrand(1/16, 1/32) * mod_scale), -1.0, 1.0, rrand(4.0, 6.0), rrand(8.0, 12.0) ),
+					LinLin.kr(
+						SinOsc.kr(rrand(1/16, 1/32) * mod_scale),
+						-1.0,
+						1.0,
+						rrand(4.0, 6.0),
+						rrand(8.0, 12.0) ),
 					10),
 				rrand(200, 10000),
 				0.3)
@@ -88,6 +121,96 @@ s.waitForBoot({
 		Out.ar(20, mix);
 	}).load(s);
 
+	//--------------------------------------------------------------
+	//_Sampling
+
+	SynthDef(\sampler, { |bufnum=0, rate=1, pan=0, amp=0.8|
+		var in = Pan2.ar(
+			PlayBuf.ar(1, bufnum, rate, doneAction:2),
+			pan
+		);
+		Out.ar(20, in * amp);
+	}).load(s);
+
+
+	SynthDef(\vGrain, { |bufnum=0, startPos=0.0, amp=0.3, dur=0.4, rate=1.0, vary=0.2, scale=1.0|
+		var in, grains, mix;
+
+		in = PlayBuf.ar(1, bufnum, loop:1) * (1.0 - scale) * 0.5;
+
+		grains = Array.fill(2, {
+			Array.fill(8, {
+				PlayBuf.ar(
+					1,
+					bufnum,
+					BufRateScale.kr(bufnum) * ((Rand(0.0, 1.0)*vary) + 0.5) * rate,
+					1,
+					BufFrames.ir(bufnum)*startPos,
+					1,
+				) * (EnvGen.kr(Env.perc(0.01, dur * ((Rand(0.0, 1.0)*vary) + 0.5)).circle)-0.001) * scale;
+			});
+		});
+
+		mix = (in + grains) * amp;
+		Out.ar(20, mix);
+	}).load(s);
+
+	//--------------------------------------------------------------
+	//_Rhythm
+
+	SynthDef(\snd, { |f1=44, f2=90, pan=0, amp=0.8|
+		var snd = LPF.ar(
+			SinOsc.ar(f1.midicps, 0, 0.5) + SinOsc.ar(f2.midicps, 0, 0.6),
+			32.midicps * 2
+		) + HPF.ar(LPF.ar(WhiteNoise.ar(0.008), 12000), 2400);
+		snd = Pan2.ar(
+			snd * EnvGen.ar(Env([0, 1, 0.6, 0], [0.0001, 0.4, 0.01]), doneAction:2),
+			pan
+		);
+		Out.ar(20, snd * amp);
+	}).load(s);
+
+
+	SynthDef(\bass, { |f1=52.8, f2=740, amp=0.8|
+		var bass, env, mix;
+		bass = SinOsc.ar([52.8, 740]*0.8, 0, [2, 0.05]).mean.tanh;
+		env = EnvGen.ar(Env([0, 0.5, 0.3, 0],
+			[0, 0.2, 0.1]),
+		doneAction:2
+		)!2;
+		mix = bass * env * amp;
+		Out.ar(20, mix);
+	}).load(s);
+
+
+	SynthDef(\hNoise, { |amp=0.8|
+		var hNoise, env, mix;
+		hNoise = BPF.ar(
+			WhiteNoise.ar(Decay2.ar(LFNoise1.ar(8, 0.5, 0.5), 0.02, 0.1) * 0.05),
+			TRand.ar(12000, 15000, 1),
+			0.9
+		)!2;
+		env = EnvGen.ar(Env([0, 0.002, 0.002, 0], [0.001, 0.2, 0.001]), doneAction:2);
+		mix = hNoise * env * amp;
+		Out.ar(20, mix);
+	}).load(s);
+
+
+	SynthDef(\click, { |amp=0.8|
+		var click, env, mix;
+		env = EnvGen.ar(Env([0, 1, 0], [0.001, 0.001]), doneAction:2);
+		click = BPF.ar(
+			PinkNoise.ar(Decay.ar(env, 0.001 * LFNoise1.ar(4).abs)),
+			15000,
+			0.9,
+			25 * LFNoise1.ar(8).range(0, 1)
+		).fold(-1, 1)!2;
+		mix = click * amp;
+		Out.ar(20, mix);
+	}).load(s);
+
+	//--------------------------------------------------------------
+	//_Mixer
 
 	SynthDef(\Mixer,{ |amp = 1.0|
 		var in, mix;
@@ -95,6 +218,11 @@ s.waitForBoot({
 		mix = in * amp;
 		Out.ar(0, mix);
 	}).load(s);
+
+
+	/**************************************************************************************************/
+	//_Functions
+
 
 
 	/**************************************************************************************************/

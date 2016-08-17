@@ -48,7 +48,7 @@ public:
     
     Image(const char *);
     Image(ofFbo);
-    ~Image();
+    ~Image(void);
     
     void display(void);
     ofFbo getFbo(void);
@@ -64,7 +64,7 @@ public:
  */
 class Transform {
 public:
-    ofFbo fbo;
+    ofFbo *fbo;
     Image *img1;
     Image *img2;
 
@@ -75,6 +75,7 @@ public:
     // inherited methods
     void draw(void);
     ofFbo get_fbo(void);
+    void set_fbo(ofFbo *);
     Image *to_image(void);
     void draw_quad(void);
 };
@@ -340,6 +341,7 @@ public:
     ~Stream(void);
     
     void add_transform(Transform *);
+    void set_init_img(Image *);
     
     void evaluate(void);
     void draw(void);
@@ -354,6 +356,7 @@ public:
     float target_time;
     bool loop;
     ofFbo fbo;
+    Image *img;
     vector<struct frame> frames;
     
     Kernel(void);
@@ -363,6 +366,7 @@ public:
     void add_frame(float l);
     ofFbo get_stream_fbo(int frame_index, int stream_index);
     ofFbo get_frame_fbo(int frame_index);
+    void get_frame_image(int frame_index);
     void set_frame_length(int frame_index, float l);
     void toggle_loop(bool);
     
