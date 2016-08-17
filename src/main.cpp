@@ -356,10 +356,15 @@ NoiseMask::NoiseMask(Image *i1, Image *i2) {
     shader.load("shadersGL2/noise_mask");
     img1 = i1;
     img2 = i2;
+    scale = 1.0;
 }
 
 void NoiseMask::update(void) {
     process_image();
+}
+
+void NoiseMask::set_scale(float _scale){
+    scale = _scale;
 }
 
 void NoiseMask::process_image(void) {
@@ -374,6 +379,7 @@ void NoiseMask::process_image(void) {
             shader.setUniformTexture("tex0", tex0, 0);
             shader.setUniformTexture("tex1", tex1, 1);
             shader.setUniform1f("time", ofGetElapsedTimef());
+            shader.setUniform1f("scale", scale);
     
             draw_quad();
         
@@ -452,21 +458,19 @@ void NoiseMaker::process_image(void){
 //========================================================================
 Swarm::Swarm(Image * in){
     
-    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
     opacity = 0.0;
     
     //initialize the particle texture
     w = 700;
     h = 700;
     
-    source = in;
+    img1 = in;
     createFbo();
     createMesh();
     
     // shaders
     updateShader.load("shadersGL2/updateShader");
     drawShader.load("shadersGL2/drawShader");
-    
     
     createPoints();
 
@@ -552,7 +556,6 @@ void Swarm::update(){
     glPushAttrib(GL_ENABLE_BIT);
     glViewport(0, 0, w, h);
     glDisable(GL_BLEND);
-    Image * lol;
     
     updateShader.begin();
     updateShader.setUniform3f("mouse", ofGetMouseX(), ofGetMouseY(), 0.0);
@@ -560,7 +563,7 @@ void Swarm::update(){
     updateShader.setUniform1f("elapsed", ofGetElapsedTimef());
     updateShader.setUniform2f("dim", ofGetWidth(), ofGetHeight());
     updateShader.setUniformTexture("tex0", particleFbo.getTexture(), 0);
-    updateShader.setUniformTexture("velocities", source->fbo.getTexture(), 1);
+    updateShader.setUniformTexture("velocities", img1->fbo.getTexture(), 1);
     quadMesh.draw();
     updateShader.end();
     
@@ -572,19 +575,19 @@ void Swarm::update(){
 }
 
 void Swarm::process_image(){
-    fbo.begin();
+    fbo->begin();
     ofClear(0,0,0,1);
 
     ofEnableBlendMode(OF_BLENDMODE_ADD);
     drawShader.begin();
-    drawShader.setUniformTexture("tex1", source->fbo.getTexture(), 10);
-    drawShader.setUniform1f("mouseX", opacity);
+    drawShader.setUniformTexture("tex1", img1->fbo.getTexture(), 10);
+    drawShader.setUniform1f("mouseX", 1.0);
     mesh.draw();
     drawShader.end();
     //source->display();
     ofDisableBlendMode();
     
-    fbo.end();
+    fbo->end();
 }
 
 //========================================================================
@@ -619,7 +622,6 @@ void Particle::draw(){
 
 //========================================================================
 Disintegrate::Disintegrate(Image * _source, Image * _mask, Image * _delta){
-    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
     source = _source;
     mask = _mask;
     delta = _delta;
@@ -664,7 +666,7 @@ void Disintegrate::update(){
 }
 
 void Disintegrate::process_image(){
-    fbo.begin();
+    fbo->begin();
     ofClear(0,0,0,0);
     source->display();
     for (Particle *p: particles){
@@ -673,7 +675,7 @@ void Disintegrate::process_image(){
     for (Particle *p: particles){
         p->draw();
     }
-    fbo.end();
+    fbo->end();
 }
 
 

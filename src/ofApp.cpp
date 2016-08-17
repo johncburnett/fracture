@@ -26,11 +26,55 @@ void ofApp::setup(){
     ofSetFrameRate(30);
     ofBackground(0);
     img0 = new Image("img/disintegrate/img.jpg");
-    img1 = new Image("img/disintegrate/mask.jpg");
-    img2 = new Image("img/disintegrate/delta.jpg");
+    img1 = new Image("img/stone.jpg");
+    img2 = new Image("img/bw.jpg");
     img3 = new Image("img/emory.jpg");
     img4 = new Image("img/stone.jpg");
+    img5 = new Image("img/landscape.jpg");
+
+    noise_mask = new NoiseMask(img0, img1);
+    smear0 = new Smear(img0, img2, 0, 0, 0, 8);
+    mask = new ShadowMask(img0, 0.2);
+    heat0 = new HeatDistort(img2, img2);
+    heat1 = new HeatDistort(img4, img3);
+    twirl = new Twirl(img3, 0.2);
+    smear1 = new Smear(img5, img0, 0, 0, 0, 2);
+    swarm = new Swarm(img5);
     
+    stream0 = new Stream();
+    stream0->add_transform(swarm);
+    stream0->add_transform(twirl);
+    
+    /*
+    stream1 = new Stream();
+    stream1->add_transform(heat0);
+    stream1->add_transform(smear0);
+    
+    stream2 = new Stream();
+    stream2->add_transform(twirl);
+    
+    stream3 = new Stream();
+    stream3->add_transform(heat1);
+    
+    stream4 = new Stream();
+    stream4->add_transform(smear1);
+*/
+    kernel = new Kernel();
+    kernel->add_stream(stream0, 0);
+    
+/*
+    kernel->add_stream(stream1, 0);
+ 
+    kernel->add_frame(2.0f);
+    kernel->add_stream(stream2, 1);
+    
+    kernel->add_frame(2.0f);
+    kernel->add_stream(stream3, 2);
+    
+    kernel->add_frame(2.0f);
+    kernel->add_stream(stream4, 3);
+    */
+    kernel->toggle_loop(true);
     
     // initialize audio server
 //    int bufferSize = 256;
@@ -40,13 +84,15 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    //vol = ofMap(smoothedVol, 0.0, 0.17, 0.0, 1.0, true);
-
+//	vol = ofMap(smoothedVol, 0.0, 0.17, 0.0, 1.0, true);
+    noise_mask->set_scale((float)ofGetMouseX()/ofGetWidth());
+    kernel->update();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-
+    ofSetWindowTitle("FPS: " + ofToString(ofGetFrameRate()));
+    kernel->draw();
 }
 
 //--------------------------------------------------------------

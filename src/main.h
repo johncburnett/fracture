@@ -223,11 +223,12 @@ public:
 class NoiseMask : public virtual Transform {
 public:
     ofShader shader;
-    float frequency;
-    float time;
+    float frequency, time, scale;
     
     NoiseMask(Image *, Image *);
     ~NoiseMask(void);
+    
+    void set_scale(float);
     
     // virtual methods
     void update(void);
@@ -276,8 +277,6 @@ public:
     ofShader updateShader, drawShader;
     ofVboMesh mesh, quadMesh;
     float opacity;
-    
-    Image * source;
     
     // dim of particle location texture
     int w, h;

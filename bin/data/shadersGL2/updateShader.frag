@@ -1,11 +1,13 @@
 #version 120
 
 uniform sampler2DRect tex0;
-uniform sampler2DRect tex1;
+uniform sampler2DRect velocities;
 
-uniform float time, scale;
-
-varying vec2 texCoordVarying;
+uniform vec3 mouse;
+uniform float radiusSquared;
+uniform float elapsed;
+uniform vec2 dim;
+varying vec4 texCoordVarying;
 
 //====================================================================
 //
@@ -108,21 +110,26 @@ float snoise(vec3 v)
     // Mix final noise value
     vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
     m = m * m;
-    return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1), 
+    return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1),
                                  dot(p2,x2), dot(p3,x3) ) );
 }
 //END
 //===================================================================
 
-void main(void) {
-    vec4 c1 = texture2DRect(tex0, texCoordVarying);
-    vec4 c2 = texture2DRect(tex1, texCoordVarying);
+
+void main()
+{
+    vec3 pos = texture2DRect(tex0, texCoordVarying.st).xyz;
+    vec3 c = texture2DRect(velocities, vec2(pos.x, pos.y)).xyz;
+    float n =snoise(vec3(texCoordVarying.x, texCoordVarying.y, elapsed*0.1));
     
-    float s = snoise(vec3(texCoordVarying.x*scale, texCoordVarying.y*scale, time));
-    float si = 1.0 - s;
-    vec4 r1 = c1*s;
-    vec4 r2 = c2*si;
-    vec4 color = r1 + r2;
+    vec3 vel = vec3(c.x*(mod(texCoordVarying.x, 2.0)-1.0)*n,30.18*(c.x+n*.1), 0);
     
-    gl_FragColor = color;
+    // move
+    pos += vel;
+    
+    pos.x = mod(pos.x, dim.x);
+    pos.y = mod(pos.y, dim.y);
+    
+    gl_FragColor = vec4(pos, 1.0);
 }
