@@ -69,6 +69,7 @@ class ofApp : public ofBaseApp{
     SmearInner * smear;
     Swarm * swarm;
     Grayscale * grayscale;
+    Twirl * twirl;
     Mirror * mirror;
     // audio server
     ofSoundStream soundStream;

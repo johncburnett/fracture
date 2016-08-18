@@ -57,12 +57,30 @@ Still::Still(const char *fname){
     fbo.end();
 }
 
+Still::Still(ofFbo * _input){
+    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
+    
+    fbo.begin();
+    ofClear(0,0,0,0);
+    _input->draw(0,0);
+    fbo.end();
+}
+
+
+Still::Still(void){
+    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
+    
+    fbo.begin();
+    ofClear(0,0,0,0);
+    fbo.end();
+}
+
 void Still::update(void){
     ;
 }
 
 ofTexture Still::get_texture(void){
-    return img.getTexture();
+    return fbo.getTexture();
 }
 
 void Still::display(){
@@ -210,8 +228,7 @@ void Transform::draw_quad(void) {
 }
 
 //========================================================================
-DisplayImage::DisplayImage(BaseImage *i1) {
-    img1 = i1;
+DisplayImage::DisplayImage(void) {
 }
 
 void DisplayImage::update(void) {
@@ -221,14 +238,13 @@ void DisplayImage::update(void) {
 void DisplayImage::process_image(void) {
     fbo->begin();
     ofClear(0, 0, 0, 0);
-    img1->display();
+    input->display();
     fbo->end();
 }
 
 
 //========================================================================
-Mirror::Mirror(BaseImage * _img1){
-    img1 = _img1;
+Mirror::Mirror(){
     shader.load("shadersGL2/mirror");
 }
     
@@ -237,7 +253,7 @@ void Mirror::update(void){
 }
 
 void Mirror::process_image(void){
-    ofTexture tex0 = img1->fbo.getTexture();
+    ofTexture tex0 = input->fbo.getTexture();
     
     fbo->begin();
     ofClear(0,0,0,1);
@@ -253,10 +269,9 @@ void Mirror::process_image(void){
 
 
 //========================================================================
-Smear::Smear(BaseImage *i1, BaseImage *i2, float xi, float yi, float init_dx, float init_dy) {
+Smear::Smear(BaseImage *_fcn, float xi, float yi, float init_dx, float init_dy) {
     shader.load("shadersGL2/smear");
-    img1 = i1;
-    img2 = i2;
+    fcn = _fcn;
     x_scale = xi;
     y_scale = yi;
     dx = init_dx;
@@ -276,8 +291,8 @@ void Smear::update(void) {
 }
 
 void Smear::process_image(void) {
-    ofTexture tex0 = img1->fbo.getTexture();
-    ofTexture tex1 = img2->fbo.getTexture();
+    ofTexture tex0 = input->fbo.getTexture();
+    ofTexture tex1 = fcn->fbo.getTexture();
 
     fbo->begin();
 	ofClear(0, 0, 0, 1);
@@ -299,10 +314,9 @@ void Smear::process_image(void) {
 }
 
 //========================================================================
-SmearInner::SmearInner(BaseImage *i1, BaseImage *i2, float _scale) {
+SmearInner::SmearInner(BaseImage *_fcn, float _scale) {
     shader.load("shadersGL2/smear_inner");
-    img1 = i1;
-    img2 = i2;
+    fcn = _fcn;
     scale = _scale;
 }
 
@@ -315,8 +329,8 @@ void SmearInner::update(void) {
 }
 
 void SmearInner::process_image(void) {
-    ofTexture tex0 = img1->fbo.getTexture();
-    ofTexture tex1 = img2->fbo.getTexture();
+    ofTexture tex0 = input->fbo.getTexture();
+    ofTexture tex1 = fcn->fbo.getTexture();
 
     fbo->begin();
 	ofClear(0, 0, 0, 1);
@@ -338,10 +352,9 @@ void SmearInner::process_image(void) {
 
 
 //========================================================================
-Invert::Invert(BaseImage *img, float t) {
+Invert::Invert(float _scale) {
     shader.load("shadersGL2/invert");
-    img1 = img;
-    scale = t;
+    scale = _scale;
 }
 
 void Invert::update(void) {
@@ -349,7 +362,7 @@ void Invert::update(void) {
 }
 
 void Invert::process_image(void) {
-    ofTexture tex0 = img1->fbo.getTexture();
+    ofTexture tex0 = input->fbo.getTexture();
     
     fbo->begin();
     ofClear(0, 0, 0, 1);
@@ -367,10 +380,9 @@ void Invert::process_image(void) {
 }
 
 //========================================================================
-Grayscale::Grayscale(BaseImage *img, float t) {
+Grayscale::Grayscale(float _scale) {
     shader.load("shadersGL2/bw");
-    img1 = img;
-    scale = t;
+    scale = _scale;
 }
 
 void Grayscale::update(void) {
@@ -378,7 +390,7 @@ void Grayscale::update(void) {
 }
 
 void Grayscale::process_image(void) {
-    ofTexture tex0 = img1->fbo.getTexture();
+    ofTexture tex0 = input->fbo.getTexture();
     
     fbo->begin();
     ofClear(0, 0, 0, 1);
@@ -396,10 +408,9 @@ void Grayscale::process_image(void) {
 }
 
 //========================================================================
-ShadowMask::ShadowMask(BaseImage *img, float t) {
+ShadowMask::ShadowMask(float _threshold) {
     shader.load("shadersGL2/shadow_mask");
-    img1 = img;
-    threshold = t;
+    threshold = _threshold;
 }
 
 void ShadowMask::update(void) {
@@ -407,7 +418,7 @@ void ShadowMask::update(void) {
 }
 
 void ShadowMask::process_image(void) {
-    ofTexture tex0 = img1->fbo.getTexture();
+    ofTexture tex0 = input->fbo.getTexture();
     
     fbo->begin();
     ofClear(0, 0, 0, 1);
@@ -504,10 +515,9 @@ void ColorMap::process_image(void) {
 }
 
 //========================================================================
-Twirl::Twirl(BaseImage*img, float s) {
+Twirl::Twirl(void) {
     shader.load("shadersGL2/twirl");
-    img1 = img;
-    scale = s;
+    scale = 0.15;
     center = ofVec2f(0,0);
 }
 
@@ -516,6 +526,9 @@ void Twirl::set_center(float new_x, float new_y){
     center.y = new_y;
 }
 
+void Twirl::set_scale(float _scale){
+    scale = _scale;
+}
 
 void Twirl::update(void) {
     set_center(ofGetMouseX(), ofGetMouseY());
@@ -523,7 +536,7 @@ void Twirl::update(void) {
 }
 
 void Twirl::process_image(void) {
-    ofTexture tex0 = img1->fbo.getTexture();
+    ofTexture tex0 = input->fbo.getTexture();
     
     fbo->begin();
     ofClear(0, 0, 0, 1);
@@ -539,13 +552,13 @@ void Twirl::process_image(void) {
             draw_quad();
     
         shader.end();
+    fbo->end();
 }
 
 //========================================================================
-NoiseMask::NoiseMask(BaseImage*i1, BaseImage*i2) {
+NoiseMask::NoiseMask(BaseImage*_mask) {
     shader.load("shadersGL2/noise_mask");
-    img1 = i1;
-    img2 = i2;
+    mask = _mask;
     scale = 1.0;
 }
 
@@ -558,8 +571,8 @@ void NoiseMask::set_scale(float _scale){
 }
 
 void NoiseMask::process_image(void) {
-    ofTexture tex0 = img1->fbo.getTexture();
-    ofTexture tex1 = img2->fbo.getTexture();
+    ofTexture tex0 = input->fbo.getTexture();
+    ofTexture tex1 = mask->fbo.getTexture();
     
     fbo->begin();
     ofClear(0, 0, 0, 1);
@@ -581,8 +594,8 @@ void NoiseMask::process_image(void) {
 //========================================================================
 HeatDistort::HeatDistort(BaseImage*i1, BaseImage*i2) {
     shader.load("shadersGL2/heat");
-    img1 = i1;
-    img2 = i2;
+    input = i1;
+    mask = i2;
     x0 = y0 = 0;
     frequency = 40.0f;
     time = 0.0f;
@@ -596,17 +609,12 @@ void HeatDistort::update(void) {
 }
 
 void HeatDistort::process_image(void) {
-    ofTexture tex0 = img1->fbo.getTexture();
+    ofTexture tex0 = input->fbo.getTexture();
     
-    float distortion(0.08);
-    float distortionSize(1.12);
-    float aberrationAmount(0.08);
-    float vignetteSharpness(8.0);
-    float vignetteSize(0.8);
-    float noiseAmount(0.1);
+
     
     //TO DO: optimize to grayscale
-    ofTexture tex1 = img2->fbo.getTexture();
+    ofTexture tex1 = mask->fbo.getTexture();
     time = ofGetElapsedTimef();
     
     fbo->begin();
@@ -633,7 +641,13 @@ Aberration::Aberration(void){
 }
 
 void Aberration::update(void){
-    ofTexture tex0 = fbo->getTexture();
+    float distortionSize(1.12);
+    float distortion(0.08);
+    float aberrationAmount(0.08);
+    float vignetteSharpness(8.0);
+    float vignetteSize(0.8);
+    float noiseAmount(0.1);
+    ofTexture tex0 = input->fbo.getTexture();
     fbo->begin();
     ofClear(0,0,0,1);
     shader.begin();
@@ -672,7 +686,7 @@ void NoiseMaker::process_image(void){
 }
 
 //========================================================================
-Swarm::Swarm(BaseImage* _img1){
+Swarm::Swarm(void){
     
     opacity = 0.0;
     
@@ -680,7 +694,6 @@ Swarm::Swarm(BaseImage* _img1){
     w = 707;
     h = 707;
     
-    img1 = _img1;
     createFbo();
     createMesh();
     
@@ -779,7 +792,7 @@ void Swarm::update(){
     updateShader.setUniform1f("elapsed", ofGetElapsedTimef());
     updateShader.setUniform2f("dim", ofGetWidth(), ofGetHeight());
     updateShader.setUniformTexture("tex0", particleFbo.getTexture(), 0);
-    updateShader.setUniformTexture("velocities", img1->fbo.getTexture(), 1);
+    updateShader.setUniformTexture("velocities", input->fbo.getTexture(), 1);
     quadMesh.draw();
     updateShader.end();
     
@@ -796,7 +809,7 @@ void Swarm::process_image(){
 
     ofEnableBlendMode(OF_BLENDMODE_ADD);
     drawShader.begin();
-    drawShader.setUniformTexture("tex1", img1->fbo.getTexture(), 10);
+    drawShader.setUniformTexture("tex1", input->fbo.getTexture(), 10);
     drawShader.setUniform1f("mouseX", 1.0);
     mesh.draw();
     drawShader.end();
@@ -898,7 +911,11 @@ void Disintegrate::process_image(){
     fbo->end();
 }
 
-// Thanks kylemcdonald for this blur¡¡!!
+
+//========================================================================
+/* 
+ * Thanks kylemcdonald for this blur¡¡!!
+ */
 float Gaussian(float x, float mean, float variance) {
     x -= mean;
     return (1. / sqrt(TWO_PI * variance)) * exp(-(x * x) / (2 * variance));
@@ -1143,8 +1160,6 @@ void ofxBlur::draw() {
 void ofxBlur::draw(ofRectangle rect) {
     base.draw(rect);
 }
-
-
 
 // kylemcdonald end
 

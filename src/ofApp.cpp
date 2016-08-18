@@ -26,7 +26,7 @@ void ofApp::setup(){
     ofSetFrameRate(30);
     ofBackground(0);
     
-    blur.setup(WIDTH, HEIGHT, 10, .2, 4);
+    blur.setup(WIDTH, HEIGHT, 10, .4, 4);
     
     fboi = new ofFbo();
     fboi->allocate(WIDTH, HEIGHT, GL_RGBA);
@@ -38,17 +38,21 @@ void ofApp::setup(){
     img4 = new Still("img/rock.jpg");
     img5 = new Still("img/landscape.jpg");
     
-    vid0 = new Video("lapses/pano_lapse.mov");
+    //vid0 = new Video("lapses/pano_lapse.mov");
     
-    //twirl = new Twirl(img3, 0.2);
+    twirl = new Twirl();
+    twirl->set_scale(0.15);
+
     //transform = new DisplayImage(vid0);
-    //smear = new SmearInner(img0, img1, 0.0);
-    swarm = new Swarm(img0);
+    smear = new SmearInner(img1, 0.0);
+    //swarm = new Swarm();
+    mirror = new Mirror();
     
     stream0 = new Stream();
-//    stream0->add_transform(mirror);
-//    stream0->add_transform(smear);
-    stream0->add_transform(swarm);
+    stream0->add_transform(twirl);
+    stream0->add_transform(mirror);
+    //stream0->add_transform(smear);
+    //stream0->add_transform(swarm);
     
     kernel = new Kernel();
     kernel->add_stream(stream0, 0);
@@ -64,13 +68,21 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 	vol = ofMap(smoothedVol, 0.0, 0.17, 0.0, 1.0, true);
-    vid0->update();
-    stream0->set_init_img(vid0);
+    //vid0->update();
+    stream0->set_init_img(img4);
     kernel->update();
+    
+    /*
+    cout << ofMap(mouseX, 0, ofGetWidth(), 0, 10) << endl;
+    cout << ofMap(mouseY, 0, ofGetHeight(), -PI, PI) << endl;
     blur.setScale(ofMap(mouseX, 0, ofGetWidth(), 0, 10));
     blur.setRotation(ofMap(mouseY, 0, ofGetHeight(), -PI, PI));
+    */
+    blur.setScale(0.26);
+    blur.setRotation(0);
     
-//    smear->set_scale(ofGetMouseX()*vol);
+    
+    smear->set_scale(ofGetMouseX()*vol);
 //    vid0->update();
 }
 
