@@ -22,13 +22,14 @@
 #ifndef main_h
 #define main_h
 
-/*
+
 #define WIDTH 1920
 #define HEIGHT 1080
-*/
 
+/*
 #define WIDTH 2880
 #define HEIGHT 1620
+*/
 
 #include "ofMain.h"
 
@@ -390,6 +391,19 @@ public:
 };
 
 //========================================================================
+class Aberration : public virtual Transform {
+    ofShader shader;
+    float amount;
+    
+    Aberration(void);
+    ~Aberration(void);
+    
+    //virtual methods
+    void update(void);
+    void process_image(void);
+};
+
+//========================================================================
 class NoiseMaker : public virtual Transform {
     ofShader shader;
     
@@ -513,6 +527,35 @@ struct frame {
     int n;
     int t;
 };
+
+// Thanks kylemcdonald for this blur¡¡!!
+class ofxBlur {
+protected:
+	ofFbo base;
+	vector<ofFbo> ping, pong;
+
+	ofShader blurShader, combineShader;
+	float scale, rotation;
+	float downsample;
+	float brightness;
+public:
+	ofxBlur();
+
+	void setup(int width, int height, int radius = 100, float shape = .2, int passes = 1, float downsample = .5);
+
+	void setScale(float scale);
+	void setRotation(float rotation);
+	void setBrightness(float brightness); // only applies to multipass
+
+	void begin();
+	void end();
+	void draw();
+    void draw(ofRectangle rect);
+
+	ofTexture& getTextureReference();
+};
+
+// kylemcdonald end
 
 //========================================================================
 //_Utilities

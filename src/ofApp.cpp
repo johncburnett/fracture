@@ -26,6 +26,8 @@ void ofApp::setup(){
     ofSetFrameRate(30);
     ofBackground(0);
     
+    blur.setup(WIDTH, HEIGHT, 10, .2, 4);
+    
     fboi = new ofFbo();
     fboi->allocate(WIDTH, HEIGHT, GL_RGBA);
     
@@ -40,14 +42,14 @@ void ofApp::setup(){
     
     //twirl = new Twirl(img3, 0.2);
     //transform = new DisplayImage(vid0);
-    smear = new SmearInner(img0, img1, 0.0);
-    swarm = new Swarm(vid0);
-    mirror = new Mirror(vid0);
-    mirror->fbo = fboi;
+    //smear = new SmearInner(img0, img1, 0.0);
+    swarm = new Swarm(img0);
     
     stream0 = new Stream();
-    stream0->add_transform(mirror);
-//    stream0->add_transform(swarm);
+//    stream0->add_transform(mirror);
+//    stream0->add_transform(smear);
+    stream0->add_transform(swarm);
+    
     kernel = new Kernel();
     kernel->add_stream(stream0, 0);
 
@@ -62,15 +64,26 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 	vol = ofMap(smoothedVol, 0.0, 0.17, 0.0, 1.0, true);
-    kernel->update();
-    //smear->set_scale(ofGetMouseX()*vol);
     vid0->update();
+    stream0->set_init_img(vid0);
+    kernel->update();
+    blur.setScale(ofMap(mouseX, 0, ofGetWidth(), 0, 10));
+    blur.setRotation(ofMap(mouseY, 0, ofGetHeight(), -PI, PI));
+    
+//    smear->set_scale(ofGetMouseX()*vol);
+//    vid0->update();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
     ofSetWindowTitle("FPS: " + ofToString(ofGetFrameRate()));
+    
+    blur.begin();
+    ofSetColor(255);
     kernel->draw();
+    blur.end();
+    
+    blur.draw();
 }
 
 //--------------------------------------------------------------

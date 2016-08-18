@@ -24,6 +24,7 @@
 #include "ofMain.h"
 #include "main.h"
 
+
 class ofApp : public ofBaseApp{
 
 	public:
@@ -46,7 +47,7 @@ class ofApp : public ofBaseApp{
     
     Kernel *kernel;
     Stream *stream0, *stream1;
-    
+    ofxBlur blur;
     ofFbo * fboi;
     
     Still *img0, *img1, *img2, *img3, *img4, *img5;
