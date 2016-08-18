@@ -25,6 +25,10 @@
 void ofApp::setup(){
     ofSetFrameRate(30);
     ofBackground(0);
+    
+    fboi = new ofFbo();
+    fboi->allocate(WIDTH, HEIGHT, GL_RGBA);
+    
     img0 = new Still("img/emory.jpg");
     img1 = new Still("img/stone.jpg");
     img2 = new Still("img/bw.jpg");
@@ -32,22 +36,18 @@ void ofApp::setup(){
     img4 = new Still("img/rock.jpg");
     img5 = new Still("img/landscape.jpg");
     
-    //vid0 = new Video("lapses/pano_lapse.mov");
+    vid0 = new Video("lapses/pano_lapse.mov");
     
     //twirl = new Twirl(img3, 0.2);
     //transform = new DisplayImage(vid0);
     smear = new SmearInner(img0, img1, 0.0);
-    swarm = new Swarm(img0);
+    swarm = new Swarm(vid0);
+    mirror = new Mirror(vid0);
+    mirror->fbo = fboi;
     
     stream0 = new Stream();
-   // stream0->add_transform(transform);
-    stream0->add_transform(smear);
-    //stream0->add_transform(swarm);
-    
-
-    stream0->set_init_img(img4);
-
-    
+    stream0->add_transform(mirror);
+//    stream0->add_transform(swarm);
     kernel = new Kernel();
     kernel->add_stream(stream0, 0);
 
@@ -63,8 +63,8 @@ void ofApp::setup(){
 void ofApp::update(){
 	vol = ofMap(smoothedVol, 0.0, 0.17, 0.0, 1.0, true);
     kernel->update();
-    smear->set_scale(ofGetMouseX()*vol);
-
+    //smear->set_scale(ofGetMouseX()*vol);
+    vid0->update();
 }
 
 //--------------------------------------------------------------

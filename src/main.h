@@ -183,6 +183,21 @@ public:
 };
 
 //========================================================================
+/*
+ *  Mirror an image.
+ */
+class Mirror : public virtual NewTransform {
+public:
+    ofShader shader;
+    Mirror(BaseImage *);
+    ~Mirror(void);
+    
+    //virtual methods
+    void update(void);
+    void process_image(void);
+};
+
+//========================================================================
 /* 
  * Smear is a Transform that distorts img1 based on the color of img2
  * Smear(img1, img2, xi, yi, init_dx, init_dy):

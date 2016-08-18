@@ -225,6 +225,33 @@ void DisplayImage::process_image(void) {
     fbo->end();
 }
 
+
+//========================================================================
+Mirror::Mirror(BaseImage * _img1){
+    img1 = _img1;
+    shader.load("shadersGL2/mirror");
+}
+    
+void Mirror::update(void){
+    process_image();
+}
+
+void Mirror::process_image(void){
+    ofTexture tex0 = img1->fbo.getTexture();
+    
+    fbo->begin();
+    ofClear(0,0,0,1);
+    shader.begin();
+    
+        shader.setUniformTexture("tex0", tex0, 0);
+        shader.setUniform2f("dim", ofGetWidth(), ofGetHeight());
+    
+    draw_quad();
+    shader.end();
+    fbo->end();
+}
+
+
 //========================================================================
 Smear::Smear(BaseImage *i1, BaseImage *i2, float xi, float yi, float init_dx, float init_dy) {
     shader.load("shadersGL2/smear");
