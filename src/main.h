@@ -104,6 +104,7 @@ public:
 class Video : public virtual BaseImage {
 public:
     ofVideoPlayer mov;
+    int cur_frame;
     
     Video(const char *);
     ~Video(void);
@@ -211,6 +212,34 @@ public:
     void process_image(void);
 };
 
+//========================================================================
+/* 
+ * Smear is a Transform that distorts img1 based on the color of img2
+ * Smear(img1, img2, xi, yi, init_dx, init_dy):
+ *     img1 : source image
+ *     img2 : displacement image
+ *     xi : initial x-axis displacement
+ *     yi : initial y- axis displacement
+ *     init_dx : x-displacement movement
+ *     init_dy : y-displacement movement
+ *
+ * update_delta(new_dx, new_dy) changes dx and dy values.
+ *
+ */
+class SmearInner : public virtual NewTransform {
+public:
+    ofShader shader;
+    float scale;
+
+    SmearInner(BaseImage *, BaseImage *, float);
+    ~SmearInner(void);
+
+    void set_scale(float);
+
+    // virtual methods
+    void update(void);
+    void process_image(void);
+};
 
 //========================================================================
 /*

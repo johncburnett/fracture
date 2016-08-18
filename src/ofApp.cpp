@@ -29,53 +29,48 @@ void ofApp::setup(){
     img1 = new Still("img/stone.jpg");
     img2 = new Still("img/bw.jpg");
     img3 = new Still("img/emory.jpg");
-    img4 = new Still("img/stone.jpg");
+    img4 = new Still("img/rock.jpg");
     img5 = new Still("img/landscape.jpg");
     
-    vid0 = new Video("lapses/pano_lapse.mov");
-//    vid1 = new Video("lapses/pano_lapse.mov");
-    
-//    sleep(1);
-//    FUCK_ME.load("lapses/pano_lapse.mov");
-//    FUCK_ME.play();
-//    FUCK_ME.setPaused(true);
+    //vid0 = new Video("lapses/pano_lapse.mov");
     
     //twirl = new Twirl(img3, 0.2);
-//    transform = new DisplayImage(vid0);
-//    smear = new Smear(vid0, img0, 0, 0, 0, 1);
-//    noise_mask =
+    //transform = new DisplayImage(vid0);
+    smear = new SmearInner(img0, img1, 0.0);
+    swarm = new Swarm(img0);
     
-//    stream0 = new Stream();
-//    stream0->add_transform(transform);
-//    stream0->add_transform(smear);
+    stream0 = new Stream();
+   // stream0->add_transform(transform);
+    stream0->add_transform(smear);
+    //stream0->add_transform(swarm);
     
-//    kernel = new Kernel();
-//    kernel->add_stream(stream0, 0);
 
-//    kernel->toggle_loop(true);
+    stream0->set_init_img(img4);
+
+    
+    kernel = new Kernel();
+    kernel->add_stream(stream0, 0);
+
+    kernel->toggle_loop(true);
     
     // initialize audio server
-//    int bufferSize = 256;
-//    audio.assign(bufferSize, 0.0);
-//    soundStream.setup(this, 0, 1, 44100, bufferSize, 2);
+    int bufferSize = 256;
+    audio.assign(bufferSize, 0.0);
+    soundStream.setup(this, 0, 1, 44100, bufferSize, 2);
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-//	vol = ofMap(smoothedVol, 0.0, 0.17, 0.0, 1.0, true);
-//    kernel->update();
-    vid0->update();
-//    FUCK_ME.nextFrame();
-//    FUCK_ME.update();
+	vol = ofMap(smoothedVol, 0.0, 0.17, 0.0, 1.0, true);
+    kernel->update();
+    smear->set_scale(ofGetMouseX()*vol);
+
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
     ofSetWindowTitle("FPS: " + ofToString(ofGetFrameRate()));
-//    kernel->draw();
-//    FUCK_ME.draw(0,0,WIDTH,HEIGHT);
-    vid0->display();
-//    vid0->fbo.draw(0,0);
+    kernel->draw();
 }
 
 //--------------------------------------------------------------

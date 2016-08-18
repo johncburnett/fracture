@@ -79,10 +79,13 @@ Video::Video(const char *fname){
     
     fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
     
-//    update();
+    update();
 }
 
 void Video::update(void){
+    if (mov.getPosition() == 1.0) {
+        mov.setPosition(0.0);
+    }
     mov.nextFrame();
     mov.update();
     
@@ -269,6 +272,45 @@ void Smear::process_image(void) {
 }
 
 //========================================================================
+SmearInner::SmearInner(BaseImage *i1, BaseImage *i2, float _scale) {
+    shader.load("shadersGL2/smear_inner");
+    img1 = i1;
+    img2 = i2;
+    scale = _scale;
+}
+
+void SmearInner::set_scale(float _scale){
+    scale = _scale;
+}
+
+void SmearInner::update(void) {
+    process_image();
+}
+
+void SmearInner::process_image(void) {
+    ofTexture tex0 = img1->fbo.getTexture();
+    ofTexture tex1 = img2->fbo.getTexture();
+
+    fbo->begin();
+	ofClear(0, 0, 0, 1);
+    
+        shader.begin();
+    
+            shader.setUniformTexture("tex0",   tex0, 0);
+            shader.setUniformTexture("tex1",  tex1, 1);
+            shader.setUniform1i("w", WIDTH);
+            shader.setUniform1i("h", HEIGHT);
+            shader.setUniform1f("scale", scale);
+            
+            draw_quad();
+    
+        shader.end();
+    
+    fbo->end();
+}
+
+
+//========================================================================
 Invert::Invert(BaseImage *img, float t) {
     shader.load("shadersGL2/invert");
     img1 = img;
@@ -296,6 +338,7 @@ void Invert::process_image(void) {
     
     fbo->end();
 }
+
 //========================================================================
 Grayscale::Grayscale(BaseImage *img, float t) {
     shader.load("shadersGL2/bw");
@@ -578,7 +621,7 @@ void NoiseMaker::process_image(void){
 }
 
 //========================================================================
-Swarm::Swarm(BaseImage* in){
+Swarm::Swarm(BaseImage* _img1){
     
     opacity = 0.0;
     
@@ -586,7 +629,7 @@ Swarm::Swarm(BaseImage* in){
     w = 700;
     h = 700;
     
-    img1 = in;
+    img1 = _img1;
     createFbo();
     createMesh();
     

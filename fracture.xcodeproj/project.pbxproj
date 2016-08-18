@@ -104,6 +104,7 @@
 		E6DEF695B88BA5FAACEAA937 /* UdpSocket.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = UdpSocket.cpp; path = ../../../addons/ofxOsc/libs/oscpack/src/ip/posix/UdpSocket.cpp; sourceTree = SOURCE_ROOT; };
 		EC3C7BA81D64D90E00864CAB /* shadersGL2 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = shadersGL2; path = bin/data/shadersGL2; sourceTree = "<group>"; };
 		EC760D161D65601300B61EDD /* libiomp5.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiomp5.dylib; path = ../../../../../usr/local/Cellar/libiomp/20150701/lib/libiomp5.dylib; sourceTree = "<group>"; };
+		EC760D181D657F1F00B61EDD /* img */ = {isa = PBXFileReference; lastKnownFileType = folder; name = img; path = bin/data/img; sourceTree = "<group>"; };
 		F141144498DC6D30A9F651FF /* kernel.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = kernel.cpp; path = src/kernel.cpp; sourceTree = SOURCE_ROOT; };
 		F4F5B6B8BA2BD52C646ED908 /* OscException.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = OscException.h; path = ../../../addons/ofxOsc/libs/oscpack/src/osc/OscException.h; sourceTree = SOURCE_ROOT; };
 		F7FBC56859535E597B24BB91 /* NetworkingUtils.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = NetworkingUtils.h; path = ../../../addons/ofxOsc/libs/oscpack/src/ip/NetworkingUtils.h; sourceTree = SOURCE_ROOT; };
@@ -244,6 +245,7 @@
 		E4B69B4A0A3A1720003C02F2 = {
 			isa = PBXGroup;
 			children = (
+				EC760D181D657F1F00B61EDD /* img */,
 				EC760D161D65601300B61EDD /* libiomp5.dylib */,
 				EC3C7BA81D64D90E00864CAB /* shadersGL2 */,
 				E4B6FCAD0C3E899E008CF71C /* openFrameworks-Info.plist */,
