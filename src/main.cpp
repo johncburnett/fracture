@@ -31,6 +31,66 @@ int main( ){
 }
 
 //========================================================================
+void BaseImage::overwrite_fbo(ofFbo * f){
+    fbo.begin();
+    ofClear(0,0,0,0);
+    ofSetColor(255);
+    f->draw(0, 0);
+    fbo.end();
+}
+
+ofFbo BaseImage::get_fbo(void) {
+    return fbo;
+}
+
+//========================================================================
+Still::Still(const char *fname){
+    img.load(fname);
+    img.resize(WIDTH, HEIGHT);
+    
+    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
+    
+    fbo.begin();
+    ofClear(0,0,0,0);
+    img.draw(0,0);
+    fbo.end();
+}
+
+void Still::update(void){
+    ;
+}
+
+ofTexture Still::get_texture(void){
+    return img.getTexture();
+}
+
+void Still::display(){
+    img.draw(0,0,WIDTH,HEIGHT);
+}
+
+//========================================================================
+Video::Video(const char *fname){
+    mov.load(fname);
+    mov.play();
+    mov.setPaused(true);
+}
+
+void Video::update(void){
+    mov.update();
+    mov.nextFrame();
+}
+
+ofTexture Video::get_texture(){
+    return mov.getTexture();
+}
+
+void Video::display(){
+    mov.draw(0,0,WIDTH,HEIGHT);
+}
+
+
+
+//========================================================================
 Image::Image(const char *fname) {
     img.load(fname);
     img.resize(WIDTH, HEIGHT);
@@ -73,6 +133,38 @@ ofFbo Image::getFbo(void) {
 }
 
 //========================================================================
+void NewTransform::draw(void) {
+    fbo->draw(0, 0);
+}
+
+void NewTransform::init_fbo(void) {
+    fbo = new ofFbo();
+    fbo->allocate(WIDTH, HEIGHT, GL_RGBA);
+}
+
+ofFbo *NewTransform::get_fbo(void) {
+    return fbo;
+}
+
+void NewTransform::set_fbo(ofFbo *f) {
+    fbo = f;
+}
+
+Image *NewTransform::to_image(void) {
+    return new Image(*fbo);
+}
+
+void NewTransform::draw_quad(void) {
+    glBegin(GL_QUADS);
+    glTexCoord2f(0, 0); glVertex3f(0, 0, 0);
+    glTexCoord2f(WIDTH, 0); glVertex3f(WIDTH, 0, 0);
+    glTexCoord2f(WIDTH, HEIGHT); glVertex3f(WIDTH, HEIGHT, 0);
+    glTexCoord2f(0, HEIGHT);  glVertex3f(0, HEIGHT, 0);
+    glEnd();
+}
+
+
+//========================================================================
 void Transform::draw(void) {
     fbo->draw(0, 0);
 }
@@ -99,9 +191,9 @@ void Transform::draw_quad(void) {
 }
 
 //========================================================================
-DisplayImage::DisplayImage(Image *i1) {
+DisplayImage::DisplayImage(BaseImage *i1) {
     img1 = i1;
-    *fbo = img1->fbo;
+    fbo = &(i1->fbo);
 }
 
 void DisplayImage::update(void) {
@@ -113,7 +205,7 @@ void DisplayImage::process_image(void) {
 }
 
 //========================================================================
-Smear::Smear(Image *i1, Image *i2, float xi, float yi, float init_dx, float init_dy) {
+Smear::Smear(BaseImage *i1, BaseImage *i2, float xi, float yi, float init_dx, float init_dy) {
     shader.load("shadersGL2/smear");
     img1 = i1;
     img2 = i2;
@@ -159,7 +251,7 @@ void Smear::process_image(void) {
 }
 
 //========================================================================
-Invert::Invert(Image *img, float t) {
+Invert::Invert(BaseImage *img, float t) {
     shader.load("shadersGL2/invert");
     img1 = img;
     scale = t;
@@ -187,7 +279,7 @@ void Invert::process_image(void) {
     fbo->end();
 }
 //========================================================================
-Grayscale::Grayscale(Image *img, float t) {
+Grayscale::Grayscale(BaseImage *img, float t) {
     shader.load("shadersGL2/bw");
     img1 = img;
     scale = t;
@@ -216,7 +308,7 @@ void Grayscale::process_image(void) {
 }
 
 //========================================================================
-ShadowMask::ShadowMask(Image *img, float t) {
+ShadowMask::ShadowMask(BaseImage *img, float t) {
     shader.load("shadersGL2/shadow_mask");
     img1 = img;
     threshold = t;
@@ -324,7 +416,7 @@ void ColorMap::process_image(void) {
 }
 
 //========================================================================
-Twirl::Twirl(Image *img, float s) {
+Twirl::Twirl(BaseImage*img, float s) {
     shader.load("shadersGL2/twirl");
     img1 = img;
     scale = s;
@@ -364,7 +456,7 @@ void Twirl::process_image(void) {
 }
 
 //========================================================================
-NoiseMask::NoiseMask(Image *i1, Image *i2) {
+NoiseMask::NoiseMask(BaseImage*i1, BaseImage*i2) {
     shader.load("shadersGL2/noise_mask");
     img1 = i1;
     img2 = i2;
@@ -401,7 +493,7 @@ void NoiseMask::process_image(void) {
 }
 
 //========================================================================
-HeatDistort::HeatDistort(Image *i1, Image *i2) {
+HeatDistort::HeatDistort(BaseImage*i1, BaseImage*i2) {
     shader.load("shadersGL2/heat");
     img1 = i1;
     img2 = i2;
@@ -468,7 +560,7 @@ void NoiseMaker::process_image(void){
 }
 
 //========================================================================
-Swarm::Swarm(Image * in){
+Swarm::Swarm(BaseImage* in){
     
     opacity = 0.0;
     
@@ -633,7 +725,7 @@ void Particle::draw(){
 }
 
 //========================================================================
-Disintegrate::Disintegrate(Image * _source, Image * _mask, Image * _delta){
+Disintegrate::Disintegrate(BaseImage * _source, BaseImage * _mask, BaseImage * _delta){
     source = _source;
     mask = _mask;
     delta = _delta;
@@ -642,12 +734,16 @@ Disintegrate::Disintegrate(Image * _source, Image * _mask, Image * _delta){
 }
 
 void Disintegrate::create_particles(){
-    for (int j = 0; j < mask->img.getHeight(); j++){
-        for (int i = 0; i < mask->img.getWidth(); i++){
-            float d = delta->img.getColor(i, j).getLightness();
+    ofPixels delta_pixels, mask_pixels, source_pixels;
+    delta->fbo.readToPixels(delta_pixels);
+    mask->fbo.readToPixels(mask_pixels);
+    source->fbo.readToPixels(source_pixels);
+    for (int j = 0; j < HEIGHT; j++){
+        for (int i = 0; i < WIDTH; i++){
+            float d = delta_pixels.getColor(i, j).getLightness();
             if (d > 0.0){
-                ofColor c =  source->img.getColor(i, j);
-                ofColor o = mask->img.getColor(i,j);
+                ofColor c = source_pixels.getColor(i, j);
+                ofColor o = mask_pixels.getColor(i,j);
                 if (d < 250.0){
                     d = max(0.f, ofRandom(-200, d));
                 }

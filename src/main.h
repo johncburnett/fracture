@@ -57,6 +57,89 @@ public:
     ofFbo getFbo(void);
 };
 
+
+
+//========================================================================
+/*
+ * The Image class stores an image / video
+ */
+class BaseImage {
+public:
+    ofFbo fbo;
+    
+    //virtual methods
+    virtual void update(void) =0;
+    virtual ofTexture get_texture(void) =0;
+    virtual void display(void) =0;
+    
+    
+    //inhereted methods
+    void overwrite_fbo(ofFbo *);
+    ofFbo get_fbo(void);
+};
+
+//========================================================================
+/*
+ * The Still class holds an image from file in an ofImage.
+ * The Constructor takes in the file name of the image.
+ */
+class Still : public virtual BaseImage {
+public:
+    ofImage img;
+    
+    Still(const char *);
+    ~Still(void);
+    
+    ofTexture get_texture(void);
+    void display(void);
+    void update(void);
+    
+};
+
+
+//========================================================================
+/*
+ * The Timelapse class
+ */
+class Video : public virtual BaseImage {
+    ofVideoPlayer mov;
+    
+    Video(const char *);
+    ~Video(void);
+    
+    ofTexture get_texture(void);
+    void display(void);
+    void update(void);
+    
+};
+
+//========================================================================
+/*
+ * Transform is an abstract class that processes one or more images.
+ * It serves as a parent class to various other transforms.
+ *
+ * void draw(void) draws fbo to the screen.
+ * void draw_quad(void) maps a texture to a quad.
+ */
+class NewTransform {
+public:
+    ofFbo *fbo;
+    BaseImage *img1;
+    BaseImage *img2;
+    
+    // virtual methods
+    virtual void process_image(void) =0;
+    virtual void update(void) =0;
+    
+    // inherited methods
+    void draw(void);
+    void init_fbo(void);
+    ofFbo *get_fbo(void);
+    void set_fbo(ofFbo *);
+    Image *to_image(void);
+    void draw_quad(void);
+};
+
 //========================================================================
 /* 
  * Transform is an abstract class that processes one or more images.
@@ -87,9 +170,9 @@ public:
 /* 
  * DisplayImage displays an image with no processing.
  */
-class DisplayImage : public virtual Transform {
+class DisplayImage : public virtual NewTransform {
 public:
-    DisplayImage(Image *);
+    DisplayImage(BaseImage *);
     ~DisplayImage(void);
 
     // virtual methods
@@ -111,13 +194,13 @@ public:
  * update_delta(new_dx, new_dy) changes dx and dy values.
  *
  */
-class Smear : public virtual Transform {
+class Smear : public virtual NewTransform {
 public:
     ofShader shader;
     float x_scale, y_scale;
     float dx, dy;
 
-    Smear(Image *, Image *, float, float, float, float);
+    Smear(BaseImage *, BaseImage *, float, float, float, float);
     ~Smear(void);
 
     void update_delta(float,float);
@@ -132,12 +215,12 @@ public:
 /*
  * Invert an image.
  */
-class Invert : public virtual Transform {
+class Invert : public virtual NewTransform{
 public:
     ofShader shader;
     float scale;
     
-    Invert(Image *, float);
+    Invert(BaseImage*, float);
     ~Invert(void);
     
     // virtual methods
@@ -149,12 +232,12 @@ public:
 /*
  * Make an image grayscale.
  */
-class Grayscale : public virtual Transform {
+class Grayscale : public virtual NewTransform{
 public:
     ofShader shader;
     float scale;
     
-    Grayscale(Image *, float);
+    Grayscale(BaseImage*, float);
     ~Grayscale(void);
     
     // virtual methods
@@ -166,12 +249,12 @@ public:
 /*
  * ShadowMask removes pixels that are below a given threshold.
  */
-class ShadowMask : public virtual Transform {
+class ShadowMask : public virtual NewTransform {
 public:
     ofShader shader;
     float threshold;
     
-    ShadowMask(Image *, float);
+    ShadowMask(BaseImage*, float);
     ~ShadowMask(void);
     
     // virtual methods
@@ -183,13 +266,13 @@ public:
 /*
  * Colormap maps one image's color to another image. Unfinished.
  */
-class ColorMap : public virtual Transform {
+class ColorMap : public virtual Transform{
 public:
     ofShader shader;
     float scale;
     ofImage processed;
     
-    ColorMap(Image *, Image *);
+    ColorMap(Image*, Image*);
     ~ColorMap(void);
     
     // virtual methods
@@ -202,13 +285,13 @@ public:
  * Twist distorts a section of the image around a point radially.
  * center is the center of the distortion
  */
-class Twirl : public virtual Transform {
+class Twirl : public virtual NewTransform{
 public:
     ofShader shader;
     float scale;
     ofVec2f center;
     
-    Twirl(Image *, float s);
+    Twirl(BaseImage*, float s);
     ~Twirl(void);
     
     void set_center(float, float);
@@ -223,12 +306,12 @@ public:
  * NoiseMask interpolates between two images based on ofImage noise.
  *
  */
-class NoiseMask : public virtual Transform {
+class NoiseMask : public virtual NewTransform {
 public:
     ofShader shader;
     float frequency, time, scale;
     
-    NoiseMask(Image *, Image *);
+    NoiseMask(BaseImage*, BaseImage*);
     ~NoiseMask(void);
     
     void set_scale(float);
@@ -243,17 +326,17 @@ public:
  * HeatDistort uses a depth map to distort an image
  *
  */
-class HeatDistort : public virtual Transform {
+class HeatDistort : public virtual NewTransform {
 public:
     ofShader shader;
     int x0, y0;
-    Image *img1, *img2;
+    BaseImage *img1, *img2;
     float frequency;
     float time;
     float distort;
     float rise;
     
-    HeatDistort(Image *, Image *);
+    HeatDistort(BaseImage*, BaseImage*);
     ~HeatDistort(void);
     
     // virtual methods
@@ -274,7 +357,7 @@ class NoiseMaker : public virtual Transform {
 };
 
 //========================================================================
-class Swarm : public virtual Transform {
+class Swarm : public virtual NewTransform {
 public:
     ofFbo particleFbo;
     ofShader updateShader, drawShader;
@@ -284,7 +367,7 @@ public:
     // dim of particle location texture
     int w, h;
 
-    Swarm(Image *);
+    Swarm(BaseImage *);
     ~Swarm(void);
     
     void createFbo(void);
@@ -313,15 +396,15 @@ public:
 };
 
 //========================================================================
-class Disintegrate : public virtual Transform {
+class Disintegrate : public virtual NewTransform{
 public:
     ofTexture color;
     ofVboMesh mesh, quadMesh;
     vector<Particle*> particles;
     
-    Image *source, *mask, *delta;
+    BaseImage *source, *mask, *delta;
     
-    Disintegrate(Image *, Image *, Image *);
+    Disintegrate(BaseImage *, BaseImage *, BaseImage *);
     ~Disintegrate(void);
     
     void create_particles(void);
@@ -342,8 +425,8 @@ public:
     Stream(void);
     ~Stream(void);
     
-    void add_transform(Transform *);
-    void set_init_img(Image *);
+    void add_transform(NewTransform *);
+    void set_init_img(BaseImage *);
     
     void evaluate(void);
     void draw(void);
@@ -377,7 +460,7 @@ public:
 };
 
 struct node {
-    Transform *transform;
+    NewTransform *transform;
 };
 
 struct frame {

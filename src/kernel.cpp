@@ -27,14 +27,14 @@ Stream::Stream(void) {
     fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
 }
 
-void Stream::add_transform(Transform *T) {
+void Stream::add_transform(NewTransform *T) {
     nodes.push_back(node());
     nodes[num_nodes].transform = T;
     nodes[num_nodes].transform->set_fbo(&fbo);
     num_nodes++;
 }
 
-void Stream::set_init_img(Image *img) {
+void Stream::set_init_img(BaseImage *img) {
     nodes[0].transform->img1 = img;
 }
 

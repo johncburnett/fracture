@@ -43,26 +43,25 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
-
-    Image *img0, *img1, *img2, *img3, *img4, *img5;
-    NoiseMask *noise_mask;
-    HeatDistort *heat0, *heat1;
-    Twirl *twirl;
-    Swarm *swarm;
-    Smear *smear0, *smear1;
-    ShadowMask *mask;
-    Invert *invert;
-    ColorMap *color_map;
-    Stream *stream0;
-    Stream *stream1;
-    Stream *stream2;
-    Stream *stream3;
-    Stream *stream4;
+    
     Kernel *kernel;
-    
-    int c, d;
-    
-    ofEasyCam cam;
+    Stream *stream0, *stream1;
+
+    Still *img0, *img1, *img2, *img3, *img4, *img5;
+//    NoiseMask *noise_mask;
+//    HeatDistort *heat0, *heat1;
+//    Swarm *swarm;
+//    Smear *smear0, *smear1;
+//    ShadowMask *mask;
+//    Invert *invert;
+//    ColorMap *color_map;
+//    Stream *stream0;
+//    Stream *stream1;
+//    Stream *stream2;
+//    Stream *stream3;
+//    Stream *stream4;
+//    Kernel *kernel;
+    Swarm *transform;
     
     // audio server
     ofSoundStream soundStream;
