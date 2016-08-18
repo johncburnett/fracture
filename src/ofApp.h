@@ -43,12 +43,14 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
-    
+
     Kernel *kernel;
     Stream *stream0, *stream1;
     
+    OSC_Server *server;
+
     ofFbo * fboi;
-    
+
     Still *img0, *img1, *img2, *img3, *img4, *img5;
     Video *vid0, *vid1;
     NoiseMask *noise_mask;
@@ -69,6 +71,7 @@ class ofApp : public ofBaseApp{
     Swarm * swarm;
     Grayscale * grayscale;
     Mirror * mirror;
+    
     // audio server
     ofSoundStream soundStream;
     vector<float> audio;

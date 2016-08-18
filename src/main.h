@@ -29,14 +29,17 @@
 
 #define WIDTH 2880
 #define HEIGHT 1620
+#define OSC_IN 7771
+#define OSC_OUT 57120
 
 #include "ofMain.h"
+#include "osc_server.h"
 
 #include <vector>
 using namespace std;
 
 //========================================================================
-/* 
+/*
  * The Image class holds an image from file in an ofImage and ofFbo.
  * The Constructor takes in the file name of the image.
  * Display outputs the image to the screen
@@ -45,19 +48,17 @@ class Image {
 public:
     ofImage img;
     ofFbo fbo;
-    
+
     Image(const char *);
     Image(ofFbo);
     Image(ofFbo *);
     ~Image(void);
-    
+
     void overwrite_fbo(ofFbo *);
-    
+
     void display(void);
     ofFbo getFbo(void);
 };
-
-
 
 //========================================================================
 /*
@@ -66,13 +67,13 @@ public:
 class BaseImage {
 public:
     ofFbo fbo;
-    
+
     //virtual methods
     virtual void update(void) =0;
     virtual ofTexture get_texture(void) =0;
     virtual void display(void) =0;
-    
-    
+
+
     //inhereted methods
     void overwrite_fbo(ofFbo *);
     ofFbo get_fbo(void);
@@ -86,16 +87,15 @@ public:
 class Still : public virtual BaseImage {
 public:
     ofImage img;
-    
+
     Still(const char *);
     ~Still(void);
-    
+
     ofTexture get_texture(void);
     void display(void);
     void update(void);
-    
-};
 
+};
 
 //========================================================================
 /*
@@ -105,14 +105,14 @@ class Video : public virtual BaseImage {
 public:
     ofVideoPlayer mov;
     int cur_frame;
-    
+
     Video(const char *);
     ~Video(void);
-    
+
     ofTexture get_texture(void);
     void display(void);
     void update(void);
-    
+
 };
 
 //========================================================================
@@ -128,11 +128,11 @@ public:
     ofFbo *fbo;
     BaseImage *img1;
     BaseImage *img2;
-    
+
     // virtual methods
     virtual void process_image(void) =0;
     virtual void update(void) =0;
-    
+
     // inherited methods
     void draw(void);
     void init_fbo(void);
@@ -143,10 +143,10 @@ public:
 };
 
 //========================================================================
-/* 
+/*
  * Transform is an abstract class that processes one or more images.
  * It serves as a parent class to various other transforms.
- * 
+ *
  * void draw(void) draws fbo to the screen.
  * void draw_quad(void) maps a texture to a quad.
  */
@@ -169,7 +169,7 @@ public:
 };
 
 //========================================================================
-/* 
+/*
  * DisplayImage displays an image with no processing.
  */
 class DisplayImage : public virtual NewTransform {
@@ -191,14 +191,14 @@ public:
     ofShader shader;
     Mirror(BaseImage *);
     ~Mirror(void);
-    
+
     //virtual methods
     void update(void);
     void process_image(void);
 };
 
 //========================================================================
-/* 
+/*
  * Smear is a Transform that distorts img1 based on the color of img2
  * Smear(img1, img2, xi, yi, init_dx, init_dy):
  *     img1 : source image
@@ -228,7 +228,7 @@ public:
 };
 
 //========================================================================
-/* 
+/*
  * Smear is a Transform that distorts img1 based on the color of img2
  * Smear(img1, img2, xi, yi, init_dx, init_dy):
  *     img1 : source image
@@ -264,10 +264,10 @@ class Invert : public virtual NewTransform{
 public:
     ofShader shader;
     float scale;
-    
+
     Invert(BaseImage*, float);
     ~Invert(void);
-    
+
     // virtual methods
     void update(void);
     void process_image(void);
@@ -281,10 +281,10 @@ class Grayscale : public virtual NewTransform{
 public:
     ofShader shader;
     float scale;
-    
+
     Grayscale(BaseImage*, float);
     ~Grayscale(void);
-    
+
     // virtual methods
     void update(void);
     void process_image(void);
@@ -298,10 +298,10 @@ class ShadowMask : public virtual NewTransform {
 public:
     ofShader shader;
     float threshold;
-    
+
     ShadowMask(BaseImage*, float);
     ~ShadowMask(void);
-    
+
     // virtual methods
     void update(void);
     void process_image(void);
@@ -316,10 +316,10 @@ public:
     ofShader shader;
     float scale;
     ofImage processed;
-    
+
     ColorMap(Image*, Image*);
     ~ColorMap(void);
-    
+
     // virtual methods
     void update(void);
     void process_image(void);
@@ -335,12 +335,12 @@ public:
     ofShader shader;
     float scale;
     ofVec2f center;
-    
+
     Twirl(BaseImage*, float s);
     ~Twirl(void);
-    
+
     void set_center(float, float);
-    
+
     // virtual methods
     void update(void);
     void process_image(void);
@@ -355,12 +355,12 @@ class NoiseMask : public virtual NewTransform {
 public:
     ofShader shader;
     float frequency, time, scale;
-    
+
     NoiseMask(BaseImage*, BaseImage*);
     ~NoiseMask(void);
-    
+
     void set_scale(float);
-    
+
     // virtual methods
     void update(void);
     void process_image(void);
@@ -380,10 +380,10 @@ public:
     float time;
     float distort;
     float rise;
-    
+
     HeatDistort(BaseImage*, BaseImage*);
     ~HeatDistort(void);
-    
+
     // virtual methods
     void update(void);
     void process_image(void);
@@ -392,10 +392,10 @@ public:
 //========================================================================
 class NoiseMaker : public virtual Transform {
     ofShader shader;
-    
+
     NoiseMaker(void);
     ~NoiseMaker(void);
-    
+
     // virtual methods
     void update(void);
     void process_image(void);
@@ -408,18 +408,18 @@ public:
     ofShader updateShader, drawShader;
     ofVboMesh mesh, quadMesh;
     float opacity;
-    
+
     // dim of particle location texture
     int w, h;
 
     Swarm(BaseImage *);
     ~Swarm(void);
-    
+
     void createFbo(void);
     void createMesh(void);
     void createPoints(void);
     void setOpacity(float);
-    
+
     // virtual methods
     void update(void);
     void process_image(void);
@@ -431,9 +431,9 @@ public:
     ofVec2f location, original_location;
     ofColor color, bg_color;
     float d;
-    
+
     Particle(float, float, float, ofColor, ofColor);
-    
+
     void reset_location(void);
     void up(void);
     void draw_original(void);
@@ -446,15 +446,15 @@ public:
     ofTexture color;
     ofVboMesh mesh, quadMesh;
     vector<Particle*> particles;
-    
+
     BaseImage *source, *mask, *delta;
-    
+
     Disintegrate(BaseImage *, BaseImage *, BaseImage *);
     ~Disintegrate(void);
-    
+
     void create_particles(void);
     bool in_bounds(Particle *);
-    
+
     // virtual methods
     void update(void);
     void process_image(void);
@@ -466,13 +466,13 @@ public:
     ofFbo fbo;
     int num_nodes;
     vector<struct node> nodes;
-    
+
     Stream(void);
     ~Stream(void);
-    
+
     void add_transform(NewTransform *);
     void set_init_img(BaseImage *);
-    
+
     void evaluate(void);
     void draw(void);
 };
@@ -488,10 +488,10 @@ public:
     ofFbo fbo;
     Image *img;
     vector<struct frame> frames;
-    
+
     Kernel(void);
     ~Kernel(void);
-    
+
     void add_stream(Stream *, int frame_index);
     void add_frame(float l);
     ofFbo get_stream_fbo(int frame_index, int stream_index);
@@ -499,7 +499,7 @@ public:
     void get_frame_image(int frame_index);
     void set_frame_length(int frame_index, float l);
     void toggle_loop(bool);
-    
+
     void update(void);
     void draw(void);
 };
@@ -518,5 +518,7 @@ struct frame {
 //_Utilities
 double mean(vector<double> A);
 double std_dev(vector<double> A);
+
+void run_supercollider(void);
 
 #endif /* main_h */

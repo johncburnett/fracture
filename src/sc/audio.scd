@@ -38,10 +38,11 @@ o.numOutputBusChannels_(2);	// 2ch
 //_GUI
 ~width = 1000;
 ~height = 600;
-~display_gui = false;
+~display_gui = true;
 
 //_dev
 ~debug_osc = false;
+~run_server = false;
 
 s.waitForBoot({
 
@@ -60,6 +61,17 @@ s.waitForBoot({
 
 	/**************************************************************************************************/
 	//_Synths
+
+	//--------------------------------------------------------------
+	//_Live Input
+
+	SynthDef(\input, { |amp=0.8|
+		var in, mix;
+		in = In.ar(0);
+		mix = in * amp;
+		Out.ar(10, in); 	// to processing
+		Out.ar(20, mix);	// to mixer
+	}).load(s);
 
 	//--------------------------------------------------------------
 	//_Sampling
@@ -143,7 +155,7 @@ s.waitForBoot({
 		d2 = Pan2.ar(d2, -1.0*pan);
 		mix = ([d1, d2]*4) * amp;
 
-		Out.ar(20, mix);
+		Out.ar(20, mix);	// to mixer
 	}).load(s);
 
 	//--------------------------------------------------------------
@@ -168,7 +180,7 @@ s.waitForBoot({
 		});
 
 		mix = (in + grains) * amp;
-		Out.ar(20, mix);
+		Out.ar(20, mix);	// to mixer
 	}).load(s);
 
 
@@ -193,7 +205,7 @@ s.waitForBoot({
 		env = EnvGen.ar(Env([1, 1], [len*vary*rate]), doneAction:2);
 
 		mix = (in + grains) * amp * env * 0.5;
-		Out.ar(20, mix);
+		Out.ar(20, mix);	// to mixer
 	}).load(s);
 
 	//--------------------------------------------------------------
@@ -208,7 +220,7 @@ s.waitForBoot({
 			snd * EnvGen.ar(Env([0, 1, 0.6, 0], [0.0001, 0.4, 0.01]), doneAction:2),
 			pan
 		);
-		Out.ar(20, snd * amp * 2);
+		Out.ar(20, snd * amp * 2);	// to mixer
 	}).load(s);
 
 
@@ -220,7 +232,7 @@ s.waitForBoot({
 		doneAction:2
 		)!2;
 		mix = bass * env * amp * 5;
-		Out.ar(20, mix);
+		Out.ar(20, mix);	// to mixer
 	}).load(s);
 
 
@@ -233,7 +245,7 @@ s.waitForBoot({
 			0.9
 		)!2;
 		mix = hNoise * amp;
-		Out.ar(20, mix);
+		Out.ar(20, mix);	// to mixer
 	}).load(s);
 
 
@@ -248,7 +260,7 @@ s.waitForBoot({
 		).fold(-1, 1);
 		click = Pan2.ar(click, pan);
 		mix = click * amp;
-		Out.ar(20, mix);
+		Out.ar(20, mix);	// to mixer
 	}).load(s);
 
 	//--------------------------------------------------------------
@@ -366,7 +378,7 @@ s.waitForBoot({
 	});
 
 	//--------------------------------------------------------------
-	//_Sound Worlds
+	//_Worlds
 
 	~world1 = Routine({
 		~r1.play;
@@ -399,7 +411,7 @@ s.waitForBoot({
 	//--------------------------------------------------------------
 	//_OSC
 
-	~osc = NetAddr.new(~ip, ~port);
+	if( (~run_server), { ~osc = NetAddr.new(~ip, ~port) } );
 
 	if( (~debug_osc),
 		{ OSCFunc.trace(true) },
@@ -433,7 +445,11 @@ s.waitForBoot({
 	))
 	.background_(Color(0.1, 0.1, 0.1))
 	.alwaysOnTop_(true)
-	.onClose_({ Server.killAll });
+	.onClose_({
+		Server.killAll;
+		thisProcess.shutdown;
+		0.exit;
+	});
 
 	if( (~display_gui), { w.front });
 
