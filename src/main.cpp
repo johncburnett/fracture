@@ -19,6 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <libiomp/omp.h>
 #include <math.h>
 #include "ofMain.h"
 #include "ofApp.h"
@@ -65,19 +66,30 @@ ofTexture Still::get_texture(void){
 }
 
 void Still::display(){
-    img.draw(0,0,WIDTH,HEIGHT);
+    fbo.draw(0, 0);
 }
 
 //========================================================================
 Video::Video(const char *fname){
     mov.load(fname);
+    sleep(3);
+    
     mov.play();
     mov.setPaused(true);
+    
+    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
+    
+//    update();
 }
 
 void Video::update(void){
-    mov.update();
     mov.nextFrame();
+    mov.update();
+    
+    fbo.begin();
+    ofClear(0,0,0,0);
+    mov.draw(0,0,WIDTH,HEIGHT);
+    fbo.end();
 }
 
 ofTexture Video::get_texture(){
@@ -85,12 +97,16 @@ ofTexture Video::get_texture(){
 }
 
 void Video::display(){
-    mov.draw(0,0,WIDTH,HEIGHT);
+    fbo.draw(0,0);
 }
 
 
 
 //========================================================================
+/*
+ * Deprecated. Use "Still" instead.
+ *
+ */
 Image::Image(const char *fname) {
     img.load(fname);
     img.resize(WIDTH, HEIGHT);
@@ -193,7 +209,6 @@ void Transform::draw_quad(void) {
 //========================================================================
 DisplayImage::DisplayImage(BaseImage *i1) {
     img1 = i1;
-    fbo = &(i1->fbo);
 }
 
 void DisplayImage::update(void) {
@@ -201,7 +216,10 @@ void DisplayImage::update(void) {
 }
 
 void DisplayImage::process_image(void) {
-    fbo->draw(0, 0);
+    fbo->begin();
+    ofClear(0, 0, 0, 0);
+    img1->display();
+    fbo->end();
 }
 
 //========================================================================

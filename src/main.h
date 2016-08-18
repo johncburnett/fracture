@@ -102,6 +102,7 @@ public:
  * The Timelapse class
  */
 class Video : public virtual BaseImage {
+public:
     ofVideoPlayer mov;
     
     Video(const char *);

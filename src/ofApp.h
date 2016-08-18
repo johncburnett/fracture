@@ -46,9 +46,12 @@ class ofApp : public ofBaseApp{
     
     Kernel *kernel;
     Stream *stream0, *stream1;
+    
+    ofVideoPlayer FUCK_ME;
 
     Still *img0, *img1, *img2, *img3, *img4, *img5;
-//    NoiseMask *noise_mask;
+    Video *vid0, *vid1;
+    NoiseMask *noise_mask;
 //    HeatDistort *heat0, *heat1;
 //    Swarm *swarm;
 //    Smear *smear0, *smear1;
@@ -61,7 +64,8 @@ class ofApp : public ofBaseApp{
 //    Stream *stream3;
 //    Stream *stream4;
 //    Kernel *kernel;
-    Swarm *transform;
+    DisplayImage *transform;
+    Smear *smear;
     
     // audio server
     ofSoundStream soundStream;

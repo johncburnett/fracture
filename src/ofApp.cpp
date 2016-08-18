@@ -31,17 +31,28 @@ void ofApp::setup(){
     img3 = new Still("img/emory.jpg");
     img4 = new Still("img/stone.jpg");
     img5 = new Still("img/landscape.jpg");
-
+    
+    vid0 = new Video("lapses/pano_lapse.mov");
+//    vid1 = new Video("lapses/pano_lapse.mov");
+    
+//    sleep(1);
+//    FUCK_ME.load("lapses/pano_lapse.mov");
+//    FUCK_ME.play();
+//    FUCK_ME.setPaused(true);
+    
     //twirl = new Twirl(img3, 0.2);
-    transform = new Swarm(img0);
+//    transform = new DisplayImage(vid0);
+//    smear = new Smear(vid0, img0, 0, 0, 0, 1);
+//    noise_mask =
     
-    stream0 = new Stream();
-    stream0->add_transform(transform);
+//    stream0 = new Stream();
+//    stream0->add_transform(transform);
+//    stream0->add_transform(smear);
     
-    kernel = new Kernel();
-    kernel->add_stream(stream0, 0);
+//    kernel = new Kernel();
+//    kernel->add_stream(stream0, 0);
 
-    kernel->toggle_loop(true);
+//    kernel->toggle_loop(true);
     
     // initialize audio server
 //    int bufferSize = 256;
@@ -52,15 +63,19 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 //	vol = ofMap(smoothedVol, 0.0, 0.17, 0.0, 1.0, true);
-    //noise_mask->set_scale((float)ofGetMouseX()/ofGetWidth());
-    kernel->update();
+//    kernel->update();
+    vid0->update();
+//    FUCK_ME.nextFrame();
+//    FUCK_ME.update();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
     ofSetWindowTitle("FPS: " + ofToString(ofGetFrameRate()));
-    kernel->draw();
-//    transform->draw();
+//    kernel->draw();
+//    FUCK_ME.draw(0,0,WIDTH,HEIGHT);
+    vid0->display();
+//    vid0->fbo.draw(0,0);
 }
 
 //--------------------------------------------------------------

@@ -107,25 +107,15 @@ void Kernel::update(void) {
 
     if(loop) {
         if(time - start_time >= target_time) {
-//            get_frame_image(current_frame);
-            
             current_frame = (current_frame + 1) % num_frames;
             start_time = time;
             target_time = frames[current_frame].t;
-            
-//            Image *img = new Image("img/landscape.jpg");
-//            frames[current_frame].streams[0]->set_init_img(img);
         }
     } else {
         if((time - start_time >= target_time) && current_frame < num_frames-1) {
-//            get_frame_image(current_frame);
-            
             current_frame++;
             start_time = time;
             target_time = frames[current_frame].t;
-            
-//            Image *img = new Image("img/landscape.jpg");
-//            frames[current_frame].streams[0]->set_init_img(img);
         }
     }
 
