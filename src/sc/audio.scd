@@ -34,15 +34,20 @@ o.numOutputBusChannels_(2);	// 2ch
 //_OSC
 ~ip = "127.0.0.1";
 ~port = 7771;
+// ~port = 57120;
+~osc = NetAddr.new(~ip, ~port);
+// o = OSCresponderNode(~osc, '/click', { |t, r, m| m.postln }).add;
+// o.remove;
+// ~osc.disconnect;
 
 //_GUI
 ~width = 1000;
 ~height = 600;
-~display_gui = true;
+~display_gui = false;
 
 //_dev
 ~debug_osc = false;
-~run_server = false;
+~run_server = true;
 
 s.waitForBoot({
 
@@ -66,11 +71,16 @@ s.waitForBoot({
 	//_Live Input
 
 	SynthDef(\input, { |amp=0.8|
-		var in, mix;
+		var in, mix, chain, onsets;
 		in = In.ar(0);
-		mix = in * amp;
+		mix = in!2 * amp;
 		Out.ar(10, in); 	// to processing
 		Out.ar(20, mix);	// to mixer
+
+/*		chain = FFT({LocalBuf(512, 1)}, in);
+		onsets = Onsets.kr(chain, 0.1, \power);
+		SendTrig.kr(onsets);
+		SendPeakRMS.kr(in, 20, 3, "/replyAddress");*/
 	}).load(s);
 
 	//--------------------------------------------------------------
@@ -296,13 +306,15 @@ s.waitForBoot({
 		Pbind(
 			\instrument, \click,
 			\dur, Prand([Pseq((1/4)!4), Pseq([1/8, 1/8, 1/8])], inf),
-			\pan, Pseq([-1, 0, 1], inf)
+			\pan, Pseq([-1, 0, 1], inf),
+			\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/click", 1)}),
 		).play;
 
 		Pbind(
 			\instrument, \snd,
 			\dur, Prand([Pseq((1/2)!4), Pseq([1/4, 1/4, 1/4])], inf),
-			\pan, Prand([-1, 0, 1], inf)
+			\pan, Prand([-1, 0, 1], inf),
+			\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/sines", 1)}),
 		).play;
 	});
 
@@ -311,7 +323,7 @@ s.waitForBoot({
 			\instrument, \sampler_1ch,
 			\bufnum, Pseq([~b1.bufnum, ~b2.bufnum], inf),
 			\dur, Prand([1/2, 1, 3/2, 3/4]*2, inf),
-			\pan, Pseq([-1, 0, 1], inf)
+			\pan, Pseq([-1, 0, 1], inf),
 		).play;
 	});
 
@@ -319,7 +331,8 @@ s.waitForBoot({
 		Pbind(
 			\instrument, \bass,
 			\dur, Prand([1/2, 1, 3/2, 3/4], inf),
-			\pan, Pseq([-1, 0, 1], inf)
+			\pan, Pseq([-1, 0, 1], inf),
+			\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/bass", 1)}),
 		).play;
 	});
 
@@ -327,7 +340,8 @@ s.waitForBoot({
 		Pbind(
 			\instrument, \hNoise,
 			\dur, Prand([Pseq((1)!4), Pseq([1/2, 1/2, 1/2])], inf),
-			\pan, Pseq([-1, 0, 1], inf)
+			\pan, Pseq([-1, 0, 1], inf),
+			\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/noise", 1)}),
 		).play;
 	});
 
@@ -405,34 +419,16 @@ s.waitForBoot({
 
 	~mix = Synth(\mixer);
 	~melt = Synth(\melt, [\mod_scale, 0.2, \amp, 0.2]);
+	~in = Synth(\input);
 
 	~world1.play;
 
 	//--------------------------------------------------------------
 	//_OSC
 
-	if( (~run_server), { ~osc = NetAddr.new(~ip, ~port) } );
-
 	if( (~debug_osc),
 		{ OSCFunc.trace(true) },
 		{ OSCFunc.trace(false) });
-
-	OSCdef.new(
-		\temperature, { |msg, time, addr, port|
-			var spec, val;
-			spec = ControlSpec(0.5, 1.5, \lin);
-			val = spec.(msg[1]);
-			~proc.set(\mod_scale, val);
-		},
-		'sensors/temperature'
-	);
-
-	OSCdef.new(
-		\piezo, { |msg, time, addr, port|
-			~proc.set(\amp, msg[1]);
-		},
-		'sensors/piezo'
-	);
 
 	/**************************************************************************************************/
 	//_GUI
@@ -447,8 +443,9 @@ s.waitForBoot({
 	.alwaysOnTop_(true)
 	.onClose_({
 		Server.killAll;
-		thisProcess.shutdown;
-		0.exit;
+		~osc.disconnect;
+		// thisProcess.shutdown;
+		// 0.exit;
 	});
 
 	if( (~display_gui), { w.front });

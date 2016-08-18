@@ -22,7 +22,6 @@
 #ifndef osc_server_hpp
 #define osc_server_hpp
 
-#include <stdio.h>
 #include "ofxOsc.h"
 #include "ofMain.h"
 
@@ -33,15 +32,14 @@ public:
     OSC_Server(int);
     void update(void);
     
-    ofTrueTypeFont font;
     ofxOscReceiver receiver;
     
     int current_msg_string;
     string msg_strings[NUM_MSG_STRINGS];
     float timers[NUM_MSG_STRINGS];
     
-    int temperature, vibration, pulse;
     int PORT;
+    int click, sines, bass, noise;
 };
 
 #endif /* osc_server_hpp */

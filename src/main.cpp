@@ -901,6 +901,6 @@ void run_supercollider(void) {
     pid_t pid = fork();
 
     if(pid == 0) {
-        system("../../../../sc ../../../../src/sc/audio.scd >> ../../../../log.txt");
+        system("../../../../sc ../../../../src/sc/audio.scd > ../../../../log.txt");
     }
 }

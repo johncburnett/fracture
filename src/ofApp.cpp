@@ -38,8 +38,6 @@ void ofApp::setup(){
     
     vid0 = new Video("lapses/pano_lapse.mov");
     
-    //twirl = new Twirl(img3, 0.2);
-    //transform = new DisplayImage(vid0);
     smear = new SmearInner(img0, img1, 0.0);
     swarm = new Swarm(vid0);
     mirror = new Mirror(vid0);
@@ -47,7 +45,7 @@ void ofApp::setup(){
     
     stream0 = new Stream();
     stream0->add_transform(mirror);
-//    stream0->add_transform(swarm);
+    
     kernel = new Kernel();
     kernel->add_stream(stream0, 0);
 
@@ -55,7 +53,7 @@ void ofApp::setup(){
     
     server = new OSC_Server(OSC_IN);
     
-    run_supercollider();
+//    run_supercollider();
     
     // initialize audio server
 //    int bufferSize = 256;
@@ -68,7 +66,7 @@ void ofApp::update(){
 //	vol = ofMap(smoothedVol, 0.0, 0.17, 0.0, 1.0, true);
     kernel->update();
     //smear->set_scale(ofGetMouseX()*vol);
-    vid0->update();
+    server->update();
 }
 
 //--------------------------------------------------------------
