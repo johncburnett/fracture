@@ -24,6 +24,7 @@
 #include "ofMain.h"
 #include "main.h"
 
+
 class ofApp : public ofBaseApp{
 
 	public:
@@ -46,6 +47,7 @@ class ofApp : public ofBaseApp{
 
     Kernel *kernel;
     Stream *stream0, *stream1;
+    ofxBlur blur;
     
     OSC_Server *server;
 
@@ -70,6 +72,7 @@ class ofApp : public ofBaseApp{
     SmearInner * smear;
     Swarm * swarm;
     Grayscale * grayscale;
+    Twirl * twirl;
     Mirror * mirror;
     
     // audio server

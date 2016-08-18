@@ -25,23 +25,26 @@
 Stream::Stream(void) {
     num_nodes = 0;
     fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
+    img = new Still();
 }
 
 void Stream::add_transform(NewTransform *T) {
     nodes.push_back(node());
     nodes[num_nodes].transform = T;
     nodes[num_nodes].transform->set_fbo(&fbo);
+    nodes[num_nodes].transform->input = img;
     num_nodes++;
 }
 
-void Stream::set_init_img(BaseImage *img) {
-    nodes[0].transform->img1 = img;
+void Stream::set_init_img(BaseImage * _input) {
+    nodes[0].transform->input = _input;
 }
 
 void Stream::evaluate(void) {
     nodes[0].transform->update();
     for(int i = 1; i < num_nodes; i++) {
-        nodes[i].transform->img1->overwrite_fbo(&fbo);
+        img->overwrite_fbo(&fbo);
+        nodes[i].transform->set_fbo(&fbo);
         nodes[i].transform->update();
     }
 }
@@ -90,6 +93,8 @@ void Kernel::get_frame_image(int frame_index) {
     ofClear(0, 0, 0, 1);
     draw();
     fbo.end();
+    
+    // TO FIX!! Use BaseImage
     delete img;
     img = new Image(fbo);
 }

@@ -26,6 +26,8 @@ void ofApp::setup(){
     ofSetFrameRate(30);
     ofBackground(0);
     
+    blur.setup(WIDTH, HEIGHT, 10, .4, 4);
+    
     fboi = new ofFbo();
     fboi->allocate(WIDTH, HEIGHT, GL_RGBA);
     
@@ -36,7 +38,7 @@ void ofApp::setup(){
     img4 = new Still("img/rock.jpg");
     img5 = new Still("img/landscape.jpg");
     
-    vid0 = new Video("lapses/pano_lapse.mov");
+    //vid0 = new Video("lapses/pano_lapse.mov");
     
     smear = new SmearInner(img0, img1, 0.0);
     swarm = new Swarm(vid0);
@@ -44,6 +46,7 @@ void ofApp::setup(){
     mirror->fbo = fboi;
     
     stream0 = new Stream();
+    stream0->add_transform(twirl);
     stream0->add_transform(mirror);
     
     kernel = new Kernel();
@@ -63,7 +66,9 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-//	vol = ofMap(smoothedVol, 0.0, 0.17, 0.0, 1.0, true);
+	vol = ofMap(smoothedVol, 0.0, 0.17, 0.0, 1.0, true);
+    //vid0->update();
+    stream0->set_init_img(img4);
     kernel->update();
     //smear->set_scale(ofGetMouseX()*vol);
     server->update();
@@ -72,7 +77,13 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
     ofSetWindowTitle("FPS: " + ofToString(ofGetFrameRate()));
+    
+    blur.begin();
+    ofSetColor(255);
     kernel->draw();
+    blur.end();
+    
+    blur.draw();
 }
 
 //--------------------------------------------------------------

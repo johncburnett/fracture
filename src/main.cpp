@@ -57,12 +57,30 @@ Still::Still(const char *fname){
     fbo.end();
 }
 
+Still::Still(ofFbo * _input){
+    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
+    
+    fbo.begin();
+    ofClear(0,0,0,0);
+    _input->draw(0,0);
+    fbo.end();
+}
+
+
+Still::Still(void){
+    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
+    
+    fbo.begin();
+    ofClear(0,0,0,0);
+    fbo.end();
+}
+
 void Still::update(void){
     ;
 }
 
 ofTexture Still::get_texture(void){
-    return img.getTexture();
+    return fbo.getTexture();
 }
 
 void Still::display(){
@@ -210,8 +228,7 @@ void Transform::draw_quad(void) {
 }
 
 //========================================================================
-DisplayImage::DisplayImage(BaseImage *i1) {
-    img1 = i1;
+DisplayImage::DisplayImage(void) {
 }
 
 void DisplayImage::update(void) {
@@ -221,14 +238,13 @@ void DisplayImage::update(void) {
 void DisplayImage::process_image(void) {
     fbo->begin();
     ofClear(0, 0, 0, 0);
-    img1->display();
+    input->display();
     fbo->end();
 }
 
 
 //========================================================================
-Mirror::Mirror(BaseImage * _img1){
-    img1 = _img1;
+Mirror::Mirror(){
     shader.load("shadersGL2/mirror");
 }
 
@@ -237,8 +253,8 @@ void Mirror::update(void){
 }
 
 void Mirror::process_image(void){
-    ofTexture tex0 = img1->fbo.getTexture();
-
+    ofTexture tex0 = input->fbo.getTexture();
+    
     fbo->begin();
     ofClear(0,0,0,1);
     shader.begin();
@@ -253,10 +269,9 @@ void Mirror::process_image(void){
 
 
 //========================================================================
-Smear::Smear(BaseImage *i1, BaseImage *i2, float xi, float yi, float init_dx, float init_dy) {
+Smear::Smear(BaseImage *_fcn, float xi, float yi, float init_dx, float init_dy) {
     shader.load("shadersGL2/smear");
-    img1 = i1;
-    img2 = i2;
+    fcn = _fcn;
     x_scale = xi;
     y_scale = yi;
     dx = init_dx;
@@ -276,8 +291,8 @@ void Smear::update(void) {
 }
 
 void Smear::process_image(void) {
-    ofTexture tex0 = img1->fbo.getTexture();
-    ofTexture tex1 = img2->fbo.getTexture();
+    ofTexture tex0 = input->fbo.getTexture();
+    ofTexture tex1 = fcn->fbo.getTexture();
 
     fbo->begin();
 	ofClear(0, 0, 0, 1);
@@ -299,10 +314,9 @@ void Smear::process_image(void) {
 }
 
 //========================================================================
-SmearInner::SmearInner(BaseImage *i1, BaseImage *i2, float _scale) {
+SmearInner::SmearInner(BaseImage *_fcn, float _scale) {
     shader.load("shadersGL2/smear_inner");
-    img1 = i1;
-    img2 = i2;
+    fcn = _fcn;
     scale = _scale;
 }
 
@@ -315,8 +329,8 @@ void SmearInner::update(void) {
 }
 
 void SmearInner::process_image(void) {
-    ofTexture tex0 = img1->fbo.getTexture();
-    ofTexture tex1 = img2->fbo.getTexture();
+    ofTexture tex0 = input->fbo.getTexture();
+    ofTexture tex1 = fcn->fbo.getTexture();
 
     fbo->begin();
 	ofClear(0, 0, 0, 1);
@@ -338,10 +352,9 @@ void SmearInner::process_image(void) {
 
 
 //========================================================================
-Invert::Invert(BaseImage *img, float t) {
+Invert::Invert(float _scale) {
     shader.load("shadersGL2/invert");
-    img1 = img;
-    scale = t;
+    scale = _scale;
 }
 
 void Invert::update(void) {
@@ -349,11 +362,11 @@ void Invert::update(void) {
 }
 
 void Invert::process_image(void) {
-    ofTexture tex0 = img1->fbo.getTexture();
-
+    ofTexture tex0 = input->fbo.getTexture();
+    
     fbo->begin();
     ofClear(0, 0, 0, 1);
-
+    
         shader.begin();
 
             shader.setUniformTexture("tex0", tex0, 0);
@@ -367,10 +380,9 @@ void Invert::process_image(void) {
 }
 
 //========================================================================
-Grayscale::Grayscale(BaseImage *img, float t) {
+Grayscale::Grayscale(float _scale) {
     shader.load("shadersGL2/bw");
-    img1 = img;
-    scale = t;
+    scale = _scale;
 }
 
 void Grayscale::update(void) {
@@ -378,8 +390,8 @@ void Grayscale::update(void) {
 }
 
 void Grayscale::process_image(void) {
-    ofTexture tex0 = img1->fbo.getTexture();
-
+    ofTexture tex0 = input->fbo.getTexture();
+    
     fbo->begin();
     ofClear(0, 0, 0, 1);
 
@@ -396,10 +408,9 @@ void Grayscale::process_image(void) {
 }
 
 //========================================================================
-ShadowMask::ShadowMask(BaseImage *img, float t) {
+ShadowMask::ShadowMask(float _threshold) {
     shader.load("shadersGL2/shadow_mask");
-    img1 = img;
-    threshold = t;
+    threshold = _threshold;
 }
 
 void ShadowMask::update(void) {
@@ -407,8 +418,8 @@ void ShadowMask::update(void) {
 }
 
 void ShadowMask::process_image(void) {
-    ofTexture tex0 = img1->fbo.getTexture();
-
+    ofTexture tex0 = input->fbo.getTexture();
+    
     fbo->begin();
     ofClear(0, 0, 0, 1);
 
@@ -504,10 +515,9 @@ void ColorMap::process_image(void) {
 }
 
 //========================================================================
-Twirl::Twirl(BaseImage*img, float s) {
+Twirl::Twirl(void) {
     shader.load("shadersGL2/twirl");
-    img1 = img;
-    scale = s;
+    scale = 0.15;
     center = ofVec2f(0,0);
 }
 
@@ -516,6 +526,9 @@ void Twirl::set_center(float new_x, float new_y){
     center.y = new_y;
 }
 
+void Twirl::set_scale(float _scale){
+    scale = _scale;
+}
 
 void Twirl::update(void) {
     set_center(ofGetMouseX(), ofGetMouseY());
@@ -523,8 +536,8 @@ void Twirl::update(void) {
 }
 
 void Twirl::process_image(void) {
-    ofTexture tex0 = img1->fbo.getTexture();
-
+    ofTexture tex0 = input->fbo.getTexture();
+    
     fbo->begin();
     ofClear(0, 0, 0, 1);
 
@@ -544,10 +557,9 @@ void Twirl::process_image(void) {
 }
 
 //========================================================================
-NoiseMask::NoiseMask(BaseImage*i1, BaseImage*i2) {
+NoiseMask::NoiseMask(BaseImage*_mask) {
     shader.load("shadersGL2/noise_mask");
-    img1 = i1;
-    img2 = i2;
+    mask = _mask;
     scale = 1.0;
 }
 
@@ -560,9 +572,9 @@ void NoiseMask::set_scale(float _scale){
 }
 
 void NoiseMask::process_image(void) {
-    ofTexture tex0 = img1->fbo.getTexture();
-    ofTexture tex1 = img2->fbo.getTexture();
-
+    ofTexture tex0 = input->fbo.getTexture();
+    ofTexture tex1 = mask->fbo.getTexture();
+    
     fbo->begin();
     ofClear(0, 0, 0, 1);
 
@@ -583,8 +595,8 @@ void NoiseMask::process_image(void) {
 //========================================================================
 HeatDistort::HeatDistort(BaseImage*i1, BaseImage*i2) {
     shader.load("shadersGL2/heat");
-    img1 = i1;
-    img2 = i2;
+    input = i1;
+    mask = i2;
     x0 = y0 = 0;
     frequency = 40.0f;
     time = 0.0f;
@@ -598,10 +610,12 @@ void HeatDistort::update(void) {
 }
 
 void HeatDistort::process_image(void) {
-    ofTexture tex0 = img1->fbo.getTexture();
+    ofTexture tex0 = input->fbo.getTexture();
+    
 
+    
     //TO DO: optimize to grayscale
-    ofTexture tex1 = img2->fbo.getTexture();
+    ofTexture tex1 = mask->fbo.getTexture();
     time = ofGetElapsedTimef();
 
     fbo->begin();
@@ -619,6 +633,31 @@ void HeatDistort::process_image(void) {
         shader.end();
 
     fbo->end();
+}
+
+//========================================================================
+Aberration::Aberration(void){
+    shader.load("shadersGL2/chromatic_aberration");
+    
+}
+
+void Aberration::update(void){
+    float distortionSize(1.12);
+    float distortion(0.08);
+    float aberrationAmount(0.08);
+    float vignetteSharpness(8.0);
+    float vignetteSize(0.8);
+    float noiseAmount(0.1);
+    ofTexture tex0 = input->fbo.getTexture();
+    fbo->begin();
+    ofClear(0,0,0,1);
+    shader.begin();
+    shader.setUniformTexture("tex0", tex0, 0);
+    shader.setUniform1f("amount", amount);
+    draw_quad();
+    shader.end();
+    fbo->end();
+    
 }
 
 //========================================================================
@@ -648,15 +687,14 @@ void NoiseMaker::process_image(void){
 }
 
 //========================================================================
-Swarm::Swarm(BaseImage* _img1){
-
+Swarm::Swarm(void){
+    
     opacity = 0.0;
 
     //initialize the particle texture
-    w = 700;
-    h = 700;
-
-    img1 = _img1;
+    w = 707;
+    h = 707;
+    
     createFbo();
     createMesh();
 
@@ -755,7 +793,7 @@ void Swarm::update(){
     updateShader.setUniform1f("elapsed", ofGetElapsedTimef());
     updateShader.setUniform2f("dim", ofGetWidth(), ofGetHeight());
     updateShader.setUniformTexture("tex0", particleFbo.getTexture(), 0);
-    updateShader.setUniformTexture("velocities", img1->fbo.getTexture(), 1);
+    updateShader.setUniformTexture("velocities", input->fbo.getTexture(), 1);
     quadMesh.draw();
     updateShader.end();
 
@@ -772,7 +810,7 @@ void Swarm::process_image(){
 
     ofEnableBlendMode(OF_BLENDMODE_ADD);
     drawShader.begin();
-    drawShader.setUniformTexture("tex1", img1->fbo.getTexture(), 10);
+    drawShader.setUniformTexture("tex1", input->fbo.getTexture(), 10);
     drawShader.setUniform1f("mouseX", 1.0);
     mesh.draw();
     drawShader.end();
@@ -873,6 +911,258 @@ void Disintegrate::process_image(){
     }
     fbo->end();
 }
+
+
+//========================================================================
+/* 
+ * Thanks kylemcdonald for this blur¡¡!!
+ */
+float Gaussian(float x, float mean, float variance) {
+    x -= mean;
+    return (1. / sqrt(TWO_PI * variance)) * exp(-(x * x) / (2 * variance));
+}
+
+void GaussianRow(int elements, vector<float>& row, float variance = .2) {
+    row.resize(elements);
+    for(int i = 0; i < elements; i++) {
+        float x = ofMap(i, 0, elements - 1, -1, 1);
+        row[i] = Gaussian(x, 0, variance);
+    }
+}
+
+string generateBlurSource(int radius, float shape) {
+    int rowSize = 2 * radius + 1;
+    
+    // generate row
+    vector<float> row;
+    GaussianRow(rowSize, row, shape);
+    
+    // normalize row and coefficients
+    vector<float> coefficients;
+    float sum = 0;
+    for(int i = 0; i < row.size(); i++) {
+        sum += row[i];
+    }
+    for(int i = 0; i < row.size(); i++) {
+        row[i] /= sum;
+    }
+    int center = row.size() / 2;
+    coefficients.push_back(row[center]);
+    for(int i = center + 1; i < row.size(); i += 2) {
+        float weightSum = row[i] + row[i + 1];
+        coefficients.push_back(weightSum);
+    }
+    
+    // generate offsets
+    vector<float> offsets;
+    for(int i = center + 1; i < row.size(); i += 2) {
+        int left = i - center;
+        int right = left + 1;
+        float leftVal = row[i];
+        float rightVal = row[i + 1];
+        float weightSum = leftVal + rightVal;
+        float weightedAverage = (left * leftVal + right * rightVal) / weightSum;
+        offsets.push_back(weightedAverage);
+    }
+    
+    stringstream src;
+    src << "#version 120\n";
+    src << "#extension GL_ARB_texture_rectangle : enable\n";
+    src << "uniform sampler2DRect source;\n";
+    src << "uniform vec2 direction;\n";
+    src << "void main(void) {\n";
+    src << "\tvec2 tc = gl_TexCoord[0].st;\n";
+    src << "\tgl_FragColor = " << coefficients[0] << " * texture2DRect(source, tc);\n";
+    for(int i = 1; i < coefficients.size(); i++) {
+        int curOffset = i - 1;
+        src << "\tgl_FragColor += " << coefficients[i] << " * \n";
+        src << "\t\t(texture2DRect(source, tc - (direction * " << offsets[i - 1] << ")) + \n";
+        src << "\t\ttexture2DRect(source, tc + (direction * " << offsets[i - 1] << ")));\n";
+    }
+    src << "}\n";
+    
+    return src.str();
+}
+
+string generateCombineSource(int passes, float downsample) {
+    vector<string> combineNames;
+    for(int i = 0; i < passes; i++) {
+        combineNames.push_back("s" + ofToString(i));
+    }
+    stringstream src;
+    src << "#version 120\n";
+    src << "#extension GL_ARB_texture_rectangle : enable\n";
+    src << "uniform sampler2DRect " << ofJoinString(combineNames, ",") << ";\n";
+    src << "uniform float brightness;\n";
+    if(downsample == 1) {
+        src << "const float scaleFactor = 1.;\n";
+    } else {
+        src << "const float scaleFactor = " << downsample << ";\n";
+    }
+    src << "void main(void) {\n";
+    src << "\tvec2 tc = gl_TexCoord[0].st;\n";
+    for(int i = 0; i < passes; i++) {
+        src << "\tgl_FragColor " << (i == 0 ? "=" : "+=");
+        src << " texture2DRect(" << combineNames[i] << ", tc);";
+        src << (i + 1 != passes ? " tc *= scaleFactor;" : "");
+        src << "\n";
+    }
+    src << "\tgl_FragColor *= brightness / " << passes << ".;\n";
+    src << "}\n";
+    return src.str();
+}
+
+ofxBlur::ofxBlur()
+:scale(1)
+,rotation(0)
+,brightness(1) {
+}
+
+void ofxBlur::setup(int width, int height, int radius, float shape, int passes, float downsample) {
+    string blurSource = generateBlurSource(radius, shape);
+    if(ofGetLogLevel() == OF_LOG_VERBOSE) {
+        cout << "ofxBlur is loading blur shader:" << endl << blurSource << endl;
+    }
+    blurShader.setupShaderFromSource(GL_FRAGMENT_SHADER, blurSource);
+    blurShader.linkProgram();
+    
+    if(passes > 1) {
+        string combineSource = generateCombineSource(passes, downsample);
+        if(ofGetLogLevel() == OF_LOG_VERBOSE) {
+            cout << "ofxBlur is loading combine shader:" << endl << combineSource << endl;
+        }
+        combineShader.setupShaderFromSource(GL_FRAGMENT_SHADER, combineSource);
+        combineShader.linkProgram();
+    }
+    
+    base.allocate(width, height);
+    base.begin(); ofClear(0); base.end();
+    
+    ofFbo::Settings settings;
+    settings.useDepth = false;
+    settings.useStencil = false;
+    settings.numSamples = 0;
+    ping.resize(passes);
+    pong.resize(passes);
+    for(int i = 0; i < passes; i++) {
+        ofLogVerbose() << "building ping/pong " << width << "x" << height;
+        settings.width = width;
+        settings.height = height;
+        ping[i].allocate(settings);
+        ping[i].begin(); ofClear(0); ping[i].end();
+        pong[i].allocate(settings);
+        pong[i].begin(); ofClear(0); pong[i].end();
+        //        ping[i].setDefaultTextureIndex(i);
+        //        pong[i].setDefaultTextureIndex(i);
+        width *= downsample;
+        height *= downsample;
+    }
+}
+
+void ofxBlur::setScale(float scale) {
+    this->scale = scale;
+}
+
+void ofxBlur::setRotation(float rotation) {
+    this->rotation = rotation;
+}
+
+void ofxBlur::setBrightness(float brightness) {
+    this->brightness = brightness;
+}
+
+void ofxBlur::begin() {
+    base.begin();
+}
+
+void ofxBlur::end() {
+    base.end();
+    
+    ofPushStyle();
+    ofSetColor(255);
+    
+    ofVec2f xDirection = ofVec2f(scale, 0).getRotatedRad(rotation);
+    ofVec2f yDirection = ofVec2f(0, scale).getRotatedRad(rotation);
+    for(int i = 0; i < ping.size(); i++) {
+        ofFbo& curPing = ping[i];
+        ofFbo& curPong = pong[i];
+        
+        // resample previous result into ping
+        curPing.begin();
+        int w = curPing.getWidth();
+        int h = curPing.getHeight();
+        if(i > 0) {
+            ping[i - 1].draw(0, 0, w, h);
+        } else {
+            base.draw(0, 0, w, h);
+        }
+        curPing.end();
+        
+        // horizontal blur ping into pong
+        curPong.begin();
+        blurShader.begin();
+        blurShader.setUniformTexture("source", curPing.getTexture(), 0);
+        blurShader.setUniform2f("direction", xDirection.x, xDirection.y);
+        curPing.draw(0, 0);
+        blurShader.end();
+        curPong.end();
+        
+        // vertical blur pong into ping
+        curPing.begin();
+        blurShader.begin();
+        blurShader.setUniformTexture("source", curPong.getTexture(), 0);
+        blurShader.setUniform2f("direction", yDirection.x, yDirection.y);
+        curPong.draw(0, 0);
+        blurShader.end();
+        curPing.end();
+    }
+    
+    // render ping back into base
+    if(ping.size() > 1) {
+        int w = base.getWidth();
+        int h = base.getHeight();
+        
+        ofPlanePrimitive plane;
+        plane.set(w, h);
+        plane.mapTexCoordsFromTexture(ping[0].getTexture());
+        
+        base.begin();
+        combineShader.begin();
+        for(int i = 0; i < ping.size(); i++) {
+            string name = "s" + ofToString(i);
+            combineShader.setUniformTexture(name.c_str(),
+                                            ping[i].getTexture(),
+                                            1 + i);
+        }
+        combineShader.setUniform1f("brightness", brightness);
+        ofPushMatrix();
+        ofTranslate(w / 2, h / 2);
+        plane.draw();
+        ofPopMatrix();
+        combineShader.end();
+        base.end();
+    } else {
+        base.begin();
+        ping[0].draw(0, 0);
+        base.end();
+    }
+    
+    ofPopStyle();
+}
+
+ofTexture& ofxBlur::getTextureReference() {
+    return base.getTexture();
+}
+
+void ofxBlur::draw() {
+    base.draw(0, 0);
+}
+
+void ofxBlur::draw(ofRectangle rect) {
+    base.draw(rect);
+}
+
+// kylemcdonald end
 
 
 //========================================================================

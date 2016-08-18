@@ -22,13 +22,16 @@
 #ifndef main_h
 #define main_h
 
-/*
+
 #define WIDTH 1920
 #define HEIGHT 1080
-*/
 
+/*
 #define WIDTH 2880
 #define HEIGHT 1620
+ */
+
+
 #define OSC_IN 7771
 #define OSC_OUT 57120
 
@@ -89,6 +92,9 @@ public:
     ofImage img;
 
     Still(const char *);
+    Still(ofFbo *);
+    Still(void);
+    
     ~Still(void);
 
     ofTexture get_texture(void);
@@ -126,7 +132,7 @@ public:
 class NewTransform {
 public:
     ofFbo *fbo;
-    BaseImage *img1;
+    BaseImage *input;
     BaseImage *img2;
 
     // virtual methods
@@ -174,7 +180,7 @@ public:
  */
 class DisplayImage : public virtual NewTransform {
 public:
-    DisplayImage(BaseImage *);
+    DisplayImage(void);
     ~DisplayImage(void);
 
     // virtual methods
@@ -189,7 +195,7 @@ public:
 class Mirror : public virtual NewTransform {
 public:
     ofShader shader;
-    Mirror(BaseImage *);
+    Mirror();
     ~Mirror(void);
 
     //virtual methods
@@ -201,7 +207,7 @@ public:
 /*
  * Smear is a Transform that distorts img1 based on the color of img2
  * Smear(img1, img2, xi, yi, init_dx, init_dy):
- *     img1 : source image
+ *     input_image : source image
  *     img2 : displacement image
  *     xi : initial x-axis displacement
  *     yi : initial y- axis displacement
@@ -216,8 +222,9 @@ public:
     ofShader shader;
     float x_scale, y_scale;
     float dx, dy;
+    BaseImage * fcn;
 
-    Smear(BaseImage *, BaseImage *, float, float, float, float);
+    Smear(BaseImage *, float, float, float, float);
     ~Smear(void);
 
     void update_delta(float,float);
@@ -245,8 +252,9 @@ class SmearInner : public virtual NewTransform {
 public:
     ofShader shader;
     float scale;
+    BaseImage * fcn;
 
-    SmearInner(BaseImage *, BaseImage *, float);
+    SmearInner(BaseImage *, float);
     ~SmearInner(void);
 
     void set_scale(float);
@@ -264,8 +272,9 @@ class Invert : public virtual NewTransform{
 public:
     ofShader shader;
     float scale;
-
-    Invert(BaseImage*, float);
+    
+    
+    Invert(float);
     ~Invert(void);
 
     // virtual methods
@@ -281,8 +290,8 @@ class Grayscale : public virtual NewTransform{
 public:
     ofShader shader;
     float scale;
-
-    Grayscale(BaseImage*, float);
+    
+    Grayscale(float);
     ~Grayscale(void);
 
     // virtual methods
@@ -298,8 +307,8 @@ class ShadowMask : public virtual NewTransform {
 public:
     ofShader shader;
     float threshold;
-
-    ShadowMask(BaseImage*, float);
+    
+    ShadowMask(float);
     ~ShadowMask(void);
 
     // virtual methods
@@ -335,12 +344,13 @@ public:
     ofShader shader;
     float scale;
     ofVec2f center;
-
-    Twirl(BaseImage*, float s);
+    
+    Twirl(void);
     ~Twirl(void);
 
     void set_center(float, float);
-
+    void set_scale(float);
+    
     // virtual methods
     void update(void);
     void process_image(void);
@@ -355,8 +365,9 @@ class NoiseMask : public virtual NewTransform {
 public:
     ofShader shader;
     float frequency, time, scale;
-
-    NoiseMask(BaseImage*, BaseImage*);
+    BaseImage *mask;
+    
+    NoiseMask(BaseImage*);
     ~NoiseMask(void);
 
     void set_scale(float);
@@ -375,7 +386,7 @@ class HeatDistort : public virtual NewTransform {
 public:
     ofShader shader;
     int x0, y0;
-    BaseImage *img1, *img2;
+    BaseImage *mask;
     float frequency;
     float time;
     float distort;
@@ -390,9 +401,22 @@ public:
 };
 
 //========================================================================
-class NoiseMaker : public virtual Transform {
+class Aberration : public virtual NewTransform {
     ofShader shader;
+    float amount;
+    
+    Aberration(void);
+    ~Aberration(void);
+    
+    //virtual methods
+    void update(void);
+    void process_image(void);
+};
 
+//========================================================================
+class NoiseMaker : public virtual NewTransform {
+    ofShader shader;
+    
     NoiseMaker(void);
     ~NoiseMaker(void);
 
@@ -412,7 +436,7 @@ public:
     // dim of particle location texture
     int w, h;
 
-    Swarm(BaseImage *);
+    Swarm(void);
     ~Swarm(void);
 
     void createFbo(void);
@@ -464,6 +488,7 @@ public:
 class Stream {
 public:
     ofFbo fbo;
+    Still * img;
     int num_nodes;
     vector<struct node> nodes;
 
@@ -513,6 +538,35 @@ struct frame {
     int n;
     int t;
 };
+
+// Thanks kylemcdonald for this blur¡¡!!
+class ofxBlur {
+protected:
+	ofFbo base;
+	vector<ofFbo> ping, pong;
+
+	ofShader blurShader, combineShader;
+	float scale, rotation;
+	float downsample;
+	float brightness;
+public:
+	ofxBlur();
+
+	void setup(int width, int height, int radius = 100, float shape = .2, int passes = 1, float downsample = .5);
+
+	void setScale(float scale);
+	void setRotation(float rotation);
+	void setBrightness(float brightness); // only applies to multipass
+
+	void begin();
+	void end();
+	void draw();
+    void draw(ofRectangle rect);
+
+	ofTexture& getTextureReference();
+};
+
+// kylemcdonald end
 
 //========================================================================
 //_Utilities

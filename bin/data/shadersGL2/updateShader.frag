@@ -123,7 +123,7 @@ void main()
     vec3 c = texture2DRect(velocities, vec2(pos.x, pos.y)).xyz;
     float n =snoise(vec3(texCoordVarying.x, texCoordVarying.y, elapsed*0.1));
     
-    vec3 vel = vec3(c.x*(mod(texCoordVarying.x, 2.0)-1.0)*n,30.18*(c.x+n*.1), 0);
+    vec3 vel = vec3(c.x*(mod(texCoordVarying.x, 2.0)-1.0)*n,30.18*(c.x+n*.5), 0);
     
     // move
     pos += vel;
