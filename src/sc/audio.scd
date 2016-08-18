@@ -20,18 +20,28 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+//_Server
+s = Server.local;
+o = s.options;
+o.sampleRate_(44.1e3); 		// 44.1k Hz
+// o.sampleRate_(96e3); 		// 96k Hz
+o.memSize_(2e6); 			// 2GB of RAM
+o.numOutputBusChannels_(2);	// 2ch
+
+//_Params
+~bpm = 100.0;
+
+//_OSC
+~ip = "127.0.0.1";
+~port = 7771;
 
 //_GUI
 ~width = 1000;
 ~height = 600;
+~display_gui = false;
 
-//_Server
-s = Server.local;
-o = s.options;
-o.sampleRate_(96e3);
-o.memSize_(2e6); // 2GB of RAM
-o.numOutputBusChannels = 4;
-
+//_dev
+~debug_osc = false;
 
 s.waitForBoot({
 
@@ -46,43 +56,52 @@ s.waitForBoot({
 	~b4 = Buffer.read(s, ~cwd +/+ "machine_drone.wav");
 	~b5 = Buffer.read(s, ~cwd +/+ "boiling.wav");
 	~b6 = Buffer.read(s, ~cwd +/+ "foam.aiff");
-
 	s.sync;
-
-	//_OSC
-	~osc = NetAddr.new("127.0.0.1", 7771);
-	~osc_recieve = { |msg, time, addr|
-		if(msg[0] != '/status.reply') {
-			"time: % sender: %\nmessage: %\n".postf(time, addr, msg);
-		}
-	};
-	// thisProcess.addOSCRecvFunc(~osc);
-	// OSCFunc.trace(true);
-
-	//_Utility
-	~scale = { |x, inputMin, inputMax, outputMin, outputMax|
-		var numer, denom, scaled;
-		numer = (outputMax-outputMin) * (x-inputMin);
-		denom = inputMax - inputMin;
-		scaled = (numer / denom) + outputMin;
-		scaled;
-	};
 
 	/**************************************************************************************************/
 	//_Synths
 
 	//--------------------------------------------------------------
-	//_Processing
+	//_Sampling
 
-	SynthDef(\Input,{ |amp = 1.0|
+	SynthDef(\sampler_1ch, { |bufnum=0, rate=1, pan=0, amp=0.8|
 		var in, mix;
-		in = SoundIn.ar(0)!2;
-		mix = in * amp;
-		Out.ar(10, mix);
+		in = PlayBuf.ar(1, bufnum, rate, 1, doneAction:2);
+		mix = Pan2.ar(in, pan) * amp;
+		Out.ar(10, in); 	// to processing
+		Out.ar(20, mix);	// to mixer
 	}).load(s);
 
 
-	SynthDef(\process,{ |amp = 1.0, mod_scale = 0.2|
+	SynthDef(\sampler_2ch, { |bufnum=0, rate=1, amp=0.8|
+		var in, mix;
+		in = PlayBuf.ar(2, bufnum, rate, 1, doneAction:2);
+		mix = in * amp;
+		Out.ar(10, in); 	// to processing
+		Out.ar(20, mix);	// to mixer
+	}).load(s);
+
+	SynthDef(\looper_1ch, { |bufnum=0, rate=1, pan=0, amp=0.8|
+		var in, mix;
+		in = PlayBuf.ar(1, bufnum, rate, 1, loop:1);
+		mix = Pan2.ar(in, pan) * amp;
+		Out.ar(10, in); 	// to processing
+		Out.ar(20, mix);	// to mixer
+	}).load(s);
+
+
+	SynthDef(\looper_2ch, { |bufnum=0, rate=1, amp=0.8|
+		var in, mix;
+		in = PlayBuf.ar(2, bufnum, rate, 1, loop:1);
+		mix = in * amp;
+		Out.ar(10, in); 	// to processing
+		Out.ar(20, mix);	// to mixer
+	}).load(s);
+
+	//--------------------------------------------------------------
+	//_Processing
+
+	SynthDef(\melt,{ |amp = 1.0, mod_scale = 1.0|
 		var in, d1, d2, pan, mix;
 
 		in = In.ar(10, 2);
@@ -128,33 +147,9 @@ s.waitForBoot({
 	}).load(s);
 
 	//--------------------------------------------------------------
-	//_Sampling
+	//_Grains
 
-	SynthDef(\sampler_1ch, { |bufnum=0, rate=1, pan=0, amp=0.8|
-		var in, mix;
-		in = Pan2.ar(
-			PlayBuf.ar(1, bufnum, rate, 1, doneAction:2),
-			pan
-		);
-		mix = in * amp;
-		Out.ar(10, in);
-		// Out.ar(20, mix);
-	}).load(s);
-
-
-	SynthDef(\sampler_2ch, { |bufnum=0, rate=1, pan=0, n, amp=0.8|
-		var in, mix;
-		in = Pan2.ar(
-			PlayBuf.ar(2, bufnum, rate, 1, doneAction:2),
-			pan
-		);
-		mix = in * amp;
-		Out.ar(10, in);
-		// Out.ar(20, mix);
-	}).load(s);
-
-
-	SynthDef(\vGrain, { |bufnum=0, startPos=0.0, amp=0.3, dur=0.4, rate=1.0, vary=0.2, scale=1.0|
+	SynthDef(\vGrain, { |bufnum=0, startPos=0.0, amp=0.3, len=0.4, rate=1.0, vary=0.2, scale=1.0|
 		var in, grains, mix;
 
 		in = PlayBuf.ar(1, bufnum, loop:1) * (1.0 - scale) * 0.5;
@@ -168,11 +163,36 @@ s.waitForBoot({
 					1,
 					BufFrames.ir(bufnum)*startPos,
 					1,
-				) * (EnvGen.kr(Env.perc(0.01, dur * ((Rand(0.0, 1.0)*vary) + 0.5)).circle)-0.001) * scale;
+				) * (EnvGen.kr(Env.perc(0.01, len * ((Rand(0.0, 1.0)*vary) + 0.5)).circle)-0.001) * scale;
 			});
 		});
 
 		mix = (in + grains) * amp;
+		Out.ar(20, mix);
+	}).load(s);
+
+
+	SynthDef(\grainFlurry, { |bufnum=0, startPos=0.0, amp=0.3, len=0.4, rate=1.0, vary=0.2, scale=1.0|
+		var in, grains, env, mix;
+
+		in = PlayBuf.ar(1, bufnum, loop:1) * (1.0 - scale) * 0.5;
+
+		grains = Array.fill(2, {
+			Array.fill(8, {
+				PlayBuf.ar(
+					1,
+					bufnum,
+					BufRateScale.kr(bufnum) * ((Rand(0.0, 1.0)*vary) + 0.5) * rate,
+					1,
+					BufFrames.ir(bufnum)*startPos,
+					1,
+				) * (EnvGen.kr(Env.perc(0.01, len * ((Rand(0.0, 1.0)*vary) + 0.5)))-0.001) * scale;
+			});
+		});
+
+		env = EnvGen.ar(Env([1, 1], [len*vary*rate]), doneAction:2);
+
+		mix = (in + grains) * amp * env * 0.5;
 		Out.ar(20, mix);
 	}).load(s);
 
@@ -188,7 +208,7 @@ s.waitForBoot({
 			snd * EnvGen.ar(Env([0, 1, 0.6, 0], [0.0001, 0.4, 0.01]), doneAction:2),
 			pan
 		);
-		Out.ar(20, snd * amp);
+		Out.ar(20, snd * amp * 2);
 	}).load(s);
 
 
@@ -244,55 +264,152 @@ s.waitForBoot({
 	/**************************************************************************************************/
 	//_Sequencing
 
-	TempoClock.default.tempo = 100/60;
+	TempoClock.default.tempo = ~bpm/60.0;
 
-	p = Pbind(
-		\instrument, \click,
-		\dur, Prand([Pseq((1/4)!4), Pseq([1/8, 1/8, 1/8])], inf),
-		\pan, Pseq([-1, 0, 1], inf)
-	).play;
+	//--------------------------------------------------------------
+	//_Streams
 
-	p = Pbind(
-		\instrument, \snd,
-		\dur, Prand([Pseq((1/2)!4), Pseq([1/4, 1/4, 1/4])], inf),
-		\pan, Prand([-1, 0, 1], inf)
-	).play;
-
-	p = Pbind(
-		\instrument, \bass,
-		\dur, Prand([1/2, 1, 3/2, 3/4], inf),
-		\pan, Pseq([-1, 0, 1], inf)
-	);
-
-	p = Pbind(
-		\instrument, \hNoise,
-		\dur, Prand([Pseq((1)!4), Pseq([1/2, 1/2, 1/2])], inf),
-		\pan, Pseq([-1, 0, 1], inf)
-	);
-
-	p = Pbind(
-		\instrument, \sampler_1ch,
-		\bufnum, Pseq([~b1.bufnum, ~b2.bufnum], inf),
-		\dur, Prand([1/2, 1, 3/2, 3/4], inf),
-		\pan, Pseq([-1, 0, 1], inf)
-	);
-
-	~f1 = Routine({
-		1.wait;
+	~machine_drone = Routine({
+		var drone = Synth(\sampler_2ch, [\bufnum, ~b4.bufnum, \amp, 0.2]);
 	});
+
+	~grains = Routine({
+		var grains = ~grain = Synth(\vGrain, [\bufnum, ~b1.bufnum, \len, 0.2, \vary, 1.0]);
+	});
+
+	//--------------------------------------------------------------
+	//_Percussive
+
+	~r1 = Routine({
+		Pbind(
+			\instrument, \click,
+			\dur, Prand([Pseq((1/4)!4), Pseq([1/8, 1/8, 1/8])], inf),
+			\pan, Pseq([-1, 0, 1], inf)
+		).play;
+
+		Pbind(
+			\instrument, \snd,
+			\dur, Prand([Pseq((1/2)!4), Pseq([1/4, 1/4, 1/4])], inf),
+			\pan, Prand([-1, 0, 1], inf)
+		).play;
+	});
+
+	~r2 = Routine({
+		Pbind(
+			\instrument, \sampler_1ch,
+			\bufnum, Pseq([~b1.bufnum, ~b2.bufnum], inf),
+			\dur, Prand([1/2, 1, 3/2, 3/4]*2, inf),
+			\pan, Pseq([-1, 0, 1], inf)
+		).play;
+	});
+
+	~r3 = Routine({
+		Pbind(
+			\instrument, \bass,
+			\dur, Prand([1/2, 1, 3/2, 3/4], inf),
+			\pan, Pseq([-1, 0, 1], inf)
+		).play;
+	});
+
+	~r4 = Routine({
+		Pbind(
+			\instrument, \hNoise,
+			\dur, Prand([Pseq((1)!4), Pseq([1/2, 1/2, 1/2])], inf),
+			\pan, Pseq([-1, 0, 1], inf)
+		).play;
+	});
+
+	~r5 = Routine({
+		Pbind(
+			\instrument, \sampler_1ch,
+			\bufnum, ~b2.bufnum,
+			\dur, Prand([Pseq((1/2)!4), Pseq([3/4, 1/2, 3/4])], inf),
+		).play;
+	});
+
+	//--------------------------------------------------------------
+	//_Modulations
+
+	~mod_melt = Routine({
+		var val = 0.8;
+		inf.do({ |i|
+			val = 1 - (val * rrand(0.0, 0.99));
+			~melt.set(\mod_scale, val);
+			rrand(1.0, 4.0).wait;
+		});
+	});
+
+	//--------------------------------------------------------------
+	//_Gestures
+
+	~deep = Routine({
+		var deep = Synth(\sampler_1ch, [\bufnum, ~b2.bufnum, \amp, 0.8]);
+	});
+
+	~burst = Routine({
+		Synth(\grainFlurry, [\bufnum, ~b1.bufnum, \dur, 0.5, \vary, 2.0]);
+	});
+
+	~splatter = Routine({
+		var grains, spec;
+		grains = Synth(\vGrain, [\bufnum, ~b1.bufnum, \dur, 0.2, \vary, 1.0, \rate, 0.6]);
+		spec = ControlSpec(0.2, 0.00001, \lin, 0.0001);
+		10.do({ |i|
+			var v1 = spec.map(i/10.0);
+			grains.set(\len, v1);
+			(3.0/10.0).wait;
+		});
+		grains.free;
+		~burst.play;
+		5.wait;
+		~burst.reset;
+	});
+
+	//--------------------------------------------------------------
+	//_Sound Worlds
+
+	~world1 = Routine({
+		~r1.play;
+		~machine_drone.play;
+		~mod_melt.play;
+		~deep.play;
+	});
+
+	//--------------------------------------------------------------
+	//_Utilities
+
+	~routines = [
+		~machine_drone, ~grains,	// streams
+		~r1, ~r2, ~r3, ~r4, ~r5,	// percussive
+		~mod_melt,					// modulations
+		~deep, ~burst, ~splatter,	// gestures
+		~world1						// worlds
+	];
+
+	~reset = { for(0, ~routines.size-1, { |i| ~routines[i].reset }) };
 
 	/**************************************************************************************************/
 	//_Main
 
 	~mix = Synth(\mixer);
-	~proc = Synth(\process);
-	~drone = Synth(\sampler_2ch, [\bufnum, ~b4.bufnum]);
-	// ~input = Synth(\Input);
+	~melt = Synth(\melt, [\mod_scale, 0.2, \amp, 0.2]);
 
+	~world1.play;
+
+	//--------------------------------------------------------------
 	//_OSC
+
+	~osc = NetAddr.new(~ip, ~port);
+
+	if( (~debug_osc),
+		{ OSCFunc.trace(true) },
+		{ OSCFunc.trace(false) });
+
 	OSCdef.new(
 		\temperature, { |msg, time, addr, port|
-			var val = ~scale.(msg[1], 0.0, 1.0, 0.5, 1.5);
+			var spec, val;
+			spec = ControlSpec(0.5, 1.5, \lin);
+			val = spec.(msg[1]);
 			~proc.set(\mod_scale, val);
 		},
 		'sensors/temperature'
@@ -302,12 +419,23 @@ s.waitForBoot({
 		\piezo, { |msg, time, addr, port|
 			~proc.set(\amp, msg[1]);
 		},
-		'sensors/sensors'
+		'sensors/piezo'
 	);
 
 	/**************************************************************************************************/
 	//_GUI
 
+	w = Window("GUI", Rect(
+		Window.screenBounds.width/2 - (~width/2),
+		Window.screenBounds.height/2 - (~height/2),
+		~width,
+		~height
+	))
+	.background_(Color(0.1, 0.1, 0.1))
+	.alwaysOnTop_(true)
+	.onClose_({ Server.killAll });
+
+	if( (~display_gui), { w.front });
 
 });
 )
