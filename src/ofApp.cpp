@@ -59,10 +59,14 @@ void ofApp::setup(){
 
     kernel->toggle_loop(true);
     
+    server = new OSC_Server(OSC_IN);
+    
+    run_supercollider();
+    
     // initialize audio server
-    int bufferSize = 256;
-    audio.assign(bufferSize, 0.0);
-    soundStream.setup(this, 0, 1, 44100, bufferSize, 2);
+//    int bufferSize = 256;
+//    audio.assign(bufferSize, 0.0);
+//    soundStream.setup(this, 0, 1, 44100, bufferSize, 2);
 }
 
 //--------------------------------------------------------------

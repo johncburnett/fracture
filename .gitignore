@@ -1,9 +1,11 @@
 .DS_Store
 *.jpg
 *.png
-*.app
+*.mov
 *.wav
 *.aiff
+*.app
+log.txt
 fracture.xcodeproj/*
 project.xcworkspace/*
 xcuserdata/
