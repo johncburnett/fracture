@@ -366,7 +366,7 @@ void Invert::process_image(void) {
     
     fbo->begin();
     ofClear(0, 0, 0, 1);
-
+    
         shader.begin();
 
             shader.setUniformTexture("tex0", tex0, 0);
@@ -552,6 +552,7 @@ void Twirl::process_image(void) {
             draw_quad();
 
         shader.end();
+
     fbo->end();
 }
 

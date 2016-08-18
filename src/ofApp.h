@@ -48,6 +48,9 @@ class ofApp : public ofBaseApp{
     Kernel *kernel;
     Stream *stream0, *stream1;
     ofxBlur blur;
+    
+    OSC_Server *server;
+
     ofFbo * fboi;
 
     Still *img0, *img1, *img2, *img3, *img4, *img5;

@@ -29,7 +29,11 @@
 /*
 #define WIDTH 2880
 #define HEIGHT 1620
-*/
+ */
+
+
+#define OSC_IN 7771
+#define OSC_OUT 57120
 
 #include "ofMain.h"
 #include "osc_server.h"
@@ -412,7 +416,7 @@ class Aberration : public virtual NewTransform {
 //========================================================================
 class NoiseMaker : public virtual NewTransform {
     ofShader shader;
-
+    
     NoiseMaker(void);
     ~NoiseMaker(void);
 
