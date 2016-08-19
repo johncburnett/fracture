@@ -40,14 +40,19 @@ void ofApp::setup(){
     
     //vid0 = new Video("lapses/pano_lapse.mov");
     
-    smear = new SmearInner(img0, img1, 0.0);
-    swarm = new Swarm(vid0);
-    mirror = new Mirror(vid0);
-    mirror->fbo = fboi;
+    twirl = new Twirl();
+    twirl->set_scale(0.15);
+
+    //transform = new DisplayImage(vid0);
+    smear = new SmearInner(img1, 0.0);
+    //swarm = new Swarm();
+    mirror = new Mirror();
     
     stream0 = new Stream();
     stream0->add_transform(twirl);
     stream0->add_transform(mirror);
+    //stream0->add_transform(smear);
+    //stream0->add_transform(swarm);
     
     kernel = new Kernel();
     kernel->add_stream(stream0, 0);
@@ -56,12 +61,7 @@ void ofApp::setup(){
     
     server = new OSC_Server(OSC_IN);
     
-//    run_supercollider();
-    
-    // initialize audio server
-//    int bufferSize = 256;
-//    audio.assign(bufferSize, 0.0);
-//    soundStream.setup(this, 0, 1, 44100, bufferSize, 2);
+    run_supercollider();
 }
 
 //--------------------------------------------------------------
@@ -70,8 +70,19 @@ void ofApp::update(){
     //vid0->update();
     stream0->set_init_img(img4);
     kernel->update();
-    //smear->set_scale(ofGetMouseX()*vol);
-    server->update();
+    
+    /*
+    cout << ofMap(mouseX, 0, ofGetWidth(), 0, 10) << endl;
+    cout << ofMap(mouseY, 0, ofGetHeight(), -PI, PI) << endl;
+    blur.setScale(ofMap(mouseX, 0, ofGetWidth(), 0, 10));
+    blur.setRotation(ofMap(mouseY, 0, ofGetHeight(), -PI, PI));
+    */
+    blur.setScale(0.26);
+    blur.setRotation(0);
+    
+    
+    smear->set_scale(ofGetMouseX()*vol);
+//    vid0->update();
 }
 
 //--------------------------------------------------------------
@@ -84,26 +95,6 @@ void ofApp::draw(){
     blur.end();
     
     blur.draw();
-}
-
-//--------------------------------------------------------------
-void ofApp::audioIn(float * input, int bufferSize, int nChannels){	
-	
-	float curVol = 0.0;
-	int numCounted = 0;
-
-	for (int i = 0; i < bufferSize; i++){
-		audio[i] = input[i*2]*0.5;
-		curVol += audio[i] * audio[i];
-		numCounted+=2;
-	}
-	
-	curVol /= (float)numCounted;
-	curVol = sqrt( curVol );
-	
-	smoothedVol *= 0.93;
-	smoothedVol += 0.07 * curVol;
-	bufferCounter++;
 }
 
 //--------------------------------------------------------------
