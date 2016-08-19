@@ -40,12 +40,16 @@ void ofApp::setup(){
     twirl = new Twirl();
     twirl->set_scale(0.15);
     smear = new SmearInner(img1, 0.0);
+    swarm = new Swarm();
     mirror = new Mirror();
     invert = new Invert(1.0);
     blur = new ofxBlur();
    
     stream0 = new Stream();
     stream0->add_transform(mirror);
+    stream0->add_transform(swarm);
+    stream0->add_transform(invert);
+    stream0->add_transform(blur);
     
     kernel = new Kernel();
     kernel->add_stream(stream0, 0);
@@ -59,13 +63,11 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    stream0->set_init_img(img4);
+    vid0->update();
+    stream0->set_init_img(vid0);
+    mirror->set_mode(1);
     kernel->update();
-    
-    blur.setScale(0.26);
-    blur.setRotation(0);
-    
-//    vid0->update();
+    server->update();
 }
 
 //--------------------------------------------------------------
@@ -73,10 +75,6 @@ void ofApp::draw(){
     ofSetWindowTitle("FPS: " + ofToString(ofGetFrameRate()));
     
     kernel->draw();
-    blur.end();
-    
-    blur.draw();
-//    vid0->draw()
 }
 
 //--------------------------------------------------------------

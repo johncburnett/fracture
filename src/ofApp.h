@@ -53,12 +53,13 @@ public:
     //_transforms
     NoiseMask *noise_mask;
     DisplayImage *transform;
-    SmearInner * smear;
-    Swarm * swarm;
-    Grayscale * grayscale;
-    Twirl * twirl;
-    Mirror * mirror;
-    ofxBlur blur;
+    SmearInner *smear;
+    Swarm *swarm;
+    Invert *invert;
+    Grayscale *grayscale;
+    Twirl *twirl;
+    Mirror *mirror;
+    ofxBlur *blur;
     
     //========================================================================
     //control
