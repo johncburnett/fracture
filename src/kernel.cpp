@@ -96,7 +96,7 @@ void Kernel::get_frame_image(int frame_index) {
     
     // TO FIX!! Use BaseImage
     delete img;
-    img = new Image(fbo);
+    img = new Still(&fbo);
 }
 
 void Kernel::set_frame_length(int frame_index, float l) {

@@ -27,7 +27,6 @@ void ofApp::setup(){
     ofBackground(0);
     ofSetVerticalSync(true);
     
-    blur.setup(WIDTH, HEIGHT, 10, .4, 4);
     
     img0 = new Still("img/emory.jpg");
     img1 = new Still("img/stone.jpg");
@@ -36,15 +35,16 @@ void ofApp::setup(){
     img4 = new Still("img/rock.jpg");
     img5 = new Still("img/landscape.jpg");
     
-    //vid0 = new Video("lapses/pano_lapse.mov");
+    vid0 = new Video("lapses/pano_lapse.mov");
     
     twirl = new Twirl();
     twirl->set_scale(0.15);
     smear = new SmearInner(img1, 0.0);
     mirror = new Mirror();
-    
+    invert = new Invert(1.0);
+    blur = new ofxBlur();
+   
     stream0 = new Stream();
-    stream0->add_transform(twirl);
     stream0->add_transform(mirror);
     
     kernel = new Kernel();
@@ -72,8 +72,6 @@ void ofApp::update(){
 void ofApp::draw(){
     ofSetWindowTitle("FPS: " + ofToString(ofGetFrameRate()));
     
-    blur.begin();
-    ofSetColor(255);
     kernel->draw();
     blur.end();
     

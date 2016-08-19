@@ -22,14 +22,11 @@
 #ifndef main_h
 #define main_h
 
-
 #define WIDTH 1920
 #define HEIGHT 1080
 
-/*
-#define WIDTH 2880
-#define HEIGHT 1620
- */
+//#define WIDTH 2880
+//#define HEIGHT 1620
 
 
 #define OSC_IN 7771
@@ -45,27 +42,6 @@
 #include <vector>
 using namespace std;
 
-//========================================================================
-/*
- * The Image class holds an image from file in an ofImage and ofFbo.
- * The Constructor takes in the file name of the image.
- * Display outputs the image to the screen
- */
-class Image {
-public:
-    ofImage img;
-    ofFbo fbo;
-
-    Image(const char *);
-    Image(ofFbo);
-    Image(ofFbo *);
-    ~Image(void);
-
-    void overwrite_fbo(ofFbo *);
-
-    void display(void);
-    ofFbo getFbo(void);
-};
 
 //========================================================================
 /*
@@ -148,33 +124,6 @@ public:
     void init_fbo(void);
     ofFbo *get_fbo(void);
     void set_fbo(ofFbo *);
-    Image *to_image(void);
-    void draw_quad(void);
-};
-
-//========================================================================
-/*
- * Transform is an abstract class that processes one or more images.
- * It serves as a parent class to various other transforms.
- *
- * void draw(void) draws fbo to the screen.
- * void draw_quad(void) maps a texture to a quad.
- */
-class Transform {
-public:
-    ofFbo *fbo;
-    Image *img1;
-    Image *img2;
-
-    // virtual methods
-    virtual void process_image(void) =0;
-    virtual void update(void) =0;
-
-    // inherited methods
-    void draw(void);
-    ofFbo get_fbo(void);
-    void set_fbo(ofFbo *);
-    Image *to_image(void);
     void draw_quad(void);
 };
 
@@ -199,8 +148,13 @@ public:
 class Mirror : public virtual NewTransform {
 public:
     ofShader shader;
+    // 0 is left, 1 is right, 2 is top, 3 is bottom
+    int mode;
+    
     Mirror();
     ~Mirror(void);
+    
+    void set_mode(int);
 
     //virtual methods
     void update(void);
@@ -320,23 +274,23 @@ public:
     void process_image(void);
 };
 
-//========================================================================
-/*
- * Colormap maps one image's color to another image. Unfinished.
- */
-class ColorMap : public virtual Transform{
-public:
-    ofShader shader;
-    float scale;
-    ofImage processed;
-
-    ColorMap(Image*, Image*);
-    ~ColorMap(void);
-
-    // virtual methods
-    void update(void);
-    void process_image(void);
-};
+////========================================================================
+///*
+// * Colormap maps one image's color to another image. Unfinished.
+// */
+//class ColorMap : public virtual Transform{
+//public:
+//    ofShader shader;
+//    float scale;
+//    ofImage processed;
+//
+//    ColorMap(Image*, Image*);
+//    ~ColorMap(void);
+//
+//    // virtual methods
+//    void update(void);
+//    void process_image(void);
+//};
 
 //========================================================================
 /*
@@ -469,7 +423,7 @@ public:
 };
 
 //========================================================================
-class Disintegrate : public virtual NewTransform{
+class Disintegrate : public virtual NewTransform {
 public:
     ofTexture color;
     ofVboMesh mesh, quadMesh;
@@ -487,6 +441,47 @@ public:
     void update(void);
     void process_image(void);
 };
+
+//========================================================================
+// Thanks kylemcdonald for this blur¡¡!!
+float Gaussian(float, float, float);
+void GuassianRow(int, vector<float>&, float);
+string generateBlurSource(int, float);
+string generateCombineSource(int, float);
+
+class ofxBlur : public virtual NewTransform {
+protected:
+	ofFbo base;
+	vector<ofFbo> ping, pong;
+
+	ofShader blurShader, combineShader;
+	float scale, rotation;
+	float downsample;
+	float brightness;
+public:
+	ofxBlur(void);
+    ~ofxBlur(void);
+
+	void setup(int width, int height, int radius = 100, float shape = .2, int passes = 1, float downsample = .5);
+
+	void setScale(float scale);
+	void setRotation(float rotation);
+	void setBrightness(float brightness); // only applies to multipass
+
+	void begin();
+	void end();
+	void draw();
+    void draw(ofRectangle rect);
+    
+    // virtual methods
+    void update(void);
+    void process_image(void);
+    
+
+	ofTexture& getTextureReference();
+};
+
+// kylemcdonald end
 
 //========================================================================
 class Stream {
@@ -515,7 +510,7 @@ public:
     float target_time;
     bool loop;
     ofFbo fbo;
-    Image *img;
+    Still *img;
     vector<struct frame> frames;
 
     Kernel(void);
@@ -543,34 +538,8 @@ struct frame {
     int t;
 };
 
-// Thanks kylemcdonald for this blur¡¡!!
-class ofxBlur {
-protected:
-	ofFbo base;
-	vector<ofFbo> ping, pong;
 
-	ofShader blurShader, combineShader;
-	float scale, rotation;
-	float downsample;
-	float brightness;
-public:
-	ofxBlur();
 
-	void setup(int width, int height, int radius = 100, float shape = .2, int passes = 1, float downsample = .5);
-
-	void setScale(float scale);
-	void setRotation(float rotation);
-	void setBrightness(float brightness); // only applies to multipass
-
-	void begin();
-	void end();
-	void draw();
-    void draw(ofRectangle rect);
-
-	ofTexture& getTextureReference();
-};
-
-// kylemcdonald end
 
 //========================================================================
 //_Utilities
