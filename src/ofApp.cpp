@@ -23,41 +23,12 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+    // openFrameworks mumbojumbo
     ofSetFrameRate(FRAMERATE);
-    ofBackground(0);
-    ofSetVerticalSync(true);
     
-    //_stills
-    img0 = new Still("img/emory.jpg");
-    img1 = new Still("img/stone.jpg");
-    img2 = new Still("img/IMG_3006.jpg");
-    img3 = new Still("img/emory.jpg");
-    img4 = new Still("img/rock.jpg");
-    img5 = new Still("img/landscape.jpg");
-    img6 = new Still("img/sludge.jpg");
-    
-    //_videos
-    vid0 = new Video("lapses/pano_lapse.mov");
-    
-    //_transforms
-    twirl = new Twirl();
-    twirl->set_scale(0.15);
-    smear = new Smear(img1, 0,0,0,0);
-    swarm = new Swarm();
-    mirror = new Mirror();
-    invert = new Invert(1.0);
-    blur = new ofxBlur();
-    pass_image = new DisplayImage();
-    
-   
-    //_streams
-    stream0 = new Stream();
-    stream0->add_transform(smear);
-    stream0->add_transform(swarm);
-    stream0->add_transform(mirror);
-    
-    //stream0->add_transform(invert);
-    stream0->add_transform(blur);
+    load_media();
+
+    init_stream0();
     
     //_kernel
     kernel = new Kernel();
@@ -77,10 +48,9 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
     vid0->update();
-    blur->setScale(ofMap(mouseY, 0, HEIGHT, 0, 10));
-    smear->dx = ofMap(mouseX, 0, WIDTH, -10, 10);
+//    blur->setScale(ofMap(mouseY, 0, HEIGHT, 0, 10));
+    
     stream0->set_init_img(vid0);
-    mirror->set_mode(3);
     kernel->update();
     server->update();
 }
@@ -90,6 +60,34 @@ void ofApp::draw(){
     ofSetWindowTitle("FPS: " + ofToString(ofGetFrameRate()));
     
     kernel->draw();
+}
+
+void ofApp::init_stream0(){
+    mode = 0;
+    
+    smear = new SmearInner(img1);
+    mirror = new Mirror();
+    grayscale = new Grayscale(1.0);
+    swarm = new Swarm();
+    
+    stream0 = new Stream();
+    stream0->add_transform(smear);
+    stream0->add_transform(mirror);
+    stream0->add_transform(grayscale);
+    stream0->add_transform(swarm);
+}
+
+void ofApp::load_media(){
+    img0 = new Still("img/emory.jpg");
+    img1 = new Still("img/stone.jpg");
+    img2 = new Still("img/IMG_3006.jpg");
+    img3 = new Still("img/emory.jpg");
+    img4 = new Still("img/rock.jpg");
+    img5 = new Still("img/landscape.jpg");
+    img6 = new Still("img/sludge.jpg");
+    
+    //_videos
+    vid0 = new Video("lapses/pano_lapse.mov");
 }
 
 //--------------------------------------------------------------
@@ -104,7 +102,15 @@ void ofApp::set_listeners(void) {
 
 //--------------------------------------------------------------
 void ofApp::sines(float &f) {
-    ;
+    // @jburnett
+    // So this seems to get messages even when I'm not running supercollider...
+    
+    /*
+    mirror->set_mode(mode/8);
+    mode++;
+    mode%=16;
+    smear->set_scale(mode*10);
+     */
 }
 
 //--------------------------------------------------------------
@@ -131,6 +137,7 @@ void ofApp::mod0(float &f) {
 void ofApp::mod1(float &f) {
     ;
 }
+
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {ofToggleFullscreen();}

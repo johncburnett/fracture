@@ -25,6 +25,7 @@
 
 //========================================================================
 int main( ){
+    // OF_GAME_MODE seems to alleviate our fullscreen woes
 	ofSetupOpenGL(WIDTH, HEIGHT,OF_WINDOW);
 	ofRunApp(new ofApp());
 }
@@ -88,7 +89,7 @@ void Still::display(){
 //========================================================================
 Video::Video(const char *fname){
     mov.load(fname);
-    sleep(3);
+    sleep(4);
 
     mov.play();
     mov.setPaused(true);
@@ -239,10 +240,10 @@ void Smear::process_image(void) {
 }
 
 //========================================================================
-SmearInner::SmearInner(BaseImage *_fcn, float _scale) {
+SmearInner::SmearInner(BaseImage *_fcn) {
     shader.load("shadersGL2/smear_inner");
     fcn = _fcn;
-    scale = _scale;
+    scale = 10.0;
 }
 
 void SmearInner::set_scale(float _scale){

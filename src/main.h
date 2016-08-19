@@ -31,7 +31,7 @@
 
 #define OSC_IN 7771
 #define OSC_OUT 57120
-#define FRAMERATE 30
+#define FRAMERATE 60
 
 #include "ofMain.h"
 #include "ofEvents.h"
@@ -213,7 +213,7 @@ public:
     float scale;
     BaseImage * fcn;
 
-    SmearInner(BaseImage *, float);
+    SmearInner(BaseImage *);
     ~SmearInner(void);
 
     void set_scale(float);

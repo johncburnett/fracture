@@ -49,12 +49,13 @@ public:
     // TODO: put this stuff in a list and parallelize loading
     Still *img0, *img1, *img2, *img3, *img4, *img5, *img6;
     Video *vid0, *vid1;
+    void load_media(void);
     
     //========================================================================
     //transforms
     NoiseMask *noise_mask;
     DisplayImage *transform;
-    Smear *smear;
+    SmearInner *smear;
     Swarm *swarm;
     Invert *invert;
     Grayscale *grayscale;
@@ -62,6 +63,11 @@ public:
     Mirror *mirror;
     ofxBlur *blur;
     DisplayImage *pass_image;
+    
+    //========================================================================
+    //Specific scenes
+    void init_stream0(void);
+    int mode;
     
     //========================================================================
     //control

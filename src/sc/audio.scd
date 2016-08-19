@@ -43,7 +43,7 @@ o.numOutputBusChannels_(2);	// 2ch
 //_GUI
 ~width = 500;
 ~height = 400;
-~display_gui = true;
+~display_gui = false;
 
 //_dev
 ~debug_osc = false;
