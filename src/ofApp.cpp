@@ -27,7 +27,7 @@ void ofApp::setup(){
     ofBackground(0);
     ofSetVerticalSync(true);
     
-    // load images
+    //_stills
     img0 = new Still("img/emory.jpg");
     img1 = new Still("img/stone.jpg");
     img2 = new Still("img/IMG_3006.jpg");
@@ -36,10 +36,13 @@ void ofApp::setup(){
     img5 = new Still("img/landscape.jpg");
     img6 = new Still("img/sludge.jpg");
     
-    // load videos
+    //_videos
     vid0 = new Video("lapses/pano_lapse.mov");
     
-    smear = new Smear(img1, 0,0,10,0);
+    //_transforms
+    twirl = new Twirl();
+    twirl->set_scale(0.15);
+    smear = new Smear(img1, 0,0,0,0);
     swarm = new Swarm();
     mirror = new Mirror();
     invert = new Invert(1.0);
@@ -67,6 +70,7 @@ void ofApp::setup(){
     set_listeners();
     event->enable();
     
+    //_supercollider
 //    run_supercollider();
 }
 
@@ -119,10 +123,17 @@ void ofApp::bass(float &f) {
 }
 
 //--------------------------------------------------------------
-void ofApp::keyPressed(int key) {
-    ofToggleFullscreen();
-
+void ofApp::mod0(float &f) {
+    ;
 }
+
+//--------------------------------------------------------------
+void ofApp::mod1(float &f) {
+    ;
+}
+
+//--------------------------------------------------------------
+void ofApp::keyPressed(int key) {ofToggleFullscreen();}
 void ofApp::keyReleased(int key) {}
 void ofApp::mouseMoved(int x, int y) {}
 void ofApp::mouseDragged(int x, int y, int button) {}
