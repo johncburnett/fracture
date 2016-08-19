@@ -23,11 +23,11 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    ofSetFrameRate(30);
+    ofSetFrameRate(FRAMERATE);
     ofBackground(0);
     ofSetVerticalSync(true);
     
-    
+    //_stills
     img0 = new Still("img/emory.jpg");
     img1 = new Still("img/stone.jpg");
     img2 = new Still("img/bw.jpg");
@@ -35,8 +35,10 @@ void ofApp::setup(){
     img4 = new Still("img/rock.jpg");
     img5 = new Still("img/landscape.jpg");
     
+    //_videos
     vid0 = new Video("lapses/pano_lapse.mov");
     
+    //_transforms
     twirl = new Twirl();
     twirl->set_scale(0.15);
     smear = new SmearInner(img1, 0.0);
@@ -45,19 +47,25 @@ void ofApp::setup(){
     invert = new Invert(1.0);
     blur = new ofxBlur();
    
+    //_streams
     stream0 = new Stream();
     stream0->add_transform(mirror);
     stream0->add_transform(swarm);
     stream0->add_transform(invert);
     stream0->add_transform(blur);
     
+    //_kernel
     kernel = new Kernel();
     kernel->add_stream(stream0, 0);
-
     kernel->toggle_loop(true);
     
+    //_OSC
     server = new OSC_Server(OSC_IN);
+    event = new EventObject(server);
+    set_listeners();
+    event->enable();
     
+    //_supercollider
     run_supercollider();
 }
 
@@ -79,10 +87,12 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::set_listeners(void) {
-//	ofAddListener(*event->pulses[0], this, &ofApp::sines);
-//	ofAddListener(*event->pulses[1], this, &ofApp::noise);
-//	ofAddListener(*event->pulses[2], this, &ofApp::click);
-//	ofAddListener(*event->pulses[3], this, &ofApp::bass);
+	ofAddListener(*event->pulses[0], this, &ofApp::sines);
+	ofAddListener(*event->pulses[1], this, &ofApp::noise);
+	ofAddListener(*event->pulses[2], this, &ofApp::click);
+	ofAddListener(*event->pulses[3], this, &ofApp::bass);
+	ofAddListener(*event->mods[0], this, &ofApp::mod0);
+	ofAddListener(*event->mods[1], this, &ofApp::mod1);
 }
 
 //--------------------------------------------------------------
@@ -102,6 +112,16 @@ void ofApp::click(float &f) {
 
 //--------------------------------------------------------------
 void ofApp::bass(float &f) {
+    ;
+}
+
+//--------------------------------------------------------------
+void ofApp::mod0(float &f) {
+    ;
+}
+
+//--------------------------------------------------------------
+void ofApp::mod1(float &f) {
     ;
 }
 

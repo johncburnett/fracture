@@ -307,14 +307,14 @@ s.waitForBoot({
 			\instrument, \click,
 			\dur, Prand([Pseq((1/4)!4), Pseq([1/8, 1/8, 1/8])], inf),
 			\pan, Pseq([-1, 0, 1], inf),
-			\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/click", 1)}),
+			\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/click", 1.0)}),
 		).play;
 
 		Pbind(
 			\instrument, \snd,
 			\dur, Prand([Pseq((1/2)!4), Pseq([1/4, 1/4, 1/4])], inf),
 			\pan, Prand([-1, 0, 1], inf),
-			\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/sines", 1)}),
+			\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/sines", 1.0)}),
 		).play;
 	});
 
@@ -332,7 +332,7 @@ s.waitForBoot({
 			\instrument, \bass,
 			\dur, Prand([1/2, 1, 3/2, 3/4], inf),
 			\pan, Pseq([-1, 0, 1], inf),
-			\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/bass", 1)}),
+			\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/bass", 1.0)}),
 		).play;
 	});
 
@@ -341,7 +341,7 @@ s.waitForBoot({
 			\instrument, \hNoise,
 			\dur, Prand([Pseq((1)!4), Pseq([1/2, 1/2, 1/2])], inf),
 			\pan, Pseq([-1, 0, 1], inf),
-			\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/noise", 1)}),
+			\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/noise", 1.0)}),
 		).play;
 	});
 
@@ -361,7 +361,7 @@ s.waitForBoot({
 		inf.do({ |i|
 			v1 = 1 - (v1 * rrand(0.0, 0.99));
 			~melt.set(\mod_scale, v1);
-			~osc.sendMsg("/melt", v1);
+			~osc.sendMsg("/mod0", v1);
 			rrand(1.0, 4.0).wait;
 		});
 	});
@@ -373,7 +373,7 @@ s.waitForBoot({
 		10.do({ |i|
 			var v1 = spec.map(i/10.0);
 			grains.set(\len, v1);
-			~osc.sendMsg("/grains", v1);
+			~osc.sendMsg("/mod1", spec.unmap(v1));
 			(3.0/10.0).wait;
 		});
 		grains.free;

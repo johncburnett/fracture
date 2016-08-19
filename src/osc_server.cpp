@@ -43,19 +43,22 @@ void OSC_Server::update(void) {
         receiver.getNextMessage(m);
         
         if(m.getAddress() == "/click") {
-            click = m.getArgAsInt32(0);
+            click = m.getArgAsFloat(0);
         }
         else if(m.getAddress() == "/sines") {
-            sines = m.getArgAsInt32(0);
+            sines = m.getArgAsFloat(0);
         }
         else if(m.getAddress() == "/bass") {
-            bass = m.getArgAsInt32(0);
+            bass = m.getArgAsFloat(0);
         }
         else if(m.getAddress() == "/noise") {
-            noise = m.getArgAsInt32(0);
+            noise = m.getArgAsFloat(0);
         }
-        else {
-            ;
+        else if(m.getAddress() == "/mod0") {
+            mod0 = m.getArgAsFloat(0);
+        }
+        else if(m.getAddress() == "/mod1") {
+            mod1 = m.getArgAsFloat(0);
         }
     }
 }
