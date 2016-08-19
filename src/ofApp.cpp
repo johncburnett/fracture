@@ -28,11 +28,12 @@ void ofApp::setup(){
     
     load_media();
 
-    init_stream0();
+    init_stream1();
     
     //_kernel
     kernel = new Kernel();
-    kernel->add_stream(stream0, 0);
+    //kernel->add_stream(stream0, 0);
+    kernel->add_stream(stream1, 0);
     kernel->toggle_loop(true);
     
     //_OSC
@@ -45,10 +46,10 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    vid0->update();
+//    vid0->update();
 //    blur->setScale(ofMap(mouseY, 0, HEIGHT, 0, 10));
     
-    stream0->set_init_img(vid0);
+    stream1->set_init_img(img7);
     kernel->update();
     server->update();
 }
@@ -75,6 +76,14 @@ void ofApp::init_stream0(){
     stream0->add_transform(swarm);
 }
 
+void ofApp::init_stream1(){
+    
+    heat = new HeatDistort(img7, img7mask);
+    
+    stream1 = new Stream();
+    stream1->add_transform(heat);
+}
+
 void ofApp::load_media(){
     img0 = new Still("img/emory.jpg");
     img1 = new Still("img/stone.jpg");
@@ -83,9 +92,11 @@ void ofApp::load_media(){
     img4 = new Still("img/rock.jpg");
     img5 = new Still("img/landscape.jpg");
     img6 = new Still("img/sludge.jpg");
+    img7 = new Still("img/IMG_1734.png");
+    img7mask = new Still("img/IMG_1734_mask.png");
     
     //_videos
-    vid0 = new Video("lapses/pano_lapse.mov");
+    //vid0 = new Video("lapses/pano_lapse.mov");
 }
 
 //--------------------------------------------------------------
@@ -130,7 +141,7 @@ void ofApp::mod1(float &f) {
 
 
 //--------------------------------------------------------------
-void ofApp::keyPressed(int key) {ofToggleFullscreen();}
+void ofApp::keyPressed(int key) {/*ofToggleFullscreen();*/}
 void ofApp::keyReleased(int key) {}
 void ofApp::mouseMoved(int x, int y) {}
 void ofApp::mouseDragged(int x, int y, int button) {}

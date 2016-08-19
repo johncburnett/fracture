@@ -35,7 +35,6 @@
 
 #include "ofMain.h"
 #include "ofEvents.h"
-#include "events.h"
 #include "osc_server.h"
 
 #include <libiomp/omp.h>

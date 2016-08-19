@@ -47,7 +47,7 @@ public:
     //========================================================================
     //media
     // TODO: put this stuff in a list and parallelize loading
-    Still *img0, *img1, *img2, *img3, *img4, *img5, *img6;
+    Still *img0, *img1, *img2, *img3, *img4, *img5, *img6, *img7, *img7mask;
     Video *vid0, *vid1;
     void load_media(void);
     
@@ -63,10 +63,12 @@ public:
     Mirror *mirror;
     ofxBlur *blur;
     DisplayImage *pass_image;
+    HeatDistort *heat;
     
     //========================================================================
     //Specific scenes
     void init_stream0(void);
+    void init_stream1(void);
     int mode;
     
     //========================================================================

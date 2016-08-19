@@ -3,7 +3,7 @@
 uniform sampler2DRect tex0;
 uniform sampler2DRect tex1;
 
-uniform float time;
+uniform float time, disp, speed, x_scale, y_scale;
 uniform vec2 mouse;
 
 varying vec2 texCoordVarying;
@@ -136,7 +136,7 @@ void main() {
                                      speed*time));
         noise += 1.0-heat.r;
         distort_coord = texCoordVarying.st + (vec2(0, -disp*(1.0-heat.r))/noise);
-        gl_FragColor = texture2DRect(tex0, distort_coord);//*(1.0-heat.r) +(color*heat.r);
+        gl_FragColor = texture2DRect(tex0, distort_coord);
     } else {
         gl_FragColor = color;
     }
