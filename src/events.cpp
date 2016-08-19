@@ -26,7 +26,10 @@ EventObject::EventObject(OSC_Server *_server) {
     server = _server;
     
     for(int i = 0; i < 4; i++) {
-        pulses.push_back(new ofEvent<int>());
+        pulses.push_back(new ofEvent<float>());
+    }
+    for(int i = 0; i < 4; i++) {
+        mods.push_back(new ofEvent<float>());
     }
 }
 
@@ -43,4 +46,6 @@ void EventObject::update(ofEventArgs &args) {
     ofNotifyEvent(*pulses[1], server->noise, this);
     ofNotifyEvent(*pulses[2], server->click, this);
     ofNotifyEvent(*pulses[3], server->bass,  this);
+    ofNotifyEvent(*mods[0], server->mod0, this);
+    ofNotifyEvent(*mods[1], server->mod1, this);
 }

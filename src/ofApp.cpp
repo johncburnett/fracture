@@ -23,7 +23,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    ofSetFrameRate(30);
+    ofSetFrameRate(FRAMERATE);
     ofBackground(0);
     ofSetVerticalSync(true);
     
@@ -47,6 +47,7 @@ void ofApp::setup(){
     pass_image = new DisplayImage();
     
    
+    //_streams
     stream0 = new Stream();
     stream0->add_transform(smear);
     stream0->add_transform(swarm);
@@ -55,12 +56,16 @@ void ofApp::setup(){
     //stream0->add_transform(invert);
     stream0->add_transform(blur);
     
+    //_kernel
     kernel = new Kernel();
     kernel->add_stream(stream0, 0);
-
     kernel->toggle_loop(true);
     
+    //_OSC
     server = new OSC_Server(OSC_IN);
+    event = new EventObject(server);
+    set_listeners();
+    event->enable();
     
 //    run_supercollider();
 }
@@ -85,10 +90,12 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::set_listeners(void) {
-//	ofAddListener(*event->pulses[0], this, &ofApp::sines);
-//	ofAddListener(*event->pulses[1], this, &ofApp::noise);
-//	ofAddListener(*event->pulses[2], this, &ofApp::click);
-//	ofAddListener(*event->pulses[3], this, &ofApp::bass);
+	ofAddListener(*event->pulses[0], this, &ofApp::sines);
+	ofAddListener(*event->pulses[1], this, &ofApp::noise);
+	ofAddListener(*event->pulses[2], this, &ofApp::click);
+	ofAddListener(*event->pulses[3], this, &ofApp::bass);
+	ofAddListener(*event->mods[0], this, &ofApp::mod0);
+	ofAddListener(*event->mods[1], this, &ofApp::mod1);
 }
 
 //--------------------------------------------------------------

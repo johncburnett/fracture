@@ -70,7 +70,6 @@ public:
     OSC_Server *server;
     EventObject *event;
     
-    
     //========================================================================
     //_event functions
     void set_listeners(void);
@@ -78,4 +77,6 @@ public:
     void noise(float &f);
     void click(float &f);
     void bass(float &f);
+    void mod0(float &f);
+    void mod1(float &f);
 };

@@ -39,7 +39,8 @@ public:
     float timers[NUM_MSG_STRINGS];
     
     int PORT;
-    int click, sines, bass, noise;
+    float click, sines, bass, noise;
+    float mod0, mod1;
 };
 
 #endif /* osc_server_h */

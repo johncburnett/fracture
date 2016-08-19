@@ -31,6 +31,7 @@
 
 #define OSC_IN 7771
 #define OSC_OUT 57120
+#define FRAMERATE 30
 
 #include "ofMain.h"
 #include "ofEvents.h"

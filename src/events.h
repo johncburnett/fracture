@@ -34,14 +34,11 @@ public:
 
     void enable(void);
     void disable(void);
-    void update(ofEventArgs & args);
+    void update(ofEventArgs &args);
 
-	ofEvent<float> newFloatEvent;
-	ofEvent<int> newIntEvent;
-    
     OSC_Server *server;
-    vector< ofEvent<int>* > pulses;
-    vector< ofEvent<float>* > modulations;
+    vector< ofEvent<float>* > pulses;
+    vector< ofEvent<float>* > mods;
 };
 
 #endif /* events_h */
