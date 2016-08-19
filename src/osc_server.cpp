@@ -49,10 +49,10 @@ void OSC_Server::update(void) {
             sines = m.getArgAsInt32(0);
         }
         else if(m.getAddress() == "/bass") {
-            click = m.getArgAsInt32(0);
+            bass = m.getArgAsInt32(0);
         }
         else if(m.getAddress() == "/noise") {
-            sines = m.getArgAsInt32(0);
+            noise = m.getArgAsInt32(0);
         }
         else {
             ;

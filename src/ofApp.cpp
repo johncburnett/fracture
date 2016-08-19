@@ -25,11 +25,9 @@
 void ofApp::setup(){
     ofSetFrameRate(30);
     ofBackground(0);
+    ofSetVerticalSync(true);
     
     blur.setup(WIDTH, HEIGHT, 10, .4, 4);
-    
-    fboi = new ofFbo();
-    fboi->allocate(WIDTH, HEIGHT, GL_RGBA);
     
     img0 = new Still("img/emory.jpg");
     img1 = new Still("img/stone.jpg");
@@ -42,17 +40,12 @@ void ofApp::setup(){
     
     twirl = new Twirl();
     twirl->set_scale(0.15);
-
-    //transform = new DisplayImage(vid0);
     smear = new SmearInner(img1, 0.0);
-    //swarm = new Swarm();
     mirror = new Mirror();
     
     stream0 = new Stream();
     stream0->add_transform(twirl);
     stream0->add_transform(mirror);
-    //stream0->add_transform(smear);
-    //stream0->add_transform(swarm);
     
     kernel = new Kernel();
     kernel->add_stream(stream0, 0);
@@ -66,22 +59,12 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-	vol = ofMap(smoothedVol, 0.0, 0.17, 0.0, 1.0, true);
-    //vid0->update();
     stream0->set_init_img(img4);
     kernel->update();
     
-    /*
-    cout << ofMap(mouseX, 0, ofGetWidth(), 0, 10) << endl;
-    cout << ofMap(mouseY, 0, ofGetHeight(), -PI, PI) << endl;
-    blur.setScale(ofMap(mouseX, 0, ofGetWidth(), 0, 10));
-    blur.setRotation(ofMap(mouseY, 0, ofGetHeight(), -PI, PI));
-    */
     blur.setScale(0.26);
     blur.setRotation(0);
     
-    
-    smear->set_scale(ofGetMouseX()*vol);
 //    vid0->update();
 }
 
@@ -95,59 +78,46 @@ void ofApp::draw(){
     blur.end();
     
     blur.draw();
+//    vid0->draw()
 }
 
 //--------------------------------------------------------------
-void ofApp::keyPressed(int key){
-    
+void ofApp::set_listeners(void) {
+//	ofAddListener(*event->pulses[0], this, &ofApp::sines);
+//	ofAddListener(*event->pulses[1], this, &ofApp::noise);
+//	ofAddListener(*event->pulses[2], this, &ofApp::click);
+//	ofAddListener(*event->pulses[3], this, &ofApp::bass);
 }
 
 //--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-
+void ofApp::sines(float &f) {
+    ;
 }
 
 //--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
-
+void ofApp::noise(float &f) {
+    ;
 }
 
 //--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button){
-
+void ofApp::click(float &f) {
+    ;
 }
 
 //--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
-
+void ofApp::bass(float &f) {
+    ;
 }
 
 //--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){
-
-}
+void ofApp::keyPressed(int key) {}
+void ofApp::keyReleased(int key) {}
+void ofApp::mouseMoved(int x, int y) {}
+void ofApp::mouseDragged(int x, int y, int button) {}
+void ofApp::mousePressed(int x, int y, int button) {}
+void ofApp::mouseReleased(int x, int y, int button) {}
+void ofApp::mouseEntered(int x, int y) {}
+void ofApp::mouseExited(int x, int y) {}
+void ofApp::windowResized(int w, int h) {}
+void ofApp::gotMessage(ofMessage msg) {}
+void ofApp::dragEvent(ofDragInfo dragInfo) {}

@@ -5,7 +5,7 @@
 *.wav
 *.aiff
 *.app
-log.txt
+*.txt
 fracture.xcodeproj/*
 project.xcworkspace/*
 xcuserdata/

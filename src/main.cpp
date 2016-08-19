@@ -19,8 +19,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libiomp/omp.h>
-#include <math.h>
 #include "ofMain.h"
 #include "ofApp.h"
 #include "main.h"
@@ -1191,6 +1189,6 @@ void run_supercollider(void) {
     pid_t pid = fork();
 
     if(pid == 0) {
-        system("../../../../sc ../../../../src/sc/audio.scd > ../../../../log.txt");
+        system("../../../../sc ../../../../src/sc/audio.scd > ../../../../log/sc_log.txt");
     }
 }

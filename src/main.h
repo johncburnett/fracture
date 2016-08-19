@@ -36,8 +36,12 @@
 #define OSC_OUT 57120
 
 #include "ofMain.h"
+#include "ofEvents.h"
+#include "events.h"
 #include "osc_server.h"
 
+#include <libiomp/omp.h>
+#include <math.h>
 #include <vector>
 using namespace std;
 

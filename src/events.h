@@ -1,5 +1,5 @@
 /*
- * fracture/src/osc_server.h
+ * fracture/src/events.h
  *
  * fracture
  * Copyright (C) 2016 - epistrata (John Burnett + Sage Jenson)
@@ -19,27 +19,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef osc_server_h
-#define osc_server_h
+#ifndef events_h
+#define events_h
 
-#include "ofxOsc.h"
 #include "main.h"
 
-#define NUM_MSG_STRINGS 20
+class OSC_Server;
 
-class OSC_Server {
+//========================================================================
+class EventObject {
 public:
-    OSC_Server(int);
-    void update(void);
+    EventObject(OSC_Server *);
+    ~EventObject(void);
+
+    void enable(void);
+    void disable(void);
+    void update(ofEventArgs & args);
+
+	ofEvent<float> newFloatEvent;
+	ofEvent<int> newIntEvent;
     
-    ofxOscReceiver receiver;
-    
-    int current_msg_string;
-    string msg_strings[NUM_MSG_STRINGS];
-    float timers[NUM_MSG_STRINGS];
-    
-    int PORT;
-    int click, sines, bass, noise;
+    OSC_Server *server;
+    vector< ofEvent<int>* > pulses;
+    vector< ofEvent<float>* > modulations;
 };
 
-#endif /* osc_server_h */
+#endif /* events_h */

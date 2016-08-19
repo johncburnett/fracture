@@ -21,63 +21,58 @@
 
 #pragma once
 
-#include "ofMain.h"
 #include "main.h"
+#include "ofEvents.h"
 
+class ofApp : public ofBaseApp {
+public:
+    //========================================================================
+    //_openFrameworks functions
+    void setup();
+    void update();
+    void draw();
 
-class ofApp : public ofBaseApp{
+    void keyPressed(int key);
+    void keyReleased(int key);
+    void mouseMoved(int x, int y );
+    void mouseDragged(int x, int y, int button);
+    void mousePressed(int x, int y, int button);
+    void mouseReleased(int x, int y, int button);
+    void mouseEntered(int x, int y);
+    void mouseExited(int x, int y);
+    void windowResized(int w, int h);
+    void dragEvent(ofDragInfo dragInfo);
+    void gotMessage(ofMessage msg);
 
-	public:
-    	void setup();
-		void update();
-		void draw();
-
-		void keyPressed(int key);
-		void keyReleased(int key);
-		void mouseMoved(int x, int y );
-		void mouseDragged(int x, int y, int button);
-		void mousePressed(int x, int y, int button);
-		void mouseReleased(int x, int y, int button);
-		void mouseEntered(int x, int y);
-		void mouseExited(int x, int y);
-		void windowResized(int w, int h);
-		void dragEvent(ofDragInfo dragInfo);
-		void gotMessage(ofMessage msg);
-
-    Kernel *kernel;
-    Stream *stream0, *stream1;
-    ofxBlur blur;
-    
-    OSC_Server *server;
-
-    ofFbo * fboi;
-
+    //========================================================================
+    //_transforms
     Still *img0, *img1, *img2, *img3, *img4, *img5;
     Video *vid0, *vid1;
+    
+    //========================================================================
+    //_transforms
     NoiseMask *noise_mask;
-//    HeatDistort *heat0, *heat1;
-//    Swarm *swarm;
-//    Smear *smear0, *smear1;
-//    ShadowMask *mask;
-//    Invert *invert;
-//    ColorMap *color_map;
-//    Stream *stream0;
-//    Stream *stream1;
-//    Stream *stream2;
-//    Stream *stream3;
-//    Stream *stream4;
-//    Kernel *kernel;
     DisplayImage *transform;
     SmearInner * smear;
     Swarm * swarm;
     Grayscale * grayscale;
     Twirl * twirl;
     Mirror * mirror;
+    ofxBlur blur;
     
-    // audio server
-    ofSoundStream soundStream;
-    vector<float> audio;
-    float smoothedVol;
-    float vol;
-    int bufferCounter;
+    //========================================================================
+    //control
+    Kernel *kernel;
+    Stream *stream0, *stream1;
+    OSC_Server *server;
+    EventObject *event;
+    
+    
+    //========================================================================
+    //_event functions
+    void set_listeners(void);
+    void sines(float &f);
+    void noise(float &f);
+    void click(float &f);
+    void bass(float &f);
 };

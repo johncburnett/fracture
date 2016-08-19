@@ -1,5 +1,5 @@
 /*
- * fracture/src/osc_server.h
+ * fracture/src/events.cpp
  *
  * fracture
  * Copyright (C) 2016 - epistrata (John Burnett + Sage Jenson)
@@ -19,27 +19,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef osc_server_h
-#define osc_server_h
+#include "events.h"
 
-#include "ofxOsc.h"
-#include "main.h"
-
-#define NUM_MSG_STRINGS 20
-
-class OSC_Server {
-public:
-    OSC_Server(int);
-    void update(void);
+//========================================================================
+EventObject::EventObject(OSC_Server *_server) {
+    server = _server;
     
-    ofxOscReceiver receiver;
-    
-    int current_msg_string;
-    string msg_strings[NUM_MSG_STRINGS];
-    float timers[NUM_MSG_STRINGS];
-    
-    int PORT;
-    int click, sines, bass, noise;
-};
+    for(int i = 0; i < 4; i++) {
+        pulses.push_back(new ofEvent<int>());
+    }
+}
 
-#endif /* osc_server_h */
+void EventObject::enable(void) {
+    ofAddListener(ofEvents().update, this, &EventObject::update);
+}
+
+void EventObject::disable(void) {
+    ofRemoveListener(ofEvents().update, this, &EventObject::update);
+}
+
+void EventObject::update(ofEventArgs &args) {
+    ofNotifyEvent(*pulses[0], server->sines, this);
+    ofNotifyEvent(*pulses[1], server->noise, this);
+    ofNotifyEvent(*pulses[2], server->click, this);
+    ofNotifyEvent(*pulses[3], server->bass,  this);
+}
