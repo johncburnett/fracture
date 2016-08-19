@@ -27,6 +27,7 @@
 
 #define NUM_MSG_STRINGS 20
 
+//========================================================================
 class OSC_Server {
 public:
     OSC_Server(int);
@@ -41,6 +42,9 @@ public:
     int PORT;
     float click, sines, bass, noise;
     float mod0, mod1;
+    
+    vector< ofEvent<float>* > pulses;
+    vector< ofEvent<float>* > mods;
 };
 
 #endif /* osc_server_h */

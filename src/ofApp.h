@@ -74,7 +74,6 @@ public:
     Kernel *kernel;
     Stream *stream0, *stream1;
     OSC_Server *server;
-    EventObject *event;
     
     //========================================================================
     //_event functions

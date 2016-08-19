@@ -37,9 +37,7 @@ void ofApp::setup(){
     
     //_OSC
     server = new OSC_Server(OSC_IN);
-    event = new EventObject(server);
     set_listeners();
-    event->enable();
     
     //_supercollider
 //    run_supercollider();
@@ -92,25 +90,17 @@ void ofApp::load_media(){
 
 //--------------------------------------------------------------
 void ofApp::set_listeners(void) {
-	ofAddListener(*event->pulses[0], this, &ofApp::sines);
-	ofAddListener(*event->pulses[1], this, &ofApp::noise);
-	ofAddListener(*event->pulses[2], this, &ofApp::click);
-	ofAddListener(*event->pulses[3], this, &ofApp::bass);
-	ofAddListener(*event->mods[0], this, &ofApp::mod0);
-	ofAddListener(*event->mods[1], this, &ofApp::mod1);
+	ofAddListener(*server->pulses[0], this, &ofApp::sines);
+	ofAddListener(*server->pulses[1], this, &ofApp::noise);
+	ofAddListener(*server->pulses[2], this, &ofApp::click);
+	ofAddListener(*server->pulses[3], this, &ofApp::bass);
+	ofAddListener(*server->mods[0], this, &ofApp::mod0);
+	ofAddListener(*server->mods[1], this, &ofApp::mod1);
 }
 
 //--------------------------------------------------------------
 void ofApp::sines(float &f) {
-    // @jburnett
-    // So this seems to get messages even when I'm not running supercollider...
-    
-    /*
-    mirror->set_mode(mode/8);
-    mode++;
-    mode%=16;
     smear->set_scale(mode*10);
-     */
 }
 
 //--------------------------------------------------------------

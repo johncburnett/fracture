@@ -21,17 +21,22 @@
 
 #include "osc_server.h"
 
+//class ofApp;
+
 //--------------------------------------------------------------
 OSC_Server::OSC_Server(int osc_port) {
     PORT = osc_port;
     
-    click = 0;
-    sines = 0;
-    
     cout << "listening on port " << PORT << "\n";
     receiver.setup(PORT);
-    
     current_msg_string = 0;
+    
+    for(int i = 0; i < 4; i++) {
+        pulses.push_back(new ofEvent<float>());
+    }
+    for(int i = 0; i < 4; i++) {
+        mods.push_back(new ofEvent<float>());
+    }
 }
 
 //--------------------------------------------------------------
@@ -42,23 +47,29 @@ void OSC_Server::update(void) {
         ofxOscMessage m;
         receiver.getNextMessage(m);
         
-        if(m.getAddress() == "/click") {
-            click = m.getArgAsFloat(0);
-        }
-        else if(m.getAddress() == "/sines") {
+        if(m.getAddress() == "/sines") {
             sines = m.getArgAsFloat(0);
-        }
-        else if(m.getAddress() == "/bass") {
-            bass = m.getArgAsFloat(0);
+            ofNotifyEvent(*pulses[0], sines, this);
         }
         else if(m.getAddress() == "/noise") {
             noise = m.getArgAsFloat(0);
+            ofNotifyEvent(*pulses[1], noise, this);
+        }
+        else if(m.getAddress() == "/click") {
+            click = m.getArgAsFloat(0);
+            ofNotifyEvent(*pulses[2], click, this);
+        }
+        else if(m.getAddress() == "/bass") {
+            bass = m.getArgAsFloat(0);
+            ofNotifyEvent(*pulses[3], bass,  this);
         }
         else if(m.getAddress() == "/mod0") {
             mod0 = m.getArgAsFloat(0);
+            ofNotifyEvent(*mods[0], mod0, this);
         }
         else if(m.getAddress() == "/mod1") {
             mod1 = m.getArgAsFloat(0);
+            ofNotifyEvent(*mods[1], mod1, this);
         }
     }
 }

@@ -12,7 +12,6 @@
 		2B4D23E5DA7826998DC9DD91 /* pd_sensors.ino in Sources */ = {isa = PBXBuildFile; fileRef = 7934E08405ACBA43A88A3B62 /* pd_sensors.ino */; };
 		4ADB88E2FB52E76A471065DE /* ofxOscParameterSync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0AED834CE4DEC5260AF302A2 /* ofxOscParameterSync.cpp */; };
 		510CAFE035E576A4E1502D52 /* UdpSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E6DEF695B88BA5FAACEAA937 /* UdpSocket.cpp */; };
-		52671FDB1D668C4500173817 /* events.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 52671FD91D668C4500173817 /* events.cpp */; };
 		52FAD3CC1D6015E800233C0C /* osc_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 52FAD3CA1D6015E800233C0C /* osc_server.cpp */; };
 		5864AD82E20F15536D054EA3 /* ofxOscMessage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DF49D76C45D5DB505A234880 /* ofxOscMessage.cpp */; };
 		62545D179C94265CA1389D4A /* OscOutboundPacketStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 63A47AC60FFAFC3BF093EC0F /* OscOutboundPacketStream.cpp */; };
@@ -72,8 +71,6 @@
 		48974F980F51769171D0B2F5 /* IpEndpointName.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = IpEndpointName.h; path = ../../../addons/ofxOsc/libs/oscpack/src/ip/IpEndpointName.h; sourceTree = SOURCE_ROOT; };
 		4E95FB446A9C9C6F0DE12D75 /* OscPrintReceivedElements.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = OscPrintReceivedElements.h; path = ../../../addons/ofxOsc/libs/oscpack/src/osc/OscPrintReceivedElements.h; sourceTree = SOURCE_ROOT; };
 		52671FCE1D65AEFC00173817 /* sc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = sc; sourceTree = "<group>"; };
-		52671FD91D668C4500173817 /* events.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = events.cpp; sourceTree = "<group>"; };
-		52671FDA1D668C4500173817 /* events.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = events.h; sourceTree = "<group>"; };
 		52671FDC1D66947E00173817 /* log */ = {isa = PBXFileReference; lastKnownFileType = folder; path = log; sourceTree = "<group>"; };
 		52FAD3CA1D6015E800233C0C /* osc_server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = osc_server.cpp; sourceTree = "<group>"; };
 		52FAD3CB1D6015E800233C0C /* osc_server.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = osc_server.h; sourceTree = "<group>"; };
@@ -277,8 +274,6 @@
 				D904A923B7FEAB55177779DE /* sc */,
 				52FAD3CA1D6015E800233C0C /* osc_server.cpp */,
 				52FAD3CB1D6015E800233C0C /* osc_server.h */,
-				52671FD91D668C4500173817 /* events.cpp */,
-				52671FDA1D668C4500173817 /* events.h */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;
@@ -403,7 +398,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E4B69E200A3A1BDC003C02F2 /* main.cpp in Sources */,
-				52671FDB1D668C4500173817 /* events.cpp in Sources */,
 				E4B69E210A3A1BDC003C02F2 /* ofApp.cpp in Sources */,
 				52FAD3CC1D6015E800233C0C /* osc_server.cpp in Sources */,
 				2B4D23E5DA7826998DC9DD91 /* pd_sensors.ino in Sources */,
