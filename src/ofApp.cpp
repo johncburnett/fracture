@@ -61,6 +61,7 @@ void ofApp::draw(){
 }
 
 void ofApp::init_stream0(){
+    
     mode = 0;
     
     smear = new SmearInner(img1);
@@ -100,7 +101,10 @@ void ofApp::set_listeners(void) {
 
 //--------------------------------------------------------------
 void ofApp::sines(float &f) {
-    smear->set_scale(mode*10);
+    smear->set_scale(ofRandom(100.0));
+    mirror->set_mode(mode);
+    mode++;
+    mode %= 4;
 }
 
 //--------------------------------------------------------------
@@ -110,7 +114,6 @@ void ofApp::noise(float &f) {
 
 //--------------------------------------------------------------
 void ofApp::click(float &f) {
-    ;
 }
 
 //--------------------------------------------------------------
