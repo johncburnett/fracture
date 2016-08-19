@@ -47,7 +47,7 @@ class ofApp : public ofBaseApp{
 
     Kernel *kernel;
     Stream *stream0, *stream1;
-    ofxBlur blur;
+    ofxBlur *blur;
     
     OSC_Server *server;
 
@@ -60,7 +60,7 @@ class ofApp : public ofBaseApp{
 //    Swarm *swarm;
 //    Smear *smear0, *smear1;
 //    ShadowMask *mask;
-//    Invert *invert;
+    Invert *invert;
 //    ColorMap *color_map;
 //    Stream *stream0;
 //    Stream *stream1;

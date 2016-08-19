@@ -121,54 +121,6 @@ void Video::display(){
     fbo.draw(0,0);
 }
 
-
-
-//========================================================================
-/*
- * Deprecated. Use "Still" instead.
- *
- */
-Image::Image(const char *fname) {
-    img.load(fname);
-    img.resize(WIDTH, HEIGHT);
-    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
-
-    // write img to fbo
-    fbo.begin();
-    ofSetColor(255);
-    img.draw(0, 0);
-    fbo.end();
-}
-
-Image::Image(ofFbo f) {
-    fbo = f;
-    img.clear();
-}
-
-Image::Image(ofFbo *f) {
-    fbo = *f;
-    img.clear();
-}
-
-void Image::overwrite_fbo(ofFbo *f) {
-    fbo.begin();
-    ofSetColor(255);
-    f->draw(0, 0);
-    fbo.end();
-}
-
-Image::~Image(void) {
-    fbo.clear();
-}
-
-void Image::display(void) {
-    fbo.draw(0, 0);
-}
-
-ofFbo Image::getFbo(void) {
-    return fbo;
-}
-
 //========================================================================
 void NewTransform::draw(void) {
     fbo->draw(0, 0);
@@ -187,10 +139,6 @@ void NewTransform::set_fbo(ofFbo *f) {
     fbo = f;
 }
 
-Image *NewTransform::to_image(void) {
-    return new Image(*fbo);
-}
-
 void NewTransform::draw_quad(void) {
     glBegin(GL_QUADS);
     glTexCoord2f(0, 0); glVertex3f(0, 0, 0);
@@ -198,33 +146,6 @@ void NewTransform::draw_quad(void) {
     glTexCoord2f(WIDTH, HEIGHT); glVertex3f(WIDTH, HEIGHT, 0);
     glTexCoord2f(0, HEIGHT);  glVertex3f(0, HEIGHT, 0);
     glEnd();
-}
-
-
-//========================================================================
-void Transform::draw(void) {
-    fbo->draw(0, 0);
-}
-
-ofFbo Transform::get_fbo(void) {
-    return *fbo;
-}
-
-void Transform::set_fbo(ofFbo *f) {
-    fbo = f;
-}
-
-Image *Transform::to_image(void) {
-    return new Image(*fbo);
-}
-
-void Transform::draw_quad(void) {
-    glBegin(GL_QUADS);
-	glTexCoord2f(0, 0); glVertex3f(0, 0, 0);
-	glTexCoord2f(WIDTH, 0); glVertex3f(WIDTH, 0, 0);
-	glTexCoord2f(WIDTH, HEIGHT); glVertex3f(WIDTH, HEIGHT, 0);
-	glTexCoord2f(0, HEIGHT);  glVertex3f(0, HEIGHT, 0);
-	glEnd();
 }
 
 //========================================================================
@@ -246,6 +167,11 @@ void DisplayImage::process_image(void) {
 //========================================================================
 Mirror::Mirror(){
     shader.load("shadersGL2/mirror");
+    mode = 0;
+}
+
+void Mirror::set_mode(int _mode){
+    mode = _mode;
 }
 
 void Mirror::update(void){
@@ -260,6 +186,7 @@ void Mirror::process_image(void){
     shader.begin();
 
         shader.setUniformTexture("tex0", tex0, 0);
+        shader.setUniform1i("mode", mode);
         shader.setUniform2f("dim", ofGetWidth(), ofGetHeight());
 
     draw_quad();
@@ -435,84 +362,84 @@ void ShadowMask::process_image(void) {
     fbo->end();
 }
 
-//========================================================================
-ColorMap::ColorMap(Image *source, Image *target) {
-    shader.load("shadersGL2/color_map");
-    img1 = source;
-    img2 = target;
-    processed.allocate(WIDTH, HEIGHT, OF_IMAGE_COLOR);
-}
-
-void ColorMap::update(void) {
-    process_image();
-}
-
-void ColorMap::process_image(void) {
-    vector<double> sr(WIDTH * HEIGHT);
-    vector<double> sg(WIDTH * HEIGHT);
-    vector<double> sb(WIDTH * HEIGHT);
-    vector<double> tr(WIDTH * HEIGHT);
-    vector<double> tg(WIDTH * HEIGHT);
-    vector<double> tb(WIDTH * HEIGHT);
-
-    for(int i = 0; i < HEIGHT; i++) {
-        for(int j = 0; j < WIDTH; j++) {
-            ofColor s_color = img1->img.getColor(j, i);
-            ofColor t_color = img2->img.getColor(j, i);
-            int index = j + (i*WIDTH);
-//            sr[index] = s_color.r;
-//            sg[index] = s_color.g;
-//            sb[index] = s_color.b;
-//            tr[index] = t_color.r;
-//            tg[index] = t_color.g;
-//            tb[index] = t_color.b;
-
-            sr[index] = s_color.getHue();
-            sg[index] = s_color.getSaturation();
-            sb[index] = s_color.getBrightness();
-            tr[index] = t_color.getHue();
-            tg[index] = t_color.getSaturation();
-            tb[index] = t_color.getBrightness();
-        }
-    }
-
-    double source_mean_r = mean(sr);
-    double source_mean_g = mean(sg);
-    double source_mean_b = mean(sb);
-    double target_mean_r = mean(tr);
-    double target_mean_g = mean(tg);
-    double target_mean_b = mean(tb);
-
-    double source_std_r = std_dev(sr);
-    double source_std_g = std_dev(sg);
-    double source_std_b = std_dev(sb);
-    double target_std_r = std_dev(tr);
-    double target_std_g = std_dev(tg);
-    double target_std_b = std_dev(tb);
-
-    double coef_r = target_std_r / source_std_r;
-    double coef_g = target_std_g / source_std_g;
-    double coef_b = target_std_b / source_std_b;
-
-    for(int i = 0; i < HEIGHT; i++) {
-        for(int j = 0; j < WIDTH; j++) {
-            ofColor color = img2->img.getColor(j, i);
-            double r_star = ((color.r - target_mean_r) * coef_r) + target_mean_r;
-            double g_star = ((color.g - target_mean_g) * coef_g) + target_mean_g;
-            double b_star = ((color.b - target_mean_b) * coef_b) + target_mean_b;
-//            ofColor p_color = ofColor(r_star, g_star, b_star, 1);
-            ofColor p_color = ofColor(0);
-            p_color.setHsb(r_star, g_star, b_star);
-            processed.setColor(j, i, p_color);
-        }
-    }
-    processed.update();
-
-    fbo->begin();
-    ofClear(0, 0, 0, 1);
-    processed.draw(0, 0);
-    fbo->end();
-}
+////========================================================================
+//ColorMap::ColorMap(Image *source, Image *target) {
+//    shader.load("shadersGL2/color_map");
+//    img1 = source;
+//    img2 = target;
+//    processed.allocate(WIDTH, HEIGHT, OF_IMAGE_COLOR);
+//}
+//
+//void ColorMap::update(void) {
+//    process_image();
+//}
+//
+//void ColorMap::process_image(void) {
+//    vector<double> sr(WIDTH * HEIGHT);
+//    vector<double> sg(WIDTH * HEIGHT);
+//    vector<double> sb(WIDTH * HEIGHT);
+//    vector<double> tr(WIDTH * HEIGHT);
+//    vector<double> tg(WIDTH * HEIGHT);
+//    vector<double> tb(WIDTH * HEIGHT);
+//
+//    for(int i = 0; i < HEIGHT; i++) {
+//        for(int j = 0; j < WIDTH; j++) {
+//            ofColor s_color = img1->img.getColor(j, i);
+//            ofColor t_color = img2->img.getColor(j, i);
+//            int index = j + (i*WIDTH);
+////            sr[index] = s_color.r;
+////            sg[index] = s_color.g;
+////            sb[index] = s_color.b;
+////            tr[index] = t_color.r;
+////            tg[index] = t_color.g;
+////            tb[index] = t_color.b;
+//
+//            sr[index] = s_color.getHue();
+//            sg[index] = s_color.getSaturation();
+//            sb[index] = s_color.getBrightness();
+//            tr[index] = t_color.getHue();
+//            tg[index] = t_color.getSaturation();
+//            tb[index] = t_color.getBrightness();
+//        }
+//    }
+//
+//    double source_mean_r = mean(sr);
+//    double source_mean_g = mean(sg);
+//    double source_mean_b = mean(sb);
+//    double target_mean_r = mean(tr);
+//    double target_mean_g = mean(tg);
+//    double target_mean_b = mean(tb);
+//
+//    double source_std_r = std_dev(sr);
+//    double source_std_g = std_dev(sg);
+//    double source_std_b = std_dev(sb);
+//    double target_std_r = std_dev(tr);
+//    double target_std_g = std_dev(tg);
+//    double target_std_b = std_dev(tb);
+//
+//    double coef_r = target_std_r / source_std_r;
+//    double coef_g = target_std_g / source_std_g;
+//    double coef_b = target_std_b / source_std_b;
+//
+//    for(int i = 0; i < HEIGHT; i++) {
+//        for(int j = 0; j < WIDTH; j++) {
+//            ofColor color = img2->img.getColor(j, i);
+//            double r_star = ((color.r - target_mean_r) * coef_r) + target_mean_r;
+//            double g_star = ((color.g - target_mean_g) * coef_g) + target_mean_g;
+//            double b_star = ((color.b - target_mean_b) * coef_b) + target_mean_b;
+////            ofColor p_color = ofColor(r_star, g_star, b_star, 1);
+//            ofColor p_color = ofColor(0);
+//            p_color.setHsb(r_star, g_star, b_star);
+//            processed.setColor(j, i, p_color);
+//        }
+//    }
+//    processed.update();
+//
+//    fbo->begin();
+//    ofClear(0, 0, 0, 1);
+//    processed.draw(0, 0);
+//    fbo->end();
+//}
 
 //========================================================================
 Twirl::Twirl(void) {
@@ -912,7 +839,6 @@ void Disintegrate::process_image(){
     fbo->end();
 }
 
-
 //========================================================================
 /* 
  * Thanks kylemcdonald for this blurÁÁ!!
@@ -1012,10 +938,11 @@ string generateCombineSource(int passes, float downsample) {
     return src.str();
 }
 
-ofxBlur::ofxBlur()
-:scale(1)
-,rotation(0)
-,brightness(1) {
+ofxBlur::ofxBlur(void){
+    this->setup(WIDTH, HEIGHT, 10, .4, 4);
+    scale = 1;
+    rotation = 1.0;
+    brightness = 1.0;
 }
 
 void ofxBlur::setup(int width, int height, int radius, float shape, int passes, float downsample) {
@@ -1162,6 +1089,20 @@ void ofxBlur::draw(ofRectangle rect) {
     base.draw(rect);
 }
 
+void ofxBlur::update(void){
+    process_image();
+}
+
+void ofxBlur::process_image(void){
+    this->begin();
+    this->input->fbo.draw(0,0);
+    this->end();
+    
+    fbo->begin();
+    ofClear(0,0,0,1);
+    this->draw();
+    fbo->end();
+}
 // kylemcdonald end
 
 
