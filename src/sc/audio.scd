@@ -36,14 +36,14 @@ o.numOutputBusChannels_(2);	// 2ch
 ~port = 7771;
 // ~port = 57120;
 ~osc = NetAddr.new(~ip, ~port);
-// o = OSCresponderNode(~osc, '/click', { |t, r, m| m.postln }).add;
+// o = OSCresponderNode(s.addr, '/tr', { |t, r, m| m.postln }).add;
 // o.remove;
 // ~osc.disconnect;
 
 //_GUI
-~width = 1000;
-~height = 600;
-~display_gui = false;
+~width = 500;
+~height = 400;
+~display_gui = true;
 
 //_dev
 ~debug_osc = false;
@@ -77,10 +77,10 @@ s.waitForBoot({
 		Out.ar(10, in); 	// to processing
 		Out.ar(20, mix);	// to mixer
 
-/*		chain = FFT({LocalBuf(512, 1)}, in);
-		onsets = Onsets.kr(chain, 0.1, \power);
+		chain = FFT(LocalBuf(2048), in);
+		onsets = Onsets.kr(chain, 0.1, \rcomplex);
 		SendTrig.kr(onsets);
-		SendPeakRMS.kr(in, 20, 3, "/replyAddress");*/
+		SendPeakRMS.kr(in, 20, 3, "/replyAddress");
 	}).load(s);
 
 	//--------------------------------------------------------------
@@ -357,12 +357,26 @@ s.waitForBoot({
 	//_Modulations
 
 	~mod_melt = Routine({
-		var val = 0.8;
+		var v1 = 0.8;
 		inf.do({ |i|
-			val = 1 - (val * rrand(0.0, 0.99));
-			~melt.set(\mod_scale, val);
+			v1 = 1 - (v1 * rrand(0.0, 0.99));
+			~melt.set(\mod_scale, v1);
+			~osc.sendMsg("/melt", v1);
 			rrand(1.0, 4.0).wait;
 		});
+	});
+
+	~mod_grains = Routine({
+		var grains, spec;
+		grains = Synth(\vGrain, [\bufnum, ~b1.bufnum, \dur, 0.2, \vary, 1.0, \rate, 0.6]);
+		spec = ControlSpec(0.2, 0.00001, \lin, 0.0001);
+		10.do({ |i|
+			var v1 = spec.map(i/10.0);
+			grains.set(\len, v1);
+			~osc.sendMsg("/grains", v1);
+			(3.0/10.0).wait;
+		});
+		grains.free;
 	});
 
 	//--------------------------------------------------------------
@@ -419,7 +433,7 @@ s.waitForBoot({
 
 	~mix = Synth(\mixer);
 	~melt = Synth(\melt, [\mod_scale, 0.2, \amp, 0.2]);
-	~in = Synth(\input);
+	// ~in = Synth(\input);
 
 	~world1.play;
 
@@ -430,10 +444,14 @@ s.waitForBoot({
 		{ OSCFunc.trace(true) },
 		{ OSCFunc.trace(false) });
 
+/*	o = OSCFunc({ |msg, time|
+		[time, msg].postln;
+	},'/tr', s.addr);*/
+
 	/**************************************************************************************************/
 	//_GUI
 
-	w = Window("GUI", Rect(
+	w = Window("fracture", Rect(
 		Window.screenBounds.width/2 - (~width/2),
 		Window.screenBounds.height/2 - (~height/2),
 		~width,
@@ -444,8 +462,8 @@ s.waitForBoot({
 	.onClose_({
 		Server.killAll;
 		~osc.disconnect;
-		// thisProcess.shutdown;
-		// 0.exit;
+		thisProcess.shutdown;
+		0.exit;
 	});
 
 	if( (~display_gui), { w.front });

@@ -58,12 +58,7 @@ void ofApp::setup(){
     
     server = new OSC_Server(OSC_IN);
     
-//    run_supercollider();
-    
-    // initialize audio server
-//    int bufferSize = 256;
-//    audio.assign(bufferSize, 0.0);
-//    soundStream.setup(this, 0, 1, 44100, bufferSize, 2);
+    run_supercollider();
 }
 
 //--------------------------------------------------------------
@@ -80,26 +75,6 @@ void ofApp::draw(){
     ofSetWindowTitle("FPS: " + ofToString(ofGetFrameRate()));
     
     kernel->draw();
-}
-
-//--------------------------------------------------------------
-void ofApp::audioIn(float * input, int bufferSize, int nChannels){	
-	
-	float curVol = 0.0;
-	int numCounted = 0;
-
-	for (int i = 0; i < bufferSize; i++){
-		audio[i] = input[i*2]*0.5;
-		curVol += audio[i] * audio[i];
-		numCounted+=2;
-	}
-	
-	curVol /= (float)numCounted;
-	curVol = sqrt( curVol );
-	
-	smoothedVol *= 0.93;
-	smoothedVol += 0.07 * curVol;
-	bufferCounter++;
 }
 
 //--------------------------------------------------------------
