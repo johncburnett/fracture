@@ -27,28 +27,32 @@ void ofApp::setup(){
     ofBackground(0);
     ofSetVerticalSync(true);
     
-    
+    // load images
     img0 = new Still("img/emory.jpg");
     img1 = new Still("img/stone.jpg");
-    img2 = new Still("img/bw.jpg");
+    img2 = new Still("img/IMG_3006.jpg");
     img3 = new Still("img/emory.jpg");
     img4 = new Still("img/rock.jpg");
     img5 = new Still("img/landscape.jpg");
+    img6 = new Still("img/sludge.jpg");
     
+    // load videos
     vid0 = new Video("lapses/pano_lapse.mov");
     
-    twirl = new Twirl();
-    twirl->set_scale(0.15);
-    smear = new SmearInner(img1, 0.0);
+    smear = new Smear(img1, 0,0,10,0);
     swarm = new Swarm();
     mirror = new Mirror();
     invert = new Invert(1.0);
     blur = new ofxBlur();
+    pass_image = new DisplayImage();
+    
    
     stream0 = new Stream();
-    stream0->add_transform(mirror);
+    stream0->add_transform(smear);
     stream0->add_transform(swarm);
-    stream0->add_transform(invert);
+    stream0->add_transform(mirror);
+    
+    //stream0->add_transform(invert);
     stream0->add_transform(blur);
     
     kernel = new Kernel();
@@ -58,14 +62,16 @@ void ofApp::setup(){
     
     server = new OSC_Server(OSC_IN);
     
-    run_supercollider();
+//    run_supercollider();
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
     vid0->update();
+    blur->setScale(ofMap(mouseY, 0, HEIGHT, 0, 10));
+    smear->dx = ofMap(mouseX, 0, WIDTH, -10, 10);
     stream0->set_init_img(vid0);
-    mirror->set_mode(1);
+    mirror->set_mode(3);
     kernel->update();
     server->update();
 }
@@ -106,7 +112,10 @@ void ofApp::bass(float &f) {
 }
 
 //--------------------------------------------------------------
-void ofApp::keyPressed(int key) {}
+void ofApp::keyPressed(int key) {
+    ofToggleFullscreen();
+
+}
 void ofApp::keyReleased(int key) {}
 void ofApp::mouseMoved(int x, int y) {}
 void ofApp::mouseDragged(int x, int y, int button) {}

@@ -462,7 +462,7 @@ public:
 	ofxBlur(void);
     ~ofxBlur(void);
 
-	void setup(int width, int height, int radius = 100, float shape = .2, int passes = 1, float downsample = .5);
+	void setup(int width, int height, int radius = 10, float shape = .2, int passes = 1, float downsample = .5);
 
 	void setScale(float scale);
 	void setRotation(float rotation);

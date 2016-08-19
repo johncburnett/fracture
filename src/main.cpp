@@ -25,7 +25,7 @@
 
 //========================================================================
 int main( ){
-	ofSetupOpenGL(WIDTH, HEIGHT, OF_WINDOW);
+	ofSetupOpenGL(WIDTH, HEIGHT,OF_WINDOW);
 	ofRunApp(new ofApp());
 }
 
@@ -185,7 +185,7 @@ void Mirror::process_image(void){
 
         shader.setUniformTexture("tex0", tex0, 0);
         shader.setUniform1i("mode", mode);
-        shader.setUniform2f("dim", ofGetWidth(), ofGetHeight());
+        shader.setUniform2f("dim", WIDTH, HEIGHT);
 
     draw_quad();
     shader.end();
@@ -690,8 +690,8 @@ void Swarm::createPoints(){
         {
             //ofVec2f location = getLocation(mask);
             unsigned idx = y * w + x;
-            particlePosns[idx * 4] = ofRandom(ofGetWidth()); // particle x
-            particlePosns[idx * 4 + 1] = ofRandom(ofGetHeight()); // particle y
+            particlePosns[idx * 4] = ofRandom(WIDTH); // particle x
+            particlePosns[idx * 4 + 1] = ofRandom(HEIGHT); // particle y
             particlePosns[idx * 4 + 2] = ofRandom(0, 0); // particle z
             particlePosns[idx * 4 + 3] = 0.f; // dummy
         }
@@ -716,7 +716,7 @@ void Swarm::update(){
     updateShader.setUniform3f("mouse", ofGetMouseX(), ofGetMouseY(), 0.0);
     updateShader.setUniform1f("radiusSquared", 200.0);
     updateShader.setUniform1f("elapsed", ofGetElapsedTimef());
-    updateShader.setUniform2f("dim", ofGetWidth(), ofGetHeight());
+    updateShader.setUniform2f("dim", WIDTH, HEIGHT);
     updateShader.setUniformTexture("tex0", particleFbo.getTexture(), 0);
     updateShader.setUniformTexture("velocities", input->fbo.getTexture(), 1);
     quadMesh.draw();
@@ -937,7 +937,7 @@ string generateCombineSource(int passes, float downsample) {
 }
 
 ofxBlur::ofxBlur(void){
-    this->setup(WIDTH, HEIGHT, 10, .4, 4);
+    this->setup(WIDTH, HEIGHT, 3, .2, 4);
     scale = 1;
     rotation = 1.0;
     brightness = 1.0;
@@ -1093,11 +1093,12 @@ void ofxBlur::update(void){
 
 void ofxBlur::process_image(void){
     this->begin();
+    //ofClear(0,0,0,1);
     this->input->fbo.draw(0,0);
     this->end();
     
     fbo->begin();
-    ofClear(0,0,0,1);
+    //ofClear(0,0,0,1);
     this->draw();
     fbo->end();
 }

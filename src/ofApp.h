@@ -45,21 +45,23 @@ public:
     void gotMessage(ofMessage msg);
 
     //========================================================================
-    //_transforms
-    Still *img0, *img1, *img2, *img3, *img4, *img5;
+    //media
+    // TODO: put this stuff in a list and parallelize loading
+    Still *img0, *img1, *img2, *img3, *img4, *img5, *img6;
     Video *vid0, *vid1;
     
     //========================================================================
-    //_transforms
+    //transforms
     NoiseMask *noise_mask;
     DisplayImage *transform;
-    SmearInner *smear;
+    Smear *smear;
     Swarm *swarm;
     Invert *invert;
     Grayscale *grayscale;
     Twirl *twirl;
     Mirror *mirror;
     ofxBlur *blur;
+    DisplayImage *pass_image;
     
     //========================================================================
     //control
