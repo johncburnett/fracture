@@ -42,6 +42,7 @@ public:
     int PORT;
     float click, sines, bass, noise;
     float mod0, mod1;
+    float rms;
     
     vector< ofEvent<float>* > pulses;
     vector< ofEvent<float>* > mods;

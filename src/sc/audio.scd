@@ -72,7 +72,7 @@ s.waitForBoot({
 
 	SynthDef(\input, { |amp=0.8|
 		var in, mix, chain, onsets;
-		in = In.ar(0);
+		in = SoundIn.ar(0);
 		mix = in!2 * amp;
 		Out.ar(10, in); 	// to processing
 		Out.ar(20, mix);	// to mixer
@@ -280,6 +280,7 @@ s.waitForBoot({
 		var in, mix;
 		in = In.ar(20, 2);
 		mix = Limiter.ar(MidEQ.ar(in, 15000, 0.7, 8)) * amp;
+		SendPeakRMS.kr(in, 20, 3, '/rms');
 		Out.ar(0, mix);
 	}).load(s);
 
@@ -292,24 +293,24 @@ s.waitForBoot({
 	//_Percussive
 
 	~r1 = Pbind(
-		\instrument, \click,
-		\dur, Prand([Pseq((1/4)!4), Pseq([1/8, 1/8, 1/8])], inf),
-		\pan, Pseq([-1, 0, 1], inf),
-		\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/click", 1.0)}),
-	).asEventStreamPlayer;
-
-	~r2 = Pbind(
 		\instrument, \snd,
 		\dur, Prand([Pseq((1/2)!4), Pseq([1/4, 1/4, 1/4])], inf),
 		\pan, Prand([-1, 0, 1], inf),
 		\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/sines", 1.0)}),
 	).asEventStreamPlayer;
 
-	~r3 = Pbind(
-		\instrument, \sampler_1ch,
-		\bufnum, Pseq([~b1.bufnum, ~b2.bufnum], inf),
-		\dur, Prand([1/2, 1, 3/2, 3/4]*2, inf),
+	~r2 = Pbind(
+		\instrument, \hNoise,
+		\dur, Prand([Pseq((1)!4), Pseq([1/2, 1/2, 1/2])], inf),
 		\pan, Pseq([-1, 0, 1], inf),
+		\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/noise", 1.0)}),
+	).asEventStreamPlayer;
+
+	~r3 = Pbind(
+		\instrument, \click,
+		\dur, Prand([Pseq((1/4)!4), Pseq([1/8, 1/8, 1/8])], inf),
+		\pan, Pseq([-1, 0, 1], inf),
+		\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/click", 1.0)}),
 	).asEventStreamPlayer;
 
 	~r4 = Pbind(
@@ -320,16 +321,16 @@ s.waitForBoot({
 	).asEventStreamPlayer;
 
 	~r5 = Pbind(
-		\instrument, \hNoise,
-		\dur, Prand([Pseq((1)!4), Pseq([1/2, 1/2, 1/2])], inf),
+		\instrument, \sampler_1ch,
+		\bufnum, Pseq([~b1.bufnum, ~b2.bufnum], inf),
+		\dur, Prand([1/2, 1, 3/2, 3/4]*2, inf),
 		\pan, Pseq([-1, 0, 1], inf),
-		\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/noise", 1.0)}),
 	).asEventStreamPlayer;
 
 	~r6 = Pbind(
 		\instrument, \sampler_1ch,
 		\bufnum, ~b2.bufnum,
-		\dur, Prand([Pseq((1/2)!4), Pseq([3/4, 1/2, 3/4])], inf),
+		\dur, Prand([Pseq((1/2)!4), Pseq([3/4, 1/2, 3/4])]*8, inf),
 	).asEventStreamPlayer;
 
 	//--------------------------------------------------------------
@@ -346,11 +347,17 @@ s.waitForBoot({
 	});
 
 	~mod_grains = Routine({
-		var spec = ControlSpec(0.2, 0.00001, \lin, 0.0001);
-		10.do({ |i|
-			var v1 = spec.map(i/10.0);
+		var spec1, spec2;
+		spec1 = ControlSpec(0.2, 0.00001, \lin, 0.0001);
+		spec2 = ControlSpec(0.5, 1, \lin, 0.0001);
+		100.do({ |i|
+			var v1, v2;
+			v1 = spec1.map(i/100.0);
+			v2 = spec2.map(i/100.0);
 			~grains.set(\len, v1);
-			(30.0/10.0).wait;
+			// ~grains.set(\vary, v2);
+			~osc.sendMsg("/mod1", i/100.0);
+			(30.0/100.0).wait;
 		});
 	});
 
@@ -384,11 +391,10 @@ s.waitForBoot({
 	//_Utilities
 
 	~routines = [
-		~machine_drone, ~grains,	// streams
-		~r1, ~r2, ~r3, ~r4, ~r5, ~r6, // pbinds
-		~mod_melt,					// modulations
-		~deep, ~burst, ~splatter,	// gestures
-		~world1						// worlds
+		~r1, ~r2, ~r3, ~r4, ~r5, ~r6, // patterns
+		~mod_melt,					  // modulations
+		~deep, ~burst, ~splatter,	  // gestures
+		~world1						  // worlds
 	];
 
 	~reset = {
@@ -399,7 +405,7 @@ s.waitForBoot({
 		});
 	};
 
-	~fadein = { |synth, amp=0.8, len=3.0, res=50|
+	~fadein = { |synth, amp=0.8, len=10.0, res=50|
 		Routine({
 			res.do({ |i|
 				synth.set(\amp, i/res*amp);
@@ -408,10 +414,21 @@ s.waitForBoot({
 		}).play;
 	};
 
-	~fadeout = { |synth, amp=0.8, len=3.0, res=50|
+	~fadeout = { |synth, amp=0.8, len=10.0, res=50|
 		Routine({
 			res.do({ |i|
 				synth.set(\amp, amp - (i/res*amp));
+				(len/res).wait;
+			});
+		}).play;
+	};
+
+	~interp = { |synth, param, start, end, len=10.0, res=100|
+		Routine({
+			var spec = ControlSpec(start, end, \lin, 0.00001);
+			res.do({ |i|
+				var v1 = spec.map(i/res);
+				synth.set(param, v1);
 				(len/res).wait;
 			});
 		}).play;
@@ -423,22 +440,36 @@ s.waitForBoot({
 	~world1 = Routine({
 		~reset.();
 
-		~fadein.(~machine, amp:0.2, len:10.0);
-		~fadeout.(~grains, amp:0.8, len:10.0);
-
 		~r1.play;
-		~r2.play;
+		~r3.play;
 		~mod_melt.play;
-		~deep.play;
+		// ~deep.play;
+
+		~fadein.(~machine, amp:0.2, len:10.0);
+		~fadein.(~melt, amp:0.4, len:30.0);
+		// ~fadeout.(~grains, amp:0.8, len:10.0);
 	});
 
 	~world2 = Routine({
 		~reset.();
 
-		~fadein.(~grains, amp:0.8, len:10.0);
-		~fadeout.(~machine, amp:0.2, len:10.0);
+		~r6.play;
 
-		~mod_grains.play;
+		~interp.(~grains, \dur, 0.2, 0.00001, len:20);
+		~interp.(~grains, \vary, 1, 0.5, len:20);
+		~interp.(~grains, \rate, 0.8, 0.25, len:20);
+
+		~fadein.(~grains, amp:0.6, len:20.0);
+		~fadeout.(~machine, amp:0.2, len:10.0);
+		~fadeout.(~melt, amp:0.4, len:10.0);
+	});
+
+	~world3 = Routine({
+		~reset.();
+
+		~r2.play;
+		~r4.play;
+		~r6.play;
 	});
 
 	/**************************************************************************************************/
@@ -452,10 +483,11 @@ s.waitForBoot({
 
 	//_textures
 	~machine = Synth(\looper_2ch, [\bufnum, ~b4.bufnum, \amp, 0.0]);
-	~grains = Synth(\vGrain, [\bufnum, ~b5.bufnum, \dur, 0.2, \vary, 0.5, \rate, 0.3, \amp, 0.0]);
+	~grains = Synth(\vGrain, [\bufnum, ~b5.bufnum, \dur, 0.2, \vary, 0.5, \rate, 0.25, \amp, 0.0]);
 
-	~world1.play;
-	~world2.play;
+	// ~world1.play;
+	// ~world2.play;
+	~world3.play;
 
 	//--------------------------------------------------------------
 	//_OSC

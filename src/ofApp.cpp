@@ -30,10 +30,17 @@ void ofApp::setup(){
 
     init_stream0();
     
+    invert = new Invert(1.0);
+    stream1 = new Stream();
+    stream1->add_transform(invert);
+    stream1->set_init_img(img0);
+    
     //_kernel
     kernel = new Kernel();
     kernel->add_stream(stream0, 0);
-    kernel->toggle_loop(true);
+    kernel->add_frame(5.0);
+    kernel->add_stream(stream1, 1);
+//    kernel->toggle_loop(true);
     
     //_OSC
     server = new OSC_Server(OSC_IN);
@@ -97,6 +104,7 @@ void ofApp::set_listeners(void) {
 	ofAddListener(*server->pulses[3], this, &ofApp::bass);
 	ofAddListener(*server->mods[0], this, &ofApp::mod0);
 	ofAddListener(*server->mods[1], this, &ofApp::mod1);
+	ofAddListener(*server->mods[2], this, &ofApp::rms);
 }
 
 //--------------------------------------------------------------
@@ -114,6 +122,7 @@ void ofApp::noise(float &f) {
 
 //--------------------------------------------------------------
 void ofApp::click(float &f) {
+    ;
 }
 
 //--------------------------------------------------------------
@@ -131,6 +140,10 @@ void ofApp::mod1(float &f) {
     ;
 }
 
+//--------------------------------------------------------------
+void ofApp::rms(float &f) {
+    ;
+}
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {ofToggleFullscreen();}
