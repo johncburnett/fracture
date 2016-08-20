@@ -77,6 +77,7 @@ public:
     void update_stream2(void);
     
     int mode;
+    float macro;
     
     //========================================================================
     //control

@@ -80,7 +80,7 @@ s.waitForBoot({
 		chain = FFT(LocalBuf(2048), in);
 		onsets = Onsets.kr(chain, 0.1, \rcomplex);
 		SendTrig.kr(onsets);
-		SendPeakRMS.kr(in, 20, 3, "/replyAddress");
+		SendPeakRMS.kr(in, 120, 1, "/replyAddress");
 	}).load(s);
 
 	//--------------------------------------------------------------
@@ -278,7 +278,7 @@ s.waitForBoot({
 
 	SynthDef(\mixer,{ |amp = 1.0|
 		var in, mix;
-		in = In.ar(20, 2);
+		in = In.ar(120, 2);
 		mix = Limiter.ar(MidEQ.ar(in, 15000, 0.7, 8)) * amp;
 		SendPeakRMS.kr(in, 20, 3, '/rms');
 		Out.ar(0, mix);
@@ -485,9 +485,9 @@ s.waitForBoot({
 	~machine = Synth(\looper_2ch, [\bufnum, ~b4.bufnum, \amp, 0.0]);
 	~grains = Synth(\vGrain, [\bufnum, ~b5.bufnum, \dur, 0.2, \vary, 0.5, \rate, 0.25, \amp, 0.0]);
 
-	// ~world1.play;
+	//~world1.play;
 	// ~world2.play;
-	~world3.play;
+	 ~world3.play;
 
 	//--------------------------------------------------------------
 	//_OSC

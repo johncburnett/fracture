@@ -36,7 +36,7 @@ void ofApp::setup(){
     set_listeners();
     
     //_supercollider
-//    run_supercollider();
+    //run_supercollider();
 }
 
 //--------------------------------------------------------------
@@ -63,7 +63,7 @@ void ofApp::draw(){
 
 void ofApp::init_stream0(){
     
-    mode = 0;
+    mode = 3;
     
     mirror = new Mirror();
     
@@ -78,16 +78,19 @@ void ofApp::init_stream0(){
     
     stream0->add_transform(mirror);
     stream0->add_transform(smear);
-    stream0->add_transform(swarm);
     stream0->add_transform(invert);
+    stream0->add_transform(swarm);
+
     stream0->add_transform(blur);
 }
 
 void ofApp::update_stream0(){
-    //if (ofGetFrameNum() %2)stream0->num_nodes = (stream0->num_nodes) % 4 + 2;
-    vid0->update();
-    smear->set_scale(ofMap(mouseX, 0, WIDTH, 0, 10000));
-    stream0->set_init_img(vid0);
+    //if (ofGetFrameNum() %2) stream0->num_nodes = (stream0->num_nodes) % 4 + 2;
+    //vid0->update();
+    //smear->set_scale(ofMap(mouseX, 0, WIDTH, 0, 10000));
+    smear->set_scale(macro);
+    stream0->set_init_img(img2);
+    smear->set_scale(ofMap(ofGetMouseX(), 0.0, WIDTH, 0, 1000));
     stream0->evaluate();
 }
 
@@ -131,10 +134,9 @@ void ofApp::set_listeners(void) {
 
 //--------------------------------------------------------------
 void ofApp::sines(float &f) {
-    smear->set_scale(ofRandom(100.0));
-    mirror->set_mode(mode);
-    mode++;
-    mode %= 4;
+    //smear->set_scale(ofRandom(1000.0));
+
+    
 }
 
 //--------------------------------------------------------------
@@ -144,7 +146,11 @@ void ofApp::noise(float &f) {
 
 //--------------------------------------------------------------
 void ofApp::click(float &f) {
-    ;
+    smear->set_scale(ofMap(ofGetFrameNum() % 1000 / 1000.f, 0.0, 1.0, 0, 1000));
+    //invert->scale = abs(1 - invert->scale);
+    
+    mode = (int) ofRandom(1.99);
+    //mirror->set_mode(mode);
 }
 
 //--------------------------------------------------------------
@@ -154,7 +160,7 @@ void ofApp::bass(float &f) {
 
 //--------------------------------------------------------------
 void ofApp::mod0(float &f) {
-    ;
+    macro = ofMap(f, 0.0, 1.0, 0.0, 10000);
 }
 
 //--------------------------------------------------------------
@@ -163,8 +169,14 @@ void ofApp::mod1(float &f) {
 }
 
 //--------------------------------------------------------------
+void ofApp::rms(float &f) {
+    //smear->set_scale(ofMap(f, 0.0, 1.0, 0, 1000));
+    cout << ofGetFrameNum() << endl;
+}
+
+//--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-    
+    stream0->num_nodes = (stream0->num_nodes) % stream0->nodes.size() + 1;
     /*ofToggleFullscreen();*/}
 void ofApp::keyReleased(int key) {}
 void ofApp::mouseMoved(int x, int y) {}

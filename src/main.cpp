@@ -89,7 +89,7 @@ void Still::display(){
 //========================================================================
 Video::Video(const char *fname){
     mov.load(fname);
-    sleep(4);
+    sleep(5);
 
     mov.play();
     mov.setPaused(true);
@@ -1095,7 +1095,7 @@ void ofxBlur::update(void){
 
 void ofxBlur::process_image(void){
     this->begin();
-    //ofClear(0,0,0,1);
+    ofClear(0,0,0,1);
     this->input->fbo.draw(0,0);
     this->end();
     
