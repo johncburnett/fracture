@@ -30,17 +30,11 @@ void ofApp::setup(){
 
     init_stream1();
     
-    invert = new Invert(1.0);
-    stream1 = new Stream();
-    stream1->add_transform(invert);
-    stream1->set_init_img(img0);
-    
     //_kernel
     kernel = new Kernel();
-    kernel->add_stream(stream0, 0);
-    kernel->add_frame(5.0);
-    kernel->add_stream(stream1, 1);
-//    kernel->toggle_loop(true);
+    //kernel->add_stream(stream0, 0);
+    kernel->add_stream(stream1, 0);
+    kernel->toggle_loop(true);
     
     //_OSC
     server = new OSC_Server(OSC_IN);
