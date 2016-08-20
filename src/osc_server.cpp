@@ -34,7 +34,7 @@ OSC_Server::OSC_Server(int osc_port) {
     for(int i = 0; i < 4; i++) {
         pulses.push_back(new ofEvent<float>());
     }
-    for(int i = 0; i < 4; i++) {
+    for(int i = 0; i < 3; i++) {
         mods.push_back(new ofEvent<float>());
     }
 }
@@ -70,6 +70,10 @@ void OSC_Server::update(void) {
         else if(m.getAddress() == "/mod1") {
             mod1 = m.getArgAsFloat(0);
             ofNotifyEvent(*mods[1], mod1, this);
+        }
+        else if(m.getAddress() == "/rms") {
+            rms = m.getArgAsFloat(0);
+            ofNotifyEvent(*mods[2], rms, this);
         }
     }
 }

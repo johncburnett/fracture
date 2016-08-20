@@ -58,7 +58,7 @@ Kernel::Kernel(void) {
     current_frame = 0;
     num_frames = 0;
     start_time = 0.0f;
-    target_time = 2.0f;
+    target_time = 20.0f;
     loop = false;
     add_frame(2.0f);
 }

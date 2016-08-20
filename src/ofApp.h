@@ -93,4 +93,5 @@ public:
     void bass(float &f);
     void mod0(float &f);
     void mod1(float &f);
+    void rms(float &f);
 };

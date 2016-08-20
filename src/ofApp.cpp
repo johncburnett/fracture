@@ -126,6 +126,7 @@ void ofApp::set_listeners(void) {
 	ofAddListener(*server->pulses[3], this, &ofApp::bass);
 	ofAddListener(*server->mods[0], this, &ofApp::mod0);
 	ofAddListener(*server->mods[1], this, &ofApp::mod1);
+	ofAddListener(*server->mods[2], this, &ofApp::rms);
 }
 
 //--------------------------------------------------------------
@@ -143,6 +144,7 @@ void ofApp::noise(float &f) {
 
 //--------------------------------------------------------------
 void ofApp::click(float &f) {
+    ;
 }
 
 //--------------------------------------------------------------
