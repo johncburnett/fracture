@@ -68,7 +68,14 @@ public:
     //========================================================================
     //Specific scenes
     void init_stream0(void);
+    void update_stream0(void);
+    
     void init_stream1(void);
+    void update_stream1(void);
+    
+    void init_stream2(void);
+    void update_stream2(void);
+    
     int mode;
     
     //========================================================================

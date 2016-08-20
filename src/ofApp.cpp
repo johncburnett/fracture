@@ -28,13 +28,8 @@ void ofApp::setup(){
     
     load_media();
 
-    init_stream1();
-    
-    //_kernel
-    kernel = new Kernel();
-    //kernel->add_stream(stream0, 0);
-    kernel->add_stream(stream1, 0);
-    kernel->toggle_loop(true);
+    init_stream0();
+    //init_stream1();
     
     //_OSC
     server = new OSC_Server(OSC_IN);
@@ -46,35 +41,54 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-//    vid0->update();
-//    blur->setScale(ofMap(mouseY, 0, HEIGHT, 0, 10));
+
+    update_stream0();
+//    stream1->set_init_img(img7);
+//    stream1->evaluate();
     
-    stream1->set_init_img(img7);
-    kernel->update();
     server->update();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
     ofSetWindowTitle("FPS: " + ofToString(ofGetFrameRate()));
-    
-    kernel->draw();
+
+    stream0->draw();
+    if (ofGetMousePressed()){
+        
+
+    }
+//    stream1->draw();
 }
 
 void ofApp::init_stream0(){
     
     mode = 0;
     
-    smear = new SmearInner(img1);
     mirror = new Mirror();
-    grayscale = new Grayscale(1.0);
+    
+    smear = new SmearInner(img6);
     swarm = new Swarm();
+    invert = new Invert(1.0);
+    blur = new ofxBlur();
+    mirror->set_mode(mode);
+    blur->setScale(0.1);
     
     stream0 = new Stream();
-    stream0->add_transform(smear);
+    
     stream0->add_transform(mirror);
-    stream0->add_transform(grayscale);
+    stream0->add_transform(smear);
     stream0->add_transform(swarm);
+    stream0->add_transform(invert);
+    stream0->add_transform(blur);
+}
+
+void ofApp::update_stream0(){
+    //if (ofGetFrameNum() %2)stream0->num_nodes = (stream0->num_nodes) % 4 + 2;
+    vid0->update();
+    smear->set_scale(ofMap(mouseX, 0, WIDTH, 0, 10000));
+    stream0->set_init_img(vid0);
+    stream0->evaluate();
 }
 
 void ofApp::init_stream1(){
@@ -83,6 +97,10 @@ void ofApp::init_stream1(){
     
     stream1 = new Stream();
     stream1->add_transform(heat);
+}
+
+void ofApp::init_stream2(){
+    ;
 }
 
 void ofApp::load_media(){
@@ -97,7 +115,7 @@ void ofApp::load_media(){
     img7mask = new Still("img/IMG_1734_mask.png");
     
     //_videos
-    //vid0 = new Video("lapses/pano_lapse.mov");
+    vid0 = new Video("lapses/pano_lapse.mov");
 }
 
 //--------------------------------------------------------------
@@ -142,9 +160,10 @@ void ofApp::mod1(float &f) {
     ;
 }
 
-
 //--------------------------------------------------------------
-void ofApp::keyPressed(int key) {/*ofToggleFullscreen();*/}
+void ofApp::keyPressed(int key) {
+    
+    /*ofToggleFullscreen();*/}
 void ofApp::keyReleased(int key) {}
 void ofApp::mouseMoved(int x, int y) {}
 void ofApp::mouseDragged(int x, int y, int button) {}
