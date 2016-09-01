@@ -29,7 +29,12 @@ void ofApp::setup(){
     load_media();
 
     init_stream0();
-    //init_stream1();
+    init_stream1();
+    
+    kernel = new Kernel();
+    kernel->add_frame(5.0);
+    kernel->add_stream(stream0, 0);
+    kernel->add_stream(stream1, 1);
     
     //_OSC
     server = new OSC_Server(OSC_IN);
@@ -41,10 +46,9 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-
     update_stream0();
-//    stream1->set_init_img(img7);
-//    stream1->evaluate();
+
+    kernel->update();
     
     server->update();
 }
@@ -53,12 +57,7 @@ void ofApp::update(){
 void ofApp::draw(){
     ofSetWindowTitle("FPS: " + ofToString(ofGetFrameRate()));
 
-    stream0->draw();
-    if (ofGetMousePressed()){
-        
-
-    }
-//    stream1->draw();
+    kernel->draw();
 }
 
 void ofApp::init_stream0(){
@@ -75,13 +74,13 @@ void ofApp::init_stream0(){
     blur->setScale(0.1);
     
     stream0 = new Stream();
-    
     stream0->add_transform(mirror);
     stream0->add_transform(smear);
     stream0->add_transform(invert);
     stream0->add_transform(swarm);
-
     stream0->add_transform(blur);
+
+    stream0->set_init_img(img2);
 }
 
 void ofApp::update_stream0(){
@@ -89,9 +88,7 @@ void ofApp::update_stream0(){
     //vid0->update();
     //smear->set_scale(ofMap(mouseX, 0, WIDTH, 0, 10000));
     smear->set_scale(macro);
-    stream0->set_init_img(img2);
     smear->set_scale(ofMap(ofGetMouseX(), 0.0, WIDTH, 0, 1000));
-    stream0->evaluate();
 }
 
 void ofApp::init_stream1(){
@@ -100,6 +97,12 @@ void ofApp::init_stream1(){
     
     stream1 = new Stream();
     stream1->add_transform(heat);
+    
+    stream1->set_init_img(img7);
+}
+
+void ofApp::update_stream1(){
+    ;
 }
 
 void ofApp::init_stream2(){

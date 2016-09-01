@@ -79,7 +79,6 @@ ofFbo Kernel::get_stream_fbo(int frame_index, int stream_index) {
 }
 
 ofFbo Kernel::get_frame_fbo(int frame_index) {
-    
     fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
     fbo.begin();
     ofClear(0, 0, 0, 1);
