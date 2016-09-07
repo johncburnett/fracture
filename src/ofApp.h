@@ -47,9 +47,11 @@ public:
     //========================================================================
     //media
     // TODO: put this stuff in a list and parallelize loading
-    Still *img0, *img1, *img2, *img3, *img4, *img5, *img6, *img7, *img7mask;
+    Still *img0, *img1, *img2, *img3, *img4, *img5, *img6, *img7, *img7mask, *img8;
     Video *vid0, *vid1;
+    vector<BaseImage*> sources;
     void load_media(void);
+    int source_index;
     
     //========================================================================
     //transforms
@@ -79,10 +81,11 @@ public:
     int mode;
     float macro;
     
+    
     //========================================================================
     //control
     Kernel *kernel;
-    Stream *stream0, *stream1;
+    Stream *stream0, *stream1, *stream2;
     OSC_Server *server;
     
     //========================================================================

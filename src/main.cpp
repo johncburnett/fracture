@@ -89,7 +89,8 @@ void Still::display(){
 //========================================================================
 Video::Video(const char *fname){
     mov.load(fname);
-    sleep(5);
+    sleep(15);
+    cout << mov.isLoaded() << endl;
 
     mov.play();
     mov.setPaused(true);
@@ -619,8 +620,8 @@ Swarm::Swarm(void){
     opacity = 0.0;
 
     //initialize the particle texture
-    w =500;
-    h =500;
+    w =650;
+    h =650;
     
     createFbo();
     createMesh();
@@ -939,7 +940,7 @@ string generateCombineSource(int passes, float downsample) {
 }
 
 ofxBlur::ofxBlur(void){
-    this->setup(WIDTH, HEIGHT, 10, .2, 4);
+    this->setup(WIDTH, HEIGHT, 3, .2, 4);
     scale = 1;
     rotation = 1.0;
     brightness = 1.0;
@@ -1095,12 +1096,12 @@ void ofxBlur::update(void){
 
 void ofxBlur::process_image(void){
     this->begin();
-    ofClear(0,0,0,1);
+    //ofClear(0,0,0,1);
     this->input->fbo.draw(0,0);
     this->end();
     
     fbo->begin();
-    ofClear(0,0,0,1);
+    //ofClear(0,0,0,1);
     this->draw();
     fbo->end();
 }
