@@ -24,7 +24,6 @@
 s = Server.local;
 o = s.options;
 o.sampleRate_(44.1e3); 		// 44.1k Hz
-// o.sampleRate_(96e3); 		// 96k Hz
 o.memSize_(2e6); 			// 2GB of RAM
 o.numOutputBusChannels_(2);	// 2ch
 
@@ -67,7 +66,7 @@ s.waitForBoot({
 	//--------------------------------------------------------------
 	//_Live Input
 
-	SynthDef(\input, { |amp=0.8|
+/*	SynthDef(\input, { |amp=0.8|
 		var in, mix, chain, onsets;
 		in = SoundIn.ar(0);
 		mix = in!2 * amp;
@@ -331,6 +330,36 @@ s.waitForBoot({
 		\dur, Prand([Pseq((1/2)!2), Pseq([3/4, 1/2, 3/4])]*8, inf),
 	).asEventStreamPlayer;
 
+	~flurry = Routine({
+		Pbind(
+			\instrument, \snd,
+			\dur, Prand([Pseq((1/2)!2), Pseq([1/4, 1/4, 1/4])], 5),
+			\pan, Prand([-1, 0, 1]),
+			\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/sines", 1.0)}),
+		).play;
+
+		Pbind(
+			\instrument, \hNoise,
+			\dur, Prand([Pseq([3/2]), Pseq([1/2])], 2),
+			\pan, Pseq([-1, 0, 1]),
+			\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/noise", 1.0)}),
+		).play;
+
+		Pbind(
+			\instrument, \click,
+			\dur, Prand([Pseq([1/4]), Pseq([1/8, 1/8, 1/8])], 5),
+			\pan, Pseq([-1, 0, 1]),
+			\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/click", 1.0)}),
+		).play;
+
+		Pbind(
+			\instrument, \bass,
+			\dur, Prand([1/2], 1),
+			\pan, Pseq([-1, 0, 1]),
+			\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/bass", 1.0)}),
+		).play;
+	});
+
 	//--------------------------------------------------------------
 	//_Modulations
 
@@ -440,7 +469,7 @@ s.waitForBoot({
 		~reset.();
 
 		~r1.play;
-		~r3.play;
+		// ~r3.play;
 		~mod_melt.play;
 		// ~deep.play;
 
@@ -452,6 +481,8 @@ s.waitForBoot({
 		~fadein.(~machine, amp:0.2, len:10.0);
 		~fadein.(~melt, amp:0.4, len:30.0);
 		// ~fadeout.(~grains, amp:0.8, len:10.0);
+
+		"entering world 1".postln;
 	});
 
 	~world2 = Routine({
@@ -467,6 +498,8 @@ s.waitForBoot({
 		~fadein.(~grains, amp:0.6, len:20.0);
 		// ~fadeout.(~machine, amp:0.2, len:10.0);
 		~fadeout.(~melt, amp:0.4, len:10.0);
+
+		"entering world 2".postln;
 	});
 
 	~world3 = Routine({
@@ -487,6 +520,9 @@ s.waitForBoot({
 
 	/**************************************************************************************************/
 	//_Main
+
+	//_wait for server
+	s.sync;
 
 	//_mixer
 	~mix = Synth(\mixer);
@@ -517,21 +553,34 @@ s.waitForBoot({
 	/**************************************************************************************************/
 	//_GUI
 
-	w = Window("fracture", Rect(
-		Window.screenBounds.width/2 - (~width/2),
-		Window.screenBounds.height/2 - (~height/2),
-		~width,
-		~height
+	w = Window("audio", Rect(
+		Window.screenBounds.width - 200,
+		Window.screenBounds.height,
+		200,
+		200
 	))
 	.background_(Color(0.1, 0.1, 0.1))
-	.alwaysOnTop_(true)
+	// .alwaysOnTop_(true)
 	.onClose_({
 		Server.killAll;
 		~osc.disconnect;
-		thisProcess.shutdown;
-		0.exit;
+		// thisProcess.shutdown;
+		// 0.exit;
 	});
 
 	if( (~display_gui), { w.front });
+
+	//--------------------------------------------------------------
+	//_Status
+
+	"".postln;
+	"fracture audio is now running\n".postln;
+	"audio".postln;
+	("sampling rate: " + o.sampleRate).postln;
+	("allocated RAM: " + (o.memSize/1000000) + "GB").postln;
+	("# output channels: " + o.numOutputBusChannels + "\n").postln;
+	"OSC".postln;
+	("ip: " + ~ip).postln;
+	("port: " + ~port + "\n").postln;
 });
 )

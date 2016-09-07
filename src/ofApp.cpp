@@ -82,6 +82,8 @@ void ofApp::init_stream0(){
     stream0->add_transform(invert);
     stream0->add_transform(swarm);
     stream0->add_transform(blur);
+
+    stream0->set_init_img(img2);
 }
 
 
@@ -134,6 +136,12 @@ void ofApp::init_stream1(){
     
     stream1 = new Stream();
     stream1->add_transform(heat);
+    
+    stream1->set_init_img(img7);
+}
+
+void ofApp::update_stream1(){
+    ;
 }
 
 
