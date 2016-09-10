@@ -28,13 +28,8 @@ void ofApp::setup(){
     
     load_media();
 
+    //init_stream0();
     init_stream0();
-    init_stream1();
-    
-    kernel = new Kernel();
-    kernel->add_frame(5.0);
-    kernel->add_stream(stream0, 0);
-    kernel->add_stream(stream1, 1);
     
     //_OSC
     server = new OSC_Server(OSC_IN);
@@ -46,10 +41,11 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    update_stream0();
 
-    kernel->update();
-    
+    //update_stream0();
+//    stream1->set_init_img(img7);
+//    stream1->evaluate();
+    update_stream0();
     server->update();
 }
 
@@ -57,12 +53,43 @@ void ofApp::update(){
 void ofApp::draw(){
     ofSetWindowTitle("FPS: " + ofToString(ofGetFrameRate()));
 
-    kernel->draw();
+    //stream0->draw();
+    stream0->draw();
+    if (ofGetMousePressed()){
+        
+
+    }
+//    stream1->draw();
 }
 
 void ofApp::init_stream0(){
     
-    mode = 3;
+    mode = 2;
+    
+    mirror = new Mirror();
+    //vid0->update();
+    smear = new SmearInner(img6);
+    swarm = new Swarm();
+    invert = new Invert(1.0);
+    blur = new ofxBlur();
+    mirror->set_mode(mode);
+    blur->setScale(0.1);
+    
+    stream0 = new Stream();
+    
+    stream0->add_transform(smear);
+    stream0->add_transform(mirror);
+    stream0->add_transform(invert);
+    stream0->add_transform(swarm);
+    stream0->add_transform(blur);
+
+    stream0->set_init_img(img2);
+}
+
+
+void ofApp::init_stream2(){
+    
+    mode = 1;
     
     mirror = new Mirror();
     
@@ -73,23 +100,35 @@ void ofApp::init_stream0(){
     mirror->set_mode(mode);
     blur->setScale(0.1);
     
-    stream0 = new Stream();
-    stream0->add_transform(mirror);
-    stream0->add_transform(smear);
-    stream0->add_transform(invert);
-    stream0->add_transform(swarm);
-    stream0->add_transform(blur);
+    stream2 = new Stream();
+    
+    stream2->add_transform(smear);
+    stream2->add_transform(mirror);
+    stream2->add_transform(invert);
+    stream2->add_transform(swarm);
 
-    stream0->set_init_img(img2);
+    stream2->add_transform(blur);
 }
 
 void ofApp::update_stream0(){
     //if (ofGetFrameNum() %2) stream0->num_nodes = (stream0->num_nodes) % 4 + 2;
-    //vid0->update();
     //smear->set_scale(ofMap(mouseX, 0, WIDTH, 0, 10000));
     smear->set_scale(macro);
-    smear->set_scale(ofMap(ofGetMouseX(), 0.0, WIDTH, 0, 1000));
+    //stream0->set_init_img(vid0);
+    stream0->set_init_img(sources[source_index]);
+    stream0->evaluate();
 }
+
+
+void ofApp::update_stream2(){
+    //if (ofGetFrameNum() %2) stream0->num_nodes = (stream0->num_nodes) % 4 + 2;
+    //smear->set_scale(ofMap(mouseX, 0, WIDTH, 0, 10000));
+    //vid0->update();
+    smear->set_scale(macro);
+    stream2->set_init_img(sources[source_index]);
+    stream2->evaluate();
+}
+
 
 void ofApp::init_stream1(){
     
@@ -105,20 +144,28 @@ void ofApp::update_stream1(){
     ;
 }
 
-void ofApp::init_stream2(){
-    ;
-}
 
 void ofApp::load_media(){
-    img0 = new Still("img/emory.jpg");
+    img0 = new Still("img/IMG_0639.jpg");
     img1 = new Still("img/stone.jpg");
     img2 = new Still("img/IMG_3006.jpg");
     img3 = new Still("img/emory.jpg");
     img4 = new Still("img/rock.jpg");
-    img5 = new Still("img/landscape.jpg");
+    img5 = new Still("img/IMG_0644.jpg");
     img6 = new Still("img/sludge.jpg");
     img7 = new Still("img/IMG_1734.png");
-    img7mask = new Still("img/IMG_1734_mask.png");
+    img8 = new Still("img/IMG_1734.png");
+    img7mask = new Still("img/IMG_6140.jpg");
+    
+    sources.push_back(img0);
+    sources.push_back(img1);
+    sources.push_back(img2);
+    sources.push_back(img3);
+    sources.push_back(img4);
+    sources.push_back(img5);
+    sources.push_back(img6);
+    sources.push_back(img7);
+    sources.push_back(img8);
     
     //_videos
     vid0 = new Video("lapses/pano_lapse.mov");
@@ -137,7 +184,7 @@ void ofApp::set_listeners(void) {
 
 //--------------------------------------------------------------
 void ofApp::sines(float &f) {
-    //smear->set_scale(ofRandom(1000.0));
+    //mirror->set_mode((mirror->mode + 1) % 2);
 
     
 }
@@ -153,7 +200,7 @@ void ofApp::click(float &f) {
     //invert->scale = abs(1 - invert->scale);
     
     mode = (int) ofRandom(1.99);
-    //mirror->set_mode(mode);
+    mirror->set_mode(mode);
 }
 
 //--------------------------------------------------------------
@@ -163,7 +210,7 @@ void ofApp::bass(float &f) {
 
 //--------------------------------------------------------------
 void ofApp::mod0(float &f) {
-    macro = ofMap(f, 0.0, 1.0, 0.0, 10000);
+    //macro = ofMap(f, 0.0, 1.0, 0.0, 10000);
 }
 
 //--------------------------------------------------------------
@@ -173,13 +220,20 @@ void ofApp::mod1(float &f) {
 
 //--------------------------------------------------------------
 void ofApp::rms(float &f) {
-    //smear->set_scale(ofMap(f, 0.0, 1.0, 0, 1000));
-    cout << ofGetFrameNum() << endl;
+    macro = ofMap(f, 0.0, 1.0, 0, 4000);
+    //cout << ofGetFrameNum() << endl;
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-    stream0->num_nodes = (stream0->num_nodes) % stream0->nodes.size() + 1;
+    if (key == 'f'){
+        stream0->num_nodes = (stream0->num_nodes) % stream0->nodes.size() + 1;
+    }
+    
+    if (key == ' '){
+        source_index = (source_index + 1) % sources.size();
+    }
+    
     /*ofToggleFullscreen();*/}
 void ofApp::keyReleased(int key) {}
 void ofApp::mouseMoved(int x, int y) {}

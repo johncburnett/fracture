@@ -31,7 +31,8 @@ o.numOutputBusChannels_(2);	// 2ch
 ~bpm = 100.0;
 
 //_OSC
-~ip = "127.0.0.1";
+ ~ip = "127.0.0.1";
+//~ip = "192.168.1.66";
 ~port = 7771;
 ~osc = NetAddr.new(~ip, ~port);
 
@@ -72,11 +73,11 @@ s.waitForBoot({
 		Out.ar(10, in); 	// to processing
 		Out.ar(20, mix);	// to mixer
 
-		chain = FFT(LocalBuf(2048), in);
+/*		chain = FFT(LocalBuf(2048), in);
 		onsets = Onsets.kr(chain, 0.1, \rcomplex);
 		SendTrig.kr(onsets);
-		SendPeakRMS.kr(in, 120, 1, "/replyAddress");
-	}).load(s);*/
+		SendPeakRMS.kr(in, 60 , 3,  "/replyAddress");*/
+	}).load(s);
 
 	//--------------------------------------------------------------
 	//_Sampling
@@ -225,7 +226,7 @@ s.waitForBoot({
 			snd * EnvGen.ar(Env([0, 1, 0.6, 0], [0.0001, 0.4, 0.01]), doneAction:2),
 			pan
 		);
-		Out.ar(20, snd * amp * 2);	// to mixer
+		Out.ar(20, snd * amp * 3);	// to mixer
 	}).load(s);
 
 
@@ -275,7 +276,7 @@ s.waitForBoot({
 		var in, mix;
 		in = In.ar(20, 2);
 		mix = Limiter.ar(MidEQ.ar(in, 15000, 0.7, 8)) * amp;
-		SendPeakRMS.kr(in, 20, 3, '/rms');
+		SendPeakRMS.kr(in, 61, 3, '/rms');
 		Out.ar(0, mix);
 	}).load(s);
 
@@ -289,14 +290,14 @@ s.waitForBoot({
 
 	~r1 = Pbind(
 		\instrument, \snd,
-		\dur, Prand([Pseq((1/2)!4), Pseq([1/4, 1/4, 1/4])], inf),
+		\dur, Prand([Pseq((1/2)!2), Pseq([1/4, 1/4, 1/4])], inf),
 		\pan, Prand([-1, 0, 1], inf),
 		\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/sines", 1.0)}),
 	).asEventStreamPlayer;
 
 	~r2 = Pbind(
 		\instrument, \hNoise,
-		\dur, Prand([Pseq((1)!4), Pseq([1/2, 1/2, 1/2])], inf),
+		\dur, Prand([Pseq((1)!4), Pseq([1/2, 1/2, 1/2]), Pseq([1/8, 1/8])], inf),
 		\pan, Pseq([-1, 0, 1], inf),
 		\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/noise", 1.0)}),
 	).asEventStreamPlayer;
@@ -310,22 +311,23 @@ s.waitForBoot({
 
 	~r4 = Pbind(
 		\instrument, \bass,
-		\dur, Prand([1/2, 1, 3/2, 3/4], inf),
+		\dur, Prand([Pseq([1/8, 1/2, 1/2]), 1, 3/2, 3/4, 1/4, 1/8], inf),
 		\pan, Pseq([-1, 0, 1], inf),
 		\sendMsg, Pfunc({|ev|  ~osc.sendMsg("/bass", 1.0)}),
 	).asEventStreamPlayer;
 
 	~r5 = Pbind(
 		\instrument, \sampler_1ch,
-		\bufnum, Pseq([~b1.bufnum, ~b2.bufnum], inf),
-		\dur, Prand([1/2, 1, 3/2, 3/4]*2, inf),
+		\bufnum, Pseq([~b1.bufnum], inf),
+		\dur, Prand([1, 4, 3/2, 6], inf),
 		\pan, Pseq([-1, 0, 1], inf),
+		\amp, 0.2,
 	).asEventStreamPlayer;
 
 	~r6 = Pbind(
 		\instrument, \sampler_1ch,
 		\bufnum, ~b2.bufnum,
-		\dur, Prand([Pseq((1/2)!4), Pseq([3/4, 1/2, 3/4])]*8, inf),
+		\dur, Prand([Pseq((1/2)!2), Pseq([3/4, 1/2, 3/4])]*8, inf),
 	).asEventStreamPlayer;
 
 	~flurry = Routine({
@@ -400,7 +402,7 @@ s.waitForBoot({
 	~splatter = Routine({
 		var grains, spec;
 		grains = Synth(\vGrain, [\bufnum, ~b1.bufnum, \dur, 0.2, \vary, 1.0, \rate, 0.6]);
-		spec = ControlSpec(0.2, 0.00001, \lin, 0.0001);
+		spec = ControlSpec(0.2, 0.00001, \lin, 0.000001);
 		10.do({ |i|
 			var v1 = spec.map(i/10.0);
 			grains.set(\len, v1);
@@ -419,7 +421,7 @@ s.waitForBoot({
 		~r1, ~r2, ~r3, ~r4, ~r5, ~r6, // patterns
 		~mod_melt,					  // modulations
 		~deep, ~burst, ~splatter,	  // gestures
-		~world1						  // worlds
+		~world1, ~world2, ~world3	  // worlds
 	];
 
 	~reset = {
@@ -454,6 +456,7 @@ s.waitForBoot({
 			res.do({ |i|
 				var v1 = spec.map(i/res);
 				synth.set(param, v1);
+				~osc.sendMsg("/mod0", i/res * 0.1);
 				(len/res).wait;
 			});
 		}).play;
@@ -470,6 +473,11 @@ s.waitForBoot({
 		~mod_melt.play;
 		// ~deep.play;
 
+		Routine({
+			30.wait;
+			~r5.play;
+		});
+
 		~fadein.(~machine, amp:0.2, len:10.0);
 		~fadein.(~melt, amp:0.4, len:30.0);
 		// ~fadeout.(~grains, amp:0.8, len:10.0);
@@ -480,14 +488,15 @@ s.waitForBoot({
 	~world2 = Routine({
 		~reset.();
 
-		~r6.play;
+		// ~r1.play;
+		// ~r3.play;
 
 		~interp.(~grains, \dur, 0.2, 0.00001, len:20);
 		~interp.(~grains, \vary, 1, 0.5, len:20);
 		~interp.(~grains, \rate, 0.8, 0.25, len:20);
 
 		~fadein.(~grains, amp:0.6, len:20.0);
-		~fadeout.(~machine, amp:0.2, len:10.0);
+		// ~fadeout.(~machine, amp:0.2, len:10.0);
 		~fadeout.(~melt, amp:0.4, len:10.0);
 
 		"entering world 2".postln;
@@ -496,13 +505,17 @@ s.waitForBoot({
 	~world3 = Routine({
 		~reset.();
 
-		~splatter.play;
-
+		~r1.play;
 		~r2.play;
+		~r3.play;
 		~r4.play;
-		~r6.play;
 
-		"entering world 3".postln;
+		~interp.(~grains, \dur, 0.2, 0.00001, len:60);
+
+		~burst.play;
+		~burst.reset;
+
+		~fadeout.(~grains, amp:0.6, len:60.0);
 	});
 
 	/**************************************************************************************************/
@@ -521,10 +534,10 @@ s.waitForBoot({
 	~machine = Synth(\looper_2ch, [\bufnum, ~b4.bufnum, \amp, 0.0]);
 	~grains = Synth(\vGrain, [\bufnum, ~b5.bufnum, \dur, 0.2, \vary, 0.5, \rate, 0.25, \amp, 0.0]);
 
-	//_worlds
 	~world1.play;
 	// ~world2.play;
 	// ~world3.play;
+	// ~reset.();
 
 	//--------------------------------------------------------------
 	//_OSC
@@ -532,6 +545,10 @@ s.waitForBoot({
 	if( (~debug_osc),
 		{ OSCFunc.trace(true) },
 		{ OSCFunc.trace(false) });
+`
+	OSCFunc({ |msg, time|
+		~osc.sendMsg('/rms', msg[4]);
+	},'/rms', s.addr);
 
 	/**************************************************************************************************/
 	//_GUI
