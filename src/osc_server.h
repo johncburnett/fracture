@@ -26,6 +26,8 @@
 #include "main.h"
 
 #define NUM_MSG_STRINGS 20
+#define OSC_IN 7771
+#define OSC_OUT 57120
 
 //========================================================================
 class OSC_Server {

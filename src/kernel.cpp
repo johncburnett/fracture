@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "main.h"
+#include "kernel.h"
 
 //========================================================================
 Stream::Stream(void) {
@@ -93,10 +93,6 @@ void Kernel::get_frame_image(int frame_index) {
     ofClear(0, 0, 0, 1);
     draw();
     fbo.end();
-    
-    // TO FIX!! Use BaseImage
-    delete img;
-    img = new Still(&fbo);
 }
 
 void Kernel::set_frame_length(int frame_index, float l) {

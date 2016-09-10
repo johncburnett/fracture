@@ -22,7 +22,11 @@
 #pragma once
 
 #include "main.h"
-#include "ofEvents.h"
+
+#include "transform.h"
+#include "kernel.h"
+#include "osc_server.h"
+
 
 class ofApp : public ofBaseApp {
 public:
