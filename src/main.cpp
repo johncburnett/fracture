@@ -19,6 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <math.h>
 #include "ofApp.h"
 #include "main.h"
 
@@ -32,7 +33,7 @@ int main( ){
 //========================================================================
 //_Utilities
 
-double mean(vector<double> A) {
+double mean(std::vector<double> A) {
     double avg, sum;
     sum = 0;
     for(int i = 0; i < A.size(); i++) {
@@ -42,7 +43,7 @@ double mean(vector<double> A) {
     return avg;
 }
 
-double std_dev(vector<double> A) {
+double std_dev(std::vector<double> A) {
     double sd = 0;
     double avg = mean(A);
     for(int i = 0; i < A.size(); i++) {
@@ -55,7 +56,7 @@ void run_supercollider(void) {
     pid_t pid = fork();
 
     if(pid == 0) {
-        system("../../../../sc \
+        std::system("../../../../sc \
                ../../../../src/sc/audio.scd \
                > ../../../../log/sc_log.txt");
     }

@@ -27,7 +27,6 @@
 #include "kernel.h"
 #include "osc_server.h"
 
-
 class ofApp : public ofBaseApp {
 public:
     //========================================================================

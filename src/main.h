@@ -27,15 +27,10 @@
 #include "ofMain.h"
 #include "ofEvents.h"
 
-#include <libiomp/omp.h>
-#include <math.h>
-#include <vector>
-using namespace std;
-
 //========================================================================
 //_Utilities
-double mean(vector<double> A);
-double std_dev(vector<double> A);
+double mean(std::vector<double> A);
+double std_dev(std::vector<double> A);
 
 void run_supercollider(void);
 
