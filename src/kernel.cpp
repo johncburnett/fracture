@@ -28,7 +28,7 @@ Stream::Stream(void) {
     img = new Still();
 }
 
-void Stream::add_transform(NewTransform *T) {
+void Stream::add_transform(Transform *T) {
     nodes.push_back(node());
     nodes[num_nodes].transform = T;
     nodes[num_nodes].transform->set_fbo(&fbo);

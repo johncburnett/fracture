@@ -33,7 +33,7 @@
  * void draw(void) draws fbo to the screen.
  * void draw_quad(void) maps a texture to a quad.
  */
-class NewTransform {
+class Transform {
 public:
     ofFbo *fbo;
     BaseImage *input;
@@ -55,7 +55,7 @@ public:
 /*
  * DisplayImage displays an image with no processing.
  */
-class DisplayImage : public virtual NewTransform {
+class DisplayImage : public virtual Transform {
 public:
     DisplayImage(void);
     ~DisplayImage(void);
@@ -69,7 +69,7 @@ public:
 /*
  *  Mirror an image.
  */
-class Mirror : public virtual NewTransform {
+class Mirror : public virtual Transform {
 public:
     ofShader shader;
     // 0 is left, 1 is right, 2 is top, 3 is bottom
@@ -99,7 +99,7 @@ public:
  * update_delta(new_dx, new_dy) changes dx and dy values.
  *
  */
-class Smear : public virtual NewTransform {
+class Smear : public virtual Transform {
 public:
     ofShader shader;
     float x_scale, y_scale;
@@ -130,7 +130,7 @@ public:
  * update_delta(new_dx, new_dy) changes dx and dy values.
  *
  */
-class SmearInner : public virtual NewTransform {
+class SmearInner : public virtual Transform {
 public:
     ofShader shader;
     float scale;
@@ -150,7 +150,7 @@ public:
 /*
  * Invert an image.
  */
-class Invert : public virtual NewTransform{
+class Invert : public virtual Transform{
 public:
     ofShader shader;
     float scale;
@@ -168,7 +168,7 @@ public:
 /*
  * Make an image grayscale.
  */
-class Grayscale : public virtual NewTransform{
+class Grayscale : public virtual Transform{
 public:
     ofShader shader;
     float scale;
@@ -185,7 +185,7 @@ public:
 /*
  * ShadowMask removes pixels that are below a given threshold.
  */
-class ShadowMask : public virtual NewTransform {
+class ShadowMask : public virtual Transform {
 public:
     ofShader shader;
     float threshold;
@@ -221,7 +221,7 @@ public:
  * Twist distorts a section of the image around a point radially.
  * center is the center of the distortion
  */
-class Twirl : public virtual NewTransform{
+class Twirl : public virtual Transform{
 public:
     ofShader shader;
     float scale;
@@ -243,7 +243,7 @@ public:
  * NoiseMask interpolates between two images based on ofImage noise.
  *
  */
-class NoiseMask : public virtual NewTransform {
+class NoiseMask : public virtual Transform {
 public:
     ofShader shader;
     float frequency, time, scale;
@@ -264,7 +264,7 @@ public:
  * HeatDistort uses a depth map to distort an image
  *
  */
-class HeatDistort : public virtual NewTransform {
+class HeatDistort : public virtual Transform {
 public:
     ofShader shader;
     int x0, y0;
@@ -283,7 +283,7 @@ public:
 };
 
 //========================================================================
-class Aberration : public virtual NewTransform {
+class Aberration : public virtual Transform {
     ofShader shader;
     float amount;
     
@@ -296,7 +296,7 @@ class Aberration : public virtual NewTransform {
 };
 
 //========================================================================
-class NoiseMaker : public virtual NewTransform {
+class NoiseMaker : public virtual Transform {
     ofShader shader;
     
     NoiseMaker(void);
@@ -308,7 +308,7 @@ class NoiseMaker : public virtual NewTransform {
 };
 
 //========================================================================
-class Swarm : public virtual NewTransform {
+class Swarm : public virtual Transform {
 public:
     ofFbo particleFbo;
     ofShader updateShader, drawShader;
@@ -347,7 +347,7 @@ public:
 };
 
 //========================================================================
-class Disintegrate : public virtual NewTransform {
+class Disintegrate : public virtual Transform {
 public:
     ofTexture color;
     ofVboMesh mesh, quadMesh;
@@ -373,7 +373,7 @@ void GuassianRow(int, vector<float>&, float);
 string generateBlurSource(int, float);
 string generateCombineSource(int, float);
 
-class ofxBlur : public virtual NewTransform {
+class ofxBlur : public virtual Transform {
 protected:
 	ofFbo base;
 	vector<ofFbo> ping, pong;

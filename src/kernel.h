@@ -1,10 +1,23 @@
-//
-//  kernel.h
-//  fracture
-//
-//  Created by John Burnett on 9/2/16.
-//
-//
+ /*
+ * fracture/src/kernel.h
+ *
+ * fracture
+ * Copyright (C) 2016 - epistrata (John Burnett + Sage Jenson)
+ * <http://www.epistrata.xyz/>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef kernel_h
 #define kernel_h
@@ -24,11 +37,15 @@ public:
     Stream(void);
     ~Stream(void);
 
-    void add_transform(NewTransform *);
+    void add_transform(Transform *);
     void set_init_img(BaseImage *);
 
     void evaluate(void);
     void draw(void);
+};
+
+struct node {
+    Transform *transform;
 };
 
 //========================================================================
@@ -55,10 +72,6 @@ public:
 
     void update(void);
     void draw(void);
-};
-
-struct node {
-    NewTransform *transform;
 };
 
 struct frame {

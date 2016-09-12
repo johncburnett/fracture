@@ -22,24 +22,24 @@
 #include "transform.h"
 
 //========================================================================
-void NewTransform::draw(void) {
+void Transform::draw(void) {
     fbo->draw(0, 0);
 }
 
-void NewTransform::init_fbo(void) {
+void Transform::init_fbo(void) {
     fbo = new ofFbo();
     fbo->allocate(WIDTH, HEIGHT, GL_RGBA);
 }
 
-ofFbo *NewTransform::get_fbo(void) {
+ofFbo *Transform::get_fbo(void) {
     return fbo;
 }
 
-void NewTransform::set_fbo(ofFbo *f) {
+void Transform::set_fbo(ofFbo *f) {
     fbo = f;
 }
 
-void NewTransform::draw_quad(void) {
+void Transform::draw_quad(void) {
     glBegin(GL_QUADS);
     glTexCoord2f(0, 0); glVertex3f(0, 0, 0);
     glTexCoord2f(WIDTH, 0); glVertex3f(WIDTH, 0, 0);

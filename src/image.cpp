@@ -23,15 +23,7 @@ ofFbo BaseImage::get_fbo(void) {
 
 //========================================================================
 Still::Still(const char *fname){
-    img.load(fname);
-    img.resize(WIDTH, HEIGHT);
-
-    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
-
-    fbo.begin();
-    ofClear(0,0,0,0);
-    img.draw(0,0);
-    fbo.end();
+    load_media(fname);
 }
 
 Still::Still(ofFbo * _input){
@@ -56,6 +48,18 @@ void Still::update(void){
     ;
 }
 
+void Still::load_media(const char *fname) {
+    img.load(fname);
+    img.resize(WIDTH, HEIGHT);
+
+    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
+
+    fbo.begin();
+    ofClear(0,0,0,0);
+    img.draw(0,0);
+    fbo.end();
+}
+
 ofTexture Still::get_texture(void){
     return fbo.getTexture();
 }
@@ -66,15 +70,11 @@ void Still::display(){
 
 //========================================================================
 Video::Video(const char *fname){
-    mov.load(fname);
-    sleep(5);
+    load_media(fname);
+}
 
-    mov.play();
-    mov.setPaused(true);
-
-    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
-
-    update();
+Video::Video(void) {
+    ;
 }
 
 void Video::update(void){
@@ -92,6 +92,18 @@ void Video::update(void){
 
 ofTexture Video::get_texture(){
     return mov.getTexture();
+}
+
+void Video::load_media(const char *fname) {
+    mov.load(fname);
+    sleep(5);
+
+    mov.play();
+    mov.setPaused(true);
+
+    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
+
+    update();
 }
 
 void Video::display(){

@@ -26,6 +26,7 @@ public:
     virtual void update(void) =0;
     virtual ofTexture get_texture(void) =0;
     virtual void display(void) =0;
+    virtual void load_media(const char *) =0;
 
 
     //inhereted methods
@@ -51,6 +52,7 @@ public:
     ofTexture get_texture(void);
     void display(void);
     void update(void);
+    void load_media(const char *);
 };
 
 //========================================================================
@@ -63,11 +65,13 @@ public:
     int cur_frame;
 
     Video(const char *);
+    Video(void);
     ~Video(void);
 
     ofTexture get_texture(void);
     void display(void);
     void update(void);
+    void load_media(const char *);
 };
 
 #endif /* image_h */

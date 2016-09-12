@@ -37,9 +37,7 @@ o.numOutputBusChannels_(2);	// 2ch
 ~osc = NetAddr.new(~ip, ~port);
 
 //_GUI
-~width = 500;
-~height = 400;
-~display_gui = false;
+~display_gui = true;
 
 //_dev
 ~debug_osc = false;
@@ -66,17 +64,17 @@ s.waitForBoot({
 	//--------------------------------------------------------------
 	//_Live Input
 
-/*	SynthDef(\input, { |amp=0.8|
+	SynthDef(\input, { |amp=0.8|
 		var in, mix, chain, onsets;
 		in = SoundIn.ar(0);
 		mix = in!2 * amp;
 		Out.ar(10, in); 	// to processing
 		Out.ar(20, mix);	// to mixer
 
-/*		chain = FFT(LocalBuf(2048), in);
+		chain = FFT(LocalBuf(2048), in);
 		onsets = Onsets.kr(chain, 0.1, \rcomplex);
 		SendTrig.kr(onsets);
-		SendPeakRMS.kr(in, 60 , 3,  "/replyAddress");*/
+		SendPeakRMS.kr(in, 60 , 3,  "/replyAddress");
 	}).load(s);
 
 	//--------------------------------------------------------------
@@ -272,7 +270,7 @@ s.waitForBoot({
 	//--------------------------------------------------------------
 	//_Mixer
 
-	SynthDef(\mixer,{ |amp = 1.0|
+	SynthDef(\mixer,{ |amp = 0.0|
 		var in, mix;
 		in = In.ar(20, 2);
 		mix = Limiter.ar(MidEQ.ar(in, 15000, 0.7, 8)) * amp;
@@ -537,7 +535,6 @@ s.waitForBoot({
 	~world1.play;
 	// ~world2.play;
 	// ~world3.play;
-	// ~reset.();
 
 	//--------------------------------------------------------------
 	//_OSC
@@ -559,13 +556,27 @@ s.waitForBoot({
 		200,
 		200
 	))
-	.background_(Color(0.1, 0.1, 0.1))
-	// .alwaysOnTop_(true)
-	.onClose_({
+	.background_(Color(0.1, 0.1, 0.1));
+
+	~audio_toggle = Button(w, Rect(10, 10, 180, 80))
+	.states_([
+		["audio off", Color.black, Color.red],
+		["audio on", Color.black, Color.green]
+	])
+	.action_({ |state|
+		if(state.value == 0, { ~mix.set(\amp, 0.0) });
+		if(state.value == 1, { ~mix.set(\amp, 1.0) });
+	});
+
+	~close_button = Button(w, Rect(10, 110, 180, 80))
+	.states_([
+		["quit", Color.black, Color.blue]
+	])
+	.action_({ |state|
 		Server.killAll;
 		~osc.disconnect;
-		// thisProcess.shutdown;
-		// 0.exit;
+		thisProcess.shutdown;
+		0.exit;
 	});
 
 	if( (~display_gui), { w.front });

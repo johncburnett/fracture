@@ -21,8 +21,6 @@
 
 #include "osc_server.h"
 
-//class ofApp;
-
 //--------------------------------------------------------------
 OSC_Server::OSC_Server(int osc_port) {
     PORT = osc_port;
