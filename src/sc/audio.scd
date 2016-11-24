@@ -40,8 +40,9 @@ o.numOutputBusChannels_(2);	// 2ch
 ~display_gui = true;
 
 //_dev
-~debug_osc = false;
-~run_server = true;
+~debug_ide  = true;  // debug from scide
+~debug_osc  = false; // post all osc
+~run_server = true;  // start osc server
 
 s.waitForBoot({
 
@@ -56,6 +57,8 @@ s.waitForBoot({
 	~b4 = Buffer.read(s, ~cwd +/+ "machine_drone.wav");
 	~b5 = Buffer.read(s, ~cwd +/+ "boiling.wav");
 	~b6 = Buffer.read(s, ~cwd +/+ "foam.aiff");
+	~b7 = Buffer.read(s, ~cwd +/+ "superball.wav");
+	~g1 = Buffer.alloc(s, s.sampleRate * 16); // for live granulation
 	s.sync;
 
 	/**************************************************************************************************/
@@ -212,10 +215,43 @@ s.waitForBoot({
 		Out.ar(20, mix);	// to mixer
 	}).load(s);
 
+	// code by Martin Hünniger
+	// start
+	SynthDef( \liveGrains, { |amp=0.0, bufnum, pdisp = 0.01, tdisp = 0.02|
+		var frames, sRate, recHead, rec, in, overlap, trig,
+		out, eff, rate, dur, pan, center;
+
+		in      = In.ar( 10 );
+
+		frames  = BufFrames.kr( bufnum );
+		sRate   = BufSampleRate.kr( bufnum );
+		recHead = Phasor.ar( 1, BufRateScale.kr( bufnum), 0, frames, 0 );
+		rec     = BufWr.ar( in, bufnum, recHead );
+		// overlap = MouseY.kr( 0.8, 10, 1 );
+		overlap = 0.9;
+		dur     = 0.6 + SinOsc.kr( 0.1, mul:0.4 );
+		pdisp   = pdisp + 1;
+		trig    = Impulse.ar( overlap/dur );
+		// rate    = MouseX.kr( -6, 6, 0 ) * TExpRand.kr( pdisp.reciprocal, pdisp, trig );
+		rate    = -4 * TExpRand.kr( pdisp.reciprocal, pdisp, trig );
+		center  = Wrap.ar( recHead - (dur * rate * 0.5), 0, frames-1 ) - TRand.kr( 0, tdisp, trig );
+		pan     = WhiteNoise.kr(0.7);
+
+		out     = TGrains.ar( 2, trig, bufnum, rate, center/sRate, dur, pan, 1.0, 2 );
+		eff     = out;
+		6.do({
+			eff = LPF.ar( AllpassC.ar( eff, 0.5, 0.1.rand, 1), 8000 );
+		});
+
+		out = (out + eff) * amp;
+		Out.ar( 20, out );
+	}).send(s);
+	// end
+
 	//--------------------------------------------------------------
 	//_Rhythm
 
-	SynthDef(\snd, { |f1=44, f2=90, pan=0, amp=0.8|
+	SynthDef(\snd, { |f1=44, f2=90, pan=0, amp=0.0|
 		var snd = LPF.ar(
 			SinOsc.ar(f1.midicps, 0, 0.5) + SinOsc.ar(f2.midicps, 0, 0.6),
 			32.midicps * 2
@@ -228,7 +264,7 @@ s.waitForBoot({
 	}).load(s);
 
 
-	SynthDef(\bass, { |f1=52.8, f2=740, amp=0.8|
+	SynthDef(\bass, { |f1=52.8, f2=740, amp=0.0|
 		var bass, env, mix;
 		bass = SinOsc.ar([52.8, 740]*0.8, 0, [2, 0.05]).mean.tanh;
 		env = EnvGen.ar(Env([0, 0.5, 0.3, 0],
@@ -240,7 +276,7 @@ s.waitForBoot({
 	}).load(s);
 
 
-	SynthDef(\hNoise, { |amp=0.8|
+	SynthDef(\hNoise, { |amp=0.0|
 		var hNoise, env, mix;
 		env = EnvGen.ar(Env([0, 1.0, 0], [0.0005, 0.01]), doneAction:2);
 		hNoise = BPF.ar(
@@ -253,7 +289,7 @@ s.waitForBoot({
 	}).load(s);
 
 
-	SynthDef(\click, { |pan=0, amp=0.8|
+	SynthDef(\click, { |pan=0, amp=0.0|
 		var click, env, mix;
 		env = EnvGen.ar(Env([0, 1, 0], [0.001, 0.001]), doneAction:2);
 		click = BPF.ar(
@@ -430,6 +466,12 @@ s.waitForBoot({
 		});
 	};
 
+	~reset_amp = {
+		~melt.set([\amp, 0.0]);
+		~machine.set([\amp, 0.0]);
+		~grains.set([\amp, 0.0]);
+	};
+
 	~fadein = { |synth, amp=0.8, len=10.0, res=50|
 		Routine({
 			res.do({ |i|
@@ -514,6 +556,19 @@ s.waitForBoot({
 		~burst.reset;
 
 		~fadeout.(~grains, amp:0.6, len:60.0);
+
+		"entering world 3".postln;
+	});
+
+	// grains
+	~world4 = Routine({
+		~reset.();
+
+		~fadein.(~machine,    amp:0.2, len:10.0);
+		~fadein.(~liveGrains, amp:0.5, len:10.0);
+		// ~fadeout.(~grains, amp:0.6, len:60.0);
+
+		"entering world 4".postln;
 	});
 
 	/**************************************************************************************************/
@@ -527,14 +582,12 @@ s.waitForBoot({
 
 	//_processes
 	~melt = Synth(\melt, [\mod_scale, 0.2, \amp, 0.0]);
+	~liveGrains = Synth(\liveGrains, [\bufnum, ~g1.bufnum, \amp, 0.0]);
 
 	//_textures
-	~machine = Synth(\looper_2ch, [\bufnum, ~b4.bufnum, \amp, 0.0]);
+	// ~machine = Synth(\looper_2ch, [\bufnum, ~b4.bufnum, \amp, 0.0]);
+	~machine = Synth(\looper_2ch, [\bufnum, ~b7.bufnum, \amp, 0.2]);
 	~grains = Synth(\vGrain, [\bufnum, ~b5.bufnum, \dur, 0.2, \vary, 0.5, \rate, 0.25, \amp, 0.0]);
-
-	~world1.play;
-	// ~world2.play;
-	// ~world3.play;
 
 	//--------------------------------------------------------------
 	//_OSC
@@ -550,14 +603,16 @@ s.waitForBoot({
 	/**************************************************************************************************/
 	//_GUI
 
+	// window config
 	w = Window("audio", Rect(
 		Window.screenBounds.width - 200,
 		Window.screenBounds.height,
 		200,
-		200
+		400
 	))
 	.background_(Color(0.1, 0.1, 0.1));
 
+	// audio controls
 	~audio_toggle = Button(w, Rect(10, 10, 180, 80))
 	.states_([
 		["audio off", Color.black, Color.red],
@@ -573,12 +628,78 @@ s.waitForBoot({
 		["quit", Color.black, Color.blue]
 	])
 	.action_({ |state|
-		Server.killAll;
+		"exiting fracture audio\n".postln;
+		s.quit;
 		~osc.disconnect;
-		thisProcess.shutdown;
-		0.exit;
+		w.close;
+		if(not(~debug_ide), {
+			thisProcess.shutdown;
+			0.exit;
+		});
 	});
 
+	// world triggers
+	~toggle_w1 = Button(w, Rect(10, 210, 180, 40))
+	.states_([
+		[" world 1: inactive", Color.black, Color.white],
+		[" world 1: active  ", Color.black, Color.cyan]
+	])
+	.action_({ |state|
+		if(state.value == 0, { ~reset.(); });
+		if(state.value == 1, {
+			~world1.play;
+			~toggle_w2.value_(0);
+			~toggle_w3.value_(0);
+			~toggle_w4.value_(0);
+		});
+	});
+
+	~toggle_w2 = Button(w, Rect(10, 250, 180, 40))
+	.states_([
+		[" world 2: inactive", Color.black, Color.white],
+		[" world 2: active  ", Color.black, Color.cyan]
+	])
+	.action_({ |state|
+		if(state.value == 0, { ~reset.(); });
+		if(state.value == 1, {
+			~world2.play;
+			~toggle_w1.value_(0);
+			~toggle_w3.value_(0);
+			~toggle_w4.value_(0);
+		});
+	});
+
+	~toggle_w3 = Button(w, Rect(10, 290, 180, 40))
+	.states_([
+		[" world 3: inactive", Color.black, Color.white],
+		[" world 3: active  ", Color.black, Color.cyan]
+	])
+	.action_({ |state|
+		if(state.value == 0, { ~reset.(); });
+		if(state.value == 1, {
+			~world3.play;
+			~toggle_w1.value_(0);
+			~toggle_w2.value_(0);
+			~toggle_w4.value_(0);
+		});
+	});
+
+	~toggle_w4 = Button(w, Rect(10, 330, 180, 40))
+	.states_([
+		[" world 4: inactive", Color.black, Color.white],
+		[" world 4: active  ", Color.black, Color.cyan]
+	])
+	.action_({ |state|
+		if(state.value == 0, { ~reset.(); });
+		if(state.value == 1, {
+			~world4.play;
+			~toggle_w1.value_(0);
+			~toggle_w2.value_(0);
+			~toggle_w3.value_(0);
+		});
+	});
+
+	// display gui
 	if( (~display_gui), { w.front });
 
 	//--------------------------------------------------------------
