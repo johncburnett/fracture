@@ -40,7 +40,7 @@ o.numOutputBusChannels_(2);	// 2ch
 ~display_gui = true;
 
 //_dev
-~debug_ide  = true;  // debug from scide
+~debug_ide  = true;  // debug from sc ide
 ~debug_osc  = false; // post all osc
 ~run_server = true;  // start osc server
 
@@ -67,54 +67,49 @@ s.waitForBoot({
 	//--------------------------------------------------------------
 	//_Live Input
 
-	SynthDef(\input, { |amp=0.8|
+	SynthDef(\input, { |amp=0.8, send=0.0|
 		var in, mix, chain, onsets;
 		in = SoundIn.ar(0);
-		mix = in!2 * amp;
-		Out.ar(10, in); 	// to processing
-		Out.ar(20, mix);	// to mixer
-
-		chain = FFT(LocalBuf(2048), in);
-		onsets = Onsets.kr(chain, 0.1, \rcomplex);
-		SendTrig.kr(onsets);
-		SendPeakRMS.kr(in, 60 , 3,  "/replyAddress");
+		mix = in!2;
+		Out.ar(10, in * send); 	// to processing
+		Out.ar(20, mix * amp);	// to mixer
 	}).load(s);
 
 	//--------------------------------------------------------------
 	//_Sampling
 
-	SynthDef(\sampler_1ch, { |bufnum=0, rate=1, pan=0, amp=0.8|
+	SynthDef(\sampler_1ch, { |bufnum=0, rate=1, pan=0, amp=0.8, send=0.0|
 		var in, mix;
 		in = PlayBuf.ar(1, bufnum, rate, doneAction:2);
 		mix = Pan2.ar(in, pan) * amp;
-		Out.ar(10, in); 	// to processing
-		Out.ar(20, mix);	// to mixer
+		Out.ar(10, in * send); 	// to processing
+		Out.ar(20, mix * amp);	// to mixer
 	}).load(s);
 
 
-	SynthDef(\sampler_2ch, { |bufnum=0, rate=1, amp=0.8|
+	SynthDef(\sampler_2ch, { |bufnum=0, rate=1, amp=0.8, send=0.0|
 		var in, mix;
 		in = PlayBuf.ar(2, bufnum, rate, doneAction:2);
 		mix = in * amp;
-		Out.ar(10, in); 	// to processing
-		Out.ar(20, mix);	// to mixer
+		Out.ar(10, in * send); 	// to processing
+		Out.ar(20, mix * amp);	// to mixer
 	}).load(s);
 
-	SynthDef(\looper_1ch, { |bufnum=0, rate=1, pan=0, amp=0.8|
+	SynthDef(\looper_1ch, { |bufnum=0, rate=1, pan=0, amp=0.8, send=0.0|
 		var in, mix;
 		in = PlayBuf.ar(1, bufnum, rate, loop:1);
 		mix = Pan2.ar(in, pan) * amp;
-		Out.ar(10, in); 	// to processing
-		Out.ar(20, mix);	// to mixer
+		Out.ar(10, in * send); 	// to processing
+		Out.ar(20, mix * amp);	// to mixer
 	}).load(s);
 
 
-	SynthDef(\looper_2ch, { |bufnum=0, rate=1, amp=0.8|
+	SynthDef(\looper_2ch, { |bufnum=0, rate=1, amp=0.8, send=0.0|
 		var in, mix;
 		in = PlayBuf.ar(2, bufnum, rate, loop:1);
 		mix = in * amp;
-		Out.ar(10, in); 	// to processing
-		Out.ar(20, mix);	// to mixer
+		Out.ar(10, in * send); 	// to processing
+		Out.ar(20, mix * amp);	// to mixer
 	}).load(s);
 
 	//--------------------------------------------------------------
@@ -235,7 +230,7 @@ s.waitForBoot({
 		// rate    = MouseX.kr( -6, 6, 0 ) * TExpRand.kr( pdisp.reciprocal, pdisp, trig );
 		rate    = -4 * TExpRand.kr( pdisp.reciprocal, pdisp, trig );
 		center  = Wrap.ar( recHead - (dur * rate * 0.5), 0, frames-1 ) - TRand.kr( 0, tdisp, trig );
-		pan     = WhiteNoise.kr(0.7);
+		pan     = WhiteNoise.kr(0.5);
 
 		out     = TGrains.ar( 2, trig, bufnum, rate, center/sRate, dur, pan, 1.0, 2 );
 		eff     = out;
@@ -468,7 +463,8 @@ s.waitForBoot({
 
 	~reset_amp = {
 		~melt.set([\amp, 0.0]);
-		~machine.set([\amp, 0.0]);
+		~machine.set([\amp, 0.0, \send, 0.0]);
+		~perc.set([\amp, 0.0, \send, 0.0]);
 		~grains.set([\amp, 0.0]);
 	};
 
@@ -564,7 +560,8 @@ s.waitForBoot({
 	~world4 = Routine({
 		~reset.();
 
-		~fadein.(~machine,    amp:0.2, len:10.0);
+		~fadein.(~perc, amp:0.5, len:10.0);
+        ~interp.(~perc, \send, 0.0, 0.8, len:10.0);
 		~fadein.(~liveGrains, amp:0.5, len:10.0);
 		// ~fadeout.(~grains, amp:0.6, len:60.0);
 
@@ -585,8 +582,8 @@ s.waitForBoot({
 	~liveGrains = Synth(\liveGrains, [\bufnum, ~g1.bufnum, \amp, 0.0]);
 
 	//_textures
-	// ~machine = Synth(\looper_2ch, [\bufnum, ~b4.bufnum, \amp, 0.0]);
-	~machine = Synth(\looper_2ch, [\bufnum, ~b7.bufnum, \amp, 0.2]);
+	~machine = Synth(\looper_2ch, [\bufnum, ~b4.bufnum, \amp, 0.0]);
+	~perc = Synth(\looper_2ch, [\bufnum, ~b7.bufnum, \amp, 0.0]);
 	~grains = Synth(\vGrain, [\bufnum, ~b5.bufnum, \dur, 0.2, \vary, 0.5, \rate, 0.25, \amp, 0.0]);
 
 	//--------------------------------------------------------------
@@ -639,7 +636,7 @@ s.waitForBoot({
 	});
 
 	// world triggers
-	~toggle_w1 = Button(w, Rect(10, 210, 180, 40))
+	~toggle_w1 = Button(w, Rect(10, 220, 180, 40))
 	.states_([
 		[" world 1: inactive", Color.black, Color.white],
 		[" world 1: active  ", Color.black, Color.cyan]
@@ -654,7 +651,7 @@ s.waitForBoot({
 		});
 	});
 
-	~toggle_w2 = Button(w, Rect(10, 250, 180, 40))
+	~toggle_w2 = Button(w, Rect(10, 260, 180, 40))
 	.states_([
 		[" world 2: inactive", Color.black, Color.white],
 		[" world 2: active  ", Color.black, Color.cyan]
@@ -669,7 +666,7 @@ s.waitForBoot({
 		});
 	});
 
-	~toggle_w3 = Button(w, Rect(10, 290, 180, 40))
+	~toggle_w3 = Button(w, Rect(10, 300, 180, 40))
 	.states_([
 		[" world 3: inactive", Color.black, Color.white],
 		[" world 3: active  ", Color.black, Color.cyan]
@@ -684,7 +681,7 @@ s.waitForBoot({
 		});
 	});
 
-	~toggle_w4 = Button(w, Rect(10, 330, 180, 40))
+	~toggle_w4 = Button(w, Rect(10, 340, 180, 40))
 	.states_([
 		[" world 4: inactive", Color.black, Color.white],
 		[" world 4: active  ", Color.black, Color.cyan]
