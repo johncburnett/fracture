@@ -52,7 +52,7 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-//    update_stream0();
+    update_stream0();
     update_stream1();
     kernel->update();
     server->update();
@@ -71,7 +71,7 @@ void ofApp::init_stream0(){
     mode = 2;
     
     mirror = new Mirror();
-    smear = new SmearInner(img6);
+    smearIn = new SmearInner(img6);
     swarm = new Swarm();
     invert = new Invert(1.0);
     blur = new ofxBlur();
@@ -92,7 +92,7 @@ void ofApp::init_stream0(){
 void ofApp::update_stream0(){
     //if (ofGetFrameNum() %2) stream0->num_nodes = (stream0->num_nodes) % 4 + 2;
     //smear->set_scale(ofMap(mouseX, 0, WIDTH, 0, 10000));
-    smear->set_scale(macro);
+    smearIn->set_scale(macro);
     //stream0->set_init_img(vid0);
     stream0->set_init_img(sources[source_index]);
     stream0->evaluate();
@@ -101,24 +101,28 @@ void ofApp::update_stream0(){
 
 void ofApp::init_stream1(){
     img.load("img/IMG_0644_BIG.jpg");
+    img8 = new Still();
+    img8->load_media("img/IMG_0644_BIG.jpg");
     
     pan = new Pan(&img);
     mirror = new Mirror();
     mirror->set_mode(2);
-    smear = new SmearInner(img6);
-    swarm = new Swarm();
+    smearIn = new SmearInner(img6);
+//    smear = new Smear(img8, 9, 9, 0, 0);
     
     stream1 = new Stream();
     stream1->add_transform(pan);
     stream1->add_transform(mirror);
-    stream1->add_transform(smear);
+    stream1->add_transform(smearIn);
+//    stream1->add_transform(smear);
 }
 
 void ofApp::update_stream1(){
 //    pan->set_corners(0, -1000-(.1*ofGetFrameNum()));
 //    pan->set_corners(0, -800-(m0* 50));
-    pan->set_corners(0, -600-(m0 * 1000));
-    smear->set_scale(vol * 4000);
+    pan->set_corners(0, -600-(m0 * 2000));
+    smearIn->set_scale(vol * 16000);
+//    smear->set_scale(0, -1 * vol * 4000);
     stream1->evaluate();
 }
 
@@ -128,7 +132,7 @@ void ofApp::init_stream2(){
     
     mirror = new Mirror();
     
-    smear = new SmearInner(img6);
+    smearIn = new SmearInner(img6);
     swarm = new Swarm();
     invert = new Invert(1.0);
     blur = new ofxBlur();
@@ -137,7 +141,7 @@ void ofApp::init_stream2(){
     
     stream2 = new Stream();
     
-    stream2->add_transform(smear);
+    stream2->add_transform(smearIn);
     stream2->add_transform(mirror);
     stream2->add_transform(invert);
     stream2->add_transform(swarm);
@@ -149,7 +153,7 @@ void ofApp::update_stream2(){
     //if (ofGetFrameNum() %2) stream0->num_nodes = (stream0->num_nodes) % 4 + 2;
     //smear->set_scale(ofMap(mouseX, 0, WIDTH, 0, 10000));
     //vid0->update();
-    smear->set_scale(macro);
+    smearIn->set_scale(macro);
     stream2->set_init_img(sources[source_index]);
     stream2->evaluate();
 }
@@ -223,7 +227,7 @@ void ofApp::noise(float &f) {
 }
 
 void ofApp::click(float &f) {
-    smear->set_scale(ofMap(ofGetFrameNum() % 1000 / 1000.f, 0.0, 1.0, 0, 1000));
+    smearIn->set_scale(ofMap(ofGetFrameNum() % 1000 / 1000.f, 0.0, 1.0, 0, 1000));
     //invert->scale = abs(1 - invert->scale);
     
     mode = (int) ofRandom(1.99);

@@ -131,6 +131,7 @@ public:
     Smear(BaseImage *, float, float, float, float);
     ~Smear(void);
 
+    void set_scale(float _x, float _y);
     void update_delta(float,float);
 
     // virtual methods

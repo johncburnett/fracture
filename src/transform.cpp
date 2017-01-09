@@ -135,6 +135,11 @@ Smear::Smear(BaseImage *_fcn, float xi, float yi, float init_dx, float init_dy) 
     dy = init_dy;
 }
 
+void Smear::set_scale(float _x, float _y) {
+    x_scale = _x;
+    y_scale = _y;
+}
+
 void Smear::update_delta(float new_dx, float new_dy){
     dx = new_dx;
     dy = new_dy;
