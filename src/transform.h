@@ -67,6 +67,28 @@ public:
 
 //========================================================================
 /*
+ *  Pan image.
+ */
+
+class Pan : public virtual Transform {
+public:
+    ofShader shader;
+    ofImage* img;
+    ofFbo* big_fbo;
+    float x, y;
+    
+    Pan(ofImage *big_image);
+    ~Pan(void);
+    
+    void set_corners(float _x, float _y);
+    
+    // virtual methods
+    void update(void);
+    void process_image(void);
+};
+
+//========================================================================
+/*
  *  Mirror an image.
  */
 class Mirror : public virtual Transform {

@@ -31,11 +31,12 @@ void ofApp::setup(){
     load_media();
     
     //_Streams
-    init_stream0();
+//    init_stream0();
+    init_stream1();
     
     //_Kernel
     kernel = new Kernel();
-    kernel->add_stream(stream0, 0);
+    kernel->add_stream(stream1, 0);
 
     //_OSC
     server = new OSC_Server(OSC_IN);
@@ -47,7 +48,7 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    update_stream0();
+    update_stream1();
     kernel->update();
     server->update();
 }
@@ -90,20 +91,27 @@ void ofApp::update_stream0(){
     //stream0->set_init_img(vid0);
     stream0->set_init_img(sources[source_index]);
     stream0->evaluate();
+//    vid0->update();
 }
 
 void ofApp::init_stream1(){
+    img.load("img/IMG_0644_BIG.jpg");
     
-    heat = new HeatDistort(img7, img7mask);
+    pan = new Pan(&img);
+    mirror = new Mirror();
+    mirror->set_mode(2);
+    smear = new SmearInner(img6);
+    swarm = new Swarm();
     
     stream1 = new Stream();
-    stream1->add_transform(heat);
-    
-    stream1->set_init_img(img7);
+    stream1->add_transform(pan);
+    stream1->add_transform(mirror);
+    stream1->add_transform(smear);
 }
 
 void ofApp::update_stream1(){
-    ;
+    pan->set_corners(0, -1000-(.1*ofGetFrameNum()));
+    stream1->evaluate();
 }
 
 void ofApp::init_stream2(){
@@ -153,7 +161,7 @@ void ofApp::load_media(){
     img7mask = new Still();
     
     //_videos
-    vid0 = new Video();
+//    vid0 = new Video();
     
     sources.push_back(img0);
     sources.push_back(img1);
@@ -164,7 +172,7 @@ void ofApp::load_media(){
     sources.push_back(img6);
     sources.push_back(img7);
     sources.push_back(img7mask);
-    sources.push_back(vid0);
+//    sources.push_back(vid0);
     
     vector<const char *> fnames = {
         "img/IMG_0639.jpg",
@@ -175,8 +183,8 @@ void ofApp::load_media(){
         "img/IMG_0644.jpg",
         "img/sludge.jpg",
         "img/IMG_1734.png",
-        "img/IMG_6140.jpg",
-        "lapses/pano_lapse.mov",
+        "img/IMG_6140.jpg"
+//        "lapses/pano_lapse.mov",
     };
     
     //_multithreaded loading
@@ -233,7 +241,7 @@ void ofApp::rms(float &f) {
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
     if (key == 'f'){
-        stream0->num_nodes = (stream0->num_nodes) % stream0->nodes.size() + 1;
+        stream1->num_nodes = (stream1->num_nodes) % stream1->nodes.size() + 1;
     }
     
     if (key == ' '){

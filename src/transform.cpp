@@ -56,11 +56,41 @@ void DisplayImage::update(void) {
     process_image();
 }
 
-void DisplayImage::process_image(void) {
+void DisplayImage::process_image(void){
     fbo->begin();
     ofClear(0, 0, 0, 0);
     input->display();
     fbo->end();
+}
+
+//========================================================================
+Pan::Pan(ofImage* big_image) {
+    shader.load("shadersGL2/pan");
+    img = big_image;
+}
+
+void Pan::set_corners(float _x, float _y){
+    x = _x;
+    y = _y;
+}
+
+void Pan::update(void) {
+    process_image();
+}
+
+void Pan::process_image(void){
+    ofTexture tex0 = img->getTexture();
+    fbo->begin();
+    ofClear(0, 0, 0, 1);
+    shader.begin();
+    
+        shader.setUniformTexture("tex0", tex0, 0);
+        shader.setUniform2f("corner", x, y);
+        draw_quad();
+    
+    shader.end();
+    fbo->end();
+    
 }
 
 

@@ -52,6 +52,7 @@ public:
     // TODO: put this stuff in a list and parallelize loading
     Still *img0, *img1, *img2, *img3, *img4, *img5, *img6, *img7, *img7mask, *img8;
     Video *vid0, *vid1;
+    ofImage img;
     vector<BaseImage*> sources;
     void load_media(void);
     int source_index;
@@ -69,6 +70,7 @@ public:
     ofxBlur *blur;
     DisplayImage *pass_image;
     HeatDistort *heat;
+    Pan *pan;
     
     //========================================================================
     //Specific scenes
