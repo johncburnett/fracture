@@ -40,9 +40,9 @@ o.numOutputBusChannels_(2);	// 2ch
 ~display_gui = true;
 
 //_dev
-~debug_ide  = true;  // debug from sc ide
 ~debug_osc  = false; // post all osc
 ~run_server = true;  // start osc server
+if(thisProcess.argv.size != 0, { ~debug_ide = false },{ ~debug_ide = true }); // debug from sc ide
 
 s.waitForBoot({
 
@@ -58,7 +58,9 @@ s.waitForBoot({
 	~b5 = Buffer.read(s, ~cwd +/+ "boiling.wav");
 	~b6 = Buffer.read(s, ~cwd +/+ "foam.aiff");
 	~b7 = Buffer.read(s, ~cwd +/+ "superball.wav");
-	~g1 = Buffer.alloc(s, s.sampleRate * 16); // for live granulation
+	// grains
+	~g1 = Buffer.alloc(s, s.sampleRate * 16);
+	~g2 = Buffer.alloc(s, s.sampleRate * 16);
 	s.sync;
 
 	/**************************************************************************************************/
@@ -73,7 +75,7 @@ s.waitForBoot({
 		mix = in!2;
 		Out.ar(10, in * send); 	// to processing
 		Out.ar(20, mix * amp);	// to mixer
-	}).load(s);
+	}).add;
 
 	//--------------------------------------------------------------
 	//_Sampling
@@ -84,7 +86,7 @@ s.waitForBoot({
 		mix = Pan2.ar(in, pan) * amp;
 		Out.ar(10, in * send); 	// to processing
 		Out.ar(20, mix * amp);	// to mixer
-	}).load(s);
+	}).add;
 
 
 	SynthDef(\sampler_2ch, { |bufnum=0, rate=1, amp=0.8, send=0.0|
@@ -93,7 +95,7 @@ s.waitForBoot({
 		mix = in * amp;
 		Out.ar(10, in * send); 	// to processing
 		Out.ar(20, mix * amp);	// to mixer
-	}).load(s);
+	}).add;
 
 	SynthDef(\looper_1ch, { |bufnum=0, rate=1, pan=0, amp=0.8, send=0.0|
 		var in, mix;
@@ -101,7 +103,7 @@ s.waitForBoot({
 		mix = Pan2.ar(in, pan) * amp;
 		Out.ar(10, in * send); 	// to processing
 		Out.ar(20, mix * amp);	// to mixer
-	}).load(s);
+	}).add;
 
 
 	SynthDef(\looper_2ch, { |bufnum=0, rate=1, amp=0.8, send=0.0|
@@ -110,7 +112,7 @@ s.waitForBoot({
 		mix = in * amp;
 		Out.ar(10, in * send); 	// to processing
 		Out.ar(20, mix * amp);	// to mixer
-	}).load(s);
+	}).add;
 
 	//--------------------------------------------------------------
 	//_Processing
@@ -158,7 +160,15 @@ s.waitForBoot({
 		mix = ([d1, d2]*4) * amp;
 
 		Out.ar(20, mix);	// to mixer
-	}).load(s);
+	}).add;
+
+	SynthDef(\dynamicRes, { |amp=0.0,
+		freqs (#[244.6, 107.8, 329.6, 669.5, 247.4, 149.5]),
+		amps (#[1, 0.3, 0.2, 0.05, 1, 1]),
+		rings (#[3, 4, 3, 4, 3, 4])|
+
+		Out.ar(20, DynKlank.ar(`[freqs, amps, rings], In.ar(10, 2).sum*0.5).dup * 0.01 * amp);
+	}).add;
 
 	//--------------------------------------------------------------
 	//_Grains
@@ -183,7 +193,7 @@ s.waitForBoot({
 
 		mix = (in + grains) * amp;
 		Out.ar(20, mix);	// to mixer
-	}).load(s);
+	}).add;
 
 
 	SynthDef(\grainFlurry, { |bufnum=0, startPos=0.0, amp=0.3, len=0.4, rate=1.0, vary=0.2, scale=1.0|
@@ -208,13 +218,12 @@ s.waitForBoot({
 
 		mix = (in + grains) * amp * env * 0.5;
 		Out.ar(20, mix);	// to mixer
-	}).load(s);
+	}).add;
 
-	// code by Martin Hünniger
+	// based off code by Martin Hünniger
 	// start
-	SynthDef( \liveGrains, { |amp=0.0, bufnum, pdisp = 0.01, tdisp = 0.02|
-		var frames, sRate, recHead, rec, in, overlap, trig,
-		out, eff, rate, dur, pan, center;
+	SynthDef( \liveGrains, { |amp=0.0, bufnum, pdisp = 0.01, tdisp = 0.02, speed=1.0, overlap=1.0|
+		var frames, sRate, recHead, rec, in, trig, out, eff, rate, dur, pan, center;
 
 		in      = In.ar( 10 );
 
@@ -222,13 +231,10 @@ s.waitForBoot({
 		sRate   = BufSampleRate.kr( bufnum );
 		recHead = Phasor.ar( 1, BufRateScale.kr( bufnum), 0, frames, 0 );
 		rec     = BufWr.ar( in, bufnum, recHead );
-		// overlap = MouseY.kr( 0.8, 10, 1 );
-		overlap = 0.9;
 		dur     = 0.6 + SinOsc.kr( 0.1, mul:0.4 );
 		pdisp   = pdisp + 1;
 		trig    = Impulse.ar( overlap/dur );
-		// rate    = MouseX.kr( -6, 6, 0 ) * TExpRand.kr( pdisp.reciprocal, pdisp, trig );
-		rate    = -4 * TExpRand.kr( pdisp.reciprocal, pdisp, trig );
+		rate    = speed * TExpRand.kr( pdisp.reciprocal, pdisp, trig );
 		center  = Wrap.ar( recHead - (dur * rate * 0.5), 0, frames-1 ) - TRand.kr( 0, tdisp, trig );
 		pan     = WhiteNoise.kr(0.5);
 
@@ -256,7 +262,7 @@ s.waitForBoot({
 			pan
 		);
 		Out.ar(20, snd * amp * 3);	// to mixer
-	}).load(s);
+	}).add;
 
 
 	SynthDef(\bass, { |f1=52.8, f2=740, amp=0.0|
@@ -268,7 +274,7 @@ s.waitForBoot({
 		)!2;
 		mix = bass * env * amp * 5;
 		Out.ar(20, mix);	// to mixer
-	}).load(s);
+	}).add;
 
 
 	SynthDef(\hNoise, { |amp=0.0|
@@ -281,7 +287,7 @@ s.waitForBoot({
 		)!2;
 		mix = hNoise * amp;
 		Out.ar(20, mix);	// to mixer
-	}).load(s);
+	}).add;
 
 
 	SynthDef(\click, { |pan=0, amp=0.0|
@@ -296,18 +302,26 @@ s.waitForBoot({
 		click = Pan2.ar(click, pan);
 		mix = click * amp;
 		Out.ar(20, mix);	// to mixer
-	}).load(s);
+	}).add;
 
 	//--------------------------------------------------------------
 	//_Mixer
 
 	SynthDef(\mixer,{ |amp = 0.0|
-		var in, mix;
+		var in, mix, lo, mid, hi;
 		in = In.ar(20, 2);
 		mix = Limiter.ar(MidEQ.ar(in, 15000, 0.7, 8)) * amp;
-		SendPeakRMS.kr(in, 61, 3, '/rms');
 		Out.ar(0, mix);
-	}).load(s);
+
+		// OSC
+		lo = LPF.ar(in, 250);
+		mid = HPF.ar(LPF.ar(in, 2000), 250);
+		hi = HPF.ar(in, 2500);
+		// SendPeakRMS.kr(lo, 20, 3, '/lo');
+
+		// SendPeakRMS.kr(in, 20, 3, '/rms');
+		SendPeakRMS.kr(hi, 20, 3, '/rms');
+	}).add;
 
 	/**************************************************************************************************/
 	//_Sequencing
@@ -425,8 +439,10 @@ s.waitForBoot({
 	});
 
 	~burst = Routine({
-		Synth(\grainFlurry, [\bufnum, ~b1.bufnum, \dur, 0.5, \vary, 2.0]);
+		Synth(\grainFlurry, [\bufnum, ~b1.bufnum, \dur, 0.5, \vary, 2]);
 	});
+	// ~burst.play
+	// ~burst.reset
 
 	~splatter = Routine({
 		var grains, spec;
@@ -468,7 +484,7 @@ s.waitForBoot({
 		~grains.set([\amp, 0.0]);
 	};
 
-	~fadein = { |synth, amp=0.8, len=10.0, res=50|
+	~fadein = { |synth, amp=0.8, len=10.0, res=100|
 		Routine({
 			res.do({ |i|
 				synth.set(\amp, i/res*amp);
@@ -477,7 +493,7 @@ s.waitForBoot({
 		}).play;
 	};
 
-	~fadeout = { |synth, amp=0.8, len=10.0, res=50|
+	~fadeout = { |synth, amp=0.8, len=10.0, res=100|
 		Routine({
 			res.do({ |i|
 				synth.set(\amp, amp - (i/res*amp));
@@ -486,13 +502,13 @@ s.waitForBoot({
 		}).play;
 	};
 
-	~interp = { |synth, param, start, end, len=10.0, res=100|
+	~interp = { |synth, param, start, end, len=10.0, res=1000, modString="/mod0"|
 		Routine({
 			var spec = ControlSpec(start, end, \lin, 0.00001);
 			res.do({ |i|
 				var v1 = spec.map(i/res);
 				synth.set(param, v1);
-				~osc.sendMsg("/mod0", i/res * 0.1);
+				~osc.sendMsg(modString, i/res);
 				(len/res).wait;
 			});
 		}).play;
@@ -501,22 +517,14 @@ s.waitForBoot({
 	//--------------------------------------------------------------
 	//_Worlds
 
+	// granulated machine
 	~world1 = Routine({
 		~reset.();
 
-		~r1.play;
-		// ~r3.play;
-		~mod_melt.play;
-		// ~deep.play;
-
-		Routine({
-			30.wait;
-			~r5.play;
-		});
-
-		~fadein.(~machine, amp:0.2, len:10.0);
-		~fadein.(~melt, amp:0.4, len:30.0);
-		// ~fadeout.(~grains, amp:0.8, len:10.0);
+		~fadein.(~machine, amp:0.8, len:30);
+		~interp.(~machine, \send, 0, 0.7, len:240);
+		~liveGrains1.set(\amp, 0.45, \speed, 0.5, \overlap, 7);
+		~liveGrains2.set(\amp, 0.90, \speed, 2.0, \overlap, 7);
 
 		"entering world 1".postln;
 	});
@@ -524,16 +532,12 @@ s.waitForBoot({
 	~world2 = Routine({
 		~reset.();
 
-		// ~r1.play;
-		// ~r3.play;
+		~fadein.(~machine, amp:0.3, len:30);
+		~interp.(~machine, \send, 0, 0.7, len:60);
+		~machine.set(\rate, 0.5);
 
-		~interp.(~grains, \dur, 0.2, 0.00001, len:20);
-		~interp.(~grains, \vary, 1, 0.5, len:20);
-		~interp.(~grains, \rate, 0.8, 0.25, len:20);
-
-		~fadein.(~grains, amp:0.6, len:20.0);
-		// ~fadeout.(~machine, amp:0.2, len:10.0);
-		~fadeout.(~melt, amp:0.4, len:10.0);
+		~fadein.(~res, amp:0.8, len:30);
+		~res.setn(\amps, Array.exprand(6, 0.01, 1));
 
 		"entering world 2".postln;
 	});
@@ -541,29 +545,40 @@ s.waitForBoot({
 	~world3 = Routine({
 		~reset.();
 
-		~r1.play;
-		~r2.play;
-		~r3.play;
-		~r4.play;
+		~fadein.(~machine, amp:0.3, len:15);
+		~interp.(~machine, \send, 0, 0.7, len:30);
+		~machine.set(\rate, 0.5);
 
-		~interp.(~grains, \dur, 0.2, 0.00001, len:60);
+		~fadein.(~res, amp:0.8, len:30);
 
-		~burst.play;
-		~burst.reset;
+		Routine.run({
+			inf.do{
+				Synth(\grainFlurry, [\bufnum, ~b1.bufnum, \dur, 0.5, \vary, rrand(0, 100), \amp, 0.03]);
+				~res.setn(\freqs, Array.exprand(6, 200, 1500));
+				~res.setn(\amps, Array.exprand(6, 0.01, 0.8));
+				rrand(10, 40).wait;
+			};
+		});
 
-		~fadeout.(~grains, amp:0.6, len:60.0);
+		Routine.run({
+			inf.do{
+				~res.setn(\freqs, Array.exprand(6, 200, 1500));
+				~res.setn(\amps, Array.exprand(6, 0.01, 1));
+				rrand(2, 10).wait;
+			};
+		});
 
 		"entering world 3".postln;
 	});
 
-	// grains
+	// granulated percussion
 	~world4 = Routine({
 		~reset.();
 
 		~fadein.(~perc, amp:0.5, len:10.0);
         ~interp.(~perc, \send, 0.0, 0.8, len:10.0);
-		~fadein.(~liveGrains, amp:0.5, len:10.0);
-		// ~fadeout.(~grains, amp:0.6, len:60.0);
+		~fadein.(~liveGrains1, amp:0.5, len:10.0);
+		~liveGrains.set(\speed, -4, \overlap, 0.7);
 
 		"entering world 4".postln;
 	});
@@ -579,7 +594,9 @@ s.waitForBoot({
 
 	//_processes
 	~melt = Synth(\melt, [\mod_scale, 0.2, \amp, 0.0]);
-	~liveGrains = Synth(\liveGrains, [\bufnum, ~g1.bufnum, \amp, 0.0]);
+	~liveGrains1 = Synth(\liveGrains, [\bufnum, ~g1.bufnum, \amp, 0.0]);
+	~liveGrains2 = Synth(\liveGrains, [\bufnum, ~g2.bufnum, \amp, 0.0]);
+	~res  = Synth(\dynamicRes, [\amp, 0.0]);
 
 	//_textures
 	~machine = Synth(\looper_2ch, [\bufnum, ~b4.bufnum, \amp, 0.0]);

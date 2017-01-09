@@ -24,6 +24,9 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+    // init status
+    for(int i = 0; i < 4; i++) { status[i] = false; }
+    
     //_OpenGL init
     ofSetFrameRate(FRAMERATE);
     
@@ -36,6 +39,7 @@ void ofApp::setup(){
     
     //_Kernel
     kernel = new Kernel();
+//    kernel->add_stream(stream0, 0);
     kernel->add_stream(stream1, 0);
 
     //_OSC
@@ -48,6 +52,7 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+//    update_stream0();
     update_stream1();
     kernel->update();
     server->update();
@@ -110,7 +115,10 @@ void ofApp::init_stream1(){
 }
 
 void ofApp::update_stream1(){
-    pan->set_corners(0, -1000-(.1*ofGetFrameNum()));
+//    pan->set_corners(0, -1000-(.1*ofGetFrameNum()));
+//    pan->set_corners(0, -800-(m0* 50));
+    pan->set_corners(0, -600-(m0 * 1000));
+    smear->set_scale(vol * 4000);
     stream1->evaluate();
 }
 
@@ -228,14 +236,17 @@ void ofApp::bass(float &f) {
 
 void ofApp::mod0(float &f) {
     //macro = ofMap(f, 0.0, 1.0, 0.0, 10000);
+    m0 = f;
 }
 
 void ofApp::mod1(float &f) {
-    ;
+    m1 = f;
 }
 
 void ofApp::rms(float &f) {
     macro = ofMap(f, 0.0, 1.0, 0, 4000);
+    vol = f * 10.0;
+//    cout << f << endl;
 }
 
 //--------------------------------------------------------------

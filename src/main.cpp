@@ -58,6 +58,7 @@ void run_supercollider(void) {
     if(pid == 0) {
         std::system("../../../../sc \
                ../../../../src/sc/audio.scd \
-               > ../../../../log/sc_log.txt");
+               > ../../../../log/sc_log.txt \
+               on");
     }
 }
