@@ -61,7 +61,8 @@ public:
     //transforms
     NoiseMask *noise_mask;
     DisplayImage *transform;
-    SmearInner *smear;
+    SmearInner *smearIn;
+    Smear *smear;
     Swarm *swarm;
     Invert *invert;
     Grayscale *grayscale;

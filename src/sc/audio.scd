@@ -484,7 +484,7 @@ s.waitForBoot({
 		~grains.set([\amp, 0.0]);
 	};
 
-	~fadein = { |synth, amp=0.8, len=10.0, res=100|
+	~fadein = { |synth, amp=0.8, len=10.0, res=1000|
 		Routine({
 			res.do({ |i|
 				synth.set(\amp, i/res*amp);
@@ -493,7 +493,7 @@ s.waitForBoot({
 		}).play;
 	};
 
-	~fadeout = { |synth, amp=0.8, len=10.0, res=100|
+	~fadeout = { |synth, amp=0.8, len=10.0, res=1000|
 		Routine({
 			res.do({ |i|
 				synth.set(\amp, amp - (i/res*amp));
@@ -502,7 +502,7 @@ s.waitForBoot({
 		}).play;
 	};
 
-	~interp = { |synth, param, start, end, len=10.0, res=1000, modString="/mod0"|
+	~interp = { |synth, param, start, end, len=10.0, res=10000, modString="/mod0"|
 		Routine({
 			var spec = ControlSpec(start, end, \lin, 0.00001);
 			res.do({ |i|
