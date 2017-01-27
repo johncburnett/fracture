@@ -64,8 +64,6 @@ void ofApp::draw(){
     ofSetWindowTitle("FPS: " + ofToString(ofGetFrameRate()));
 
     kernel->draw();
-
- 
 }
 
 //--------------------------------------------------------------
