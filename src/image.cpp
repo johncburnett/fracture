@@ -74,7 +74,11 @@ Video::Video(const char *fname){
 }
 
 Video::Video(void) {
-    ;
+    fbo.allocate(WIDTH, HEIGHT, GL_RGBA);
+    
+    fbo.begin();
+    ofClear(0,0,0,0);
+    fbo.end();
 }
 
 void Video::update(void){

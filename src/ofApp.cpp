@@ -35,25 +35,26 @@ void ofApp::setup(){
     
     //_Streams
 //    init_stream0();
-    init_stream1();
+//    init_stream1();
+    init_stream2();
     
     //_Kernel
     kernel = new Kernel();
 //    kernel->add_stream(stream0, 0);
-    kernel->add_stream(stream1, 0);
+//    kernel->add_stream(stream1, 0);
+    kernel->add_stream(stream2, 0);
 
     //_OSC
     server = new OSC_Server(OSC_IN);
     set_listeners();
     
     //_supercollider
-    run_supercollider();
+    //run_supercollider();
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-//    update_stream0();
-    update_stream1();
+    update_stream2();
     kernel->update();
     server->update();
 }
@@ -63,6 +64,8 @@ void ofApp::draw(){
     ofSetWindowTitle("FPS: " + ofToString(ofGetFrameRate()));
 
     kernel->draw();
+
+ 
 }
 
 //--------------------------------------------------------------
@@ -123,34 +126,13 @@ void ofApp::update_stream1(){
 }
 
 void ofApp::init_stream2(){
-    
-    mode = 1;
-    
-    mirror = new Mirror();
-    
-    smear = new SmearInner(img6);
-    swarm = new Swarm();
-    invert = new Invert(1.0);
-    blur = new ofxBlur();
-    mirror->set_mode(mode);
-    blur->setScale(0.1);
+    fm = new FrameMover(vid0);
     
     stream2 = new Stream();
-    
-    stream2->add_transform(smear);
-    stream2->add_transform(mirror);
-    stream2->add_transform(invert);
-    stream2->add_transform(swarm);
-
-    stream2->add_transform(blur);
+    stream2->add_transform(fm);
 }
 
 void ofApp::update_stream2(){
-    //if (ofGetFrameNum() %2) stream0->num_nodes = (stream0->num_nodes) % 4 + 2;
-    //smear->set_scale(ofMap(mouseX, 0, WIDTH, 0, 10000));
-    //vid0->update();
-    smear->set_scale(macro);
-    stream2->set_init_img(sources[source_index]);
     stream2->evaluate();
 }
 
@@ -169,7 +151,7 @@ void ofApp::load_media(){
     img7mask = new Still();
     
     //_videos
-//    vid0 = new Video();
+    vid0 = new Video();
     
     sources.push_back(img0);
     sources.push_back(img1);
@@ -180,7 +162,7 @@ void ofApp::load_media(){
     sources.push_back(img6);
     sources.push_back(img7);
     sources.push_back(img7mask);
-//    sources.push_back(vid0);
+    sources.push_back(vid0);
     
     vector<const char *> fnames = {
         "img/IMG_0639.jpg",
@@ -191,8 +173,8 @@ void ofApp::load_media(){
         "img/IMG_0644.jpg",
         "img/sludge.jpg",
         "img/IMG_1734.png",
-        "img/IMG_6140.jpg"
-//        "lapses/pano_lapse.mov",
+        "img/IMG_6140.jpg",
+        "lapses/pano_lapse.mov",
     };
     
     //_multithreaded loading

@@ -71,6 +71,7 @@ public:
     DisplayImage *pass_image;
     HeatDistort *heat;
     Pan *pan;
+    FrameMover* fm;
     
     //========================================================================
     //Specific scenes

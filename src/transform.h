@@ -75,6 +75,7 @@ public:
     ofShader shader;
     ofImage* img;
     ofFbo* big_fbo;
+    ofTexture tex0, tex1;
     float x, y;
     
     Pan(ofImage *big_image);
@@ -164,6 +165,24 @@ public:
     void set_scale(float);
 
     // virtual methods
+    void update(void);
+    void process_image(void);
+};
+
+//========================================================================
+/*
+ * Move between video frames.
+ */
+class FrameMover : public virtual Transform {
+public:
+    ofShader shader;
+    Video* current_frame;
+    Still* aggregate;
+    int counter;
+    
+    FrameMover(Video* _video);
+    ~FrameMover(void);
+    
     void update(void);
     void process_image(void);
 };

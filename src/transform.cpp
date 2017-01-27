@@ -207,6 +207,54 @@ void SmearInner::process_image(void) {
     fbo->end();
 }
 
+//========================================================================
+FrameMover::FrameMover(Video* _video){
+    shader.load("shadersGL2/video");
+    current_frame = _video;
+    current_frame->update();
+    
+    aggregate = new Still();
+    aggregate->overwrite_fbo(&current_frame->fbo);
+    counter = 0;
+}
+
+
+void FrameMover::update(void){
+    if (counter % 10 == 0){
+        current_frame->update();
+    }
+    counter++;
+    process_image();
+}
+
+void FrameMover::process_image(){
+    ofTexture tex0 = aggregate->get_texture();
+    ofTexture tex1 = current_frame->get_texture();
+    
+    // not sure about this; not allocated initially
+    if (not tex1.isAllocated()){
+        tex1.allocate(WIDTH, HEIGHT, GL_RGBA);
+    }
+    fbo->begin();
+	ofClear(0, 0, 0, 1);
+
+        shader.begin();
+
+            shader.setUniformTexture("tex0", tex0, 0);
+            shader.setUniformTexture("tex1", tex1, 1);
+            shader.setUniform1f("time", counter);
+            shader.setUniform1i("w", WIDTH);
+            shader.setUniform1i("h", HEIGHT);
+
+            draw_quad();
+
+        shader.end();
+
+    fbo->end();
+    aggregate->overwrite_fbo(fbo);
+}
+
+
 
 //========================================================================
 Invert::Invert(float _scale) {

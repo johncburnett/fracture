@@ -8,6 +8,7 @@ uniform float radiusSquared;
 uniform float elapsed;
 uniform vec2 dim;
 varying vec4 texCoordVarying;
+uniform float time = 0.0;
 
 //====================================================================
 //
