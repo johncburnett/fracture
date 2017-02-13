@@ -19,13 +19,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libiomp/omp.h>
+//#include <libiomp/omp.h>
 #include "ofApp.h"
 
 //--------------------------------------------------------------
 void ofApp::setup(){
     // init status
     for(int i = 0; i < 4; i++) { status[i] = false; }
+    status[3] = true;
     
     //_OpenGL init
     ofSetFrameRate(FRAMERATE);
@@ -35,26 +36,39 @@ void ofApp::setup(){
     
     //_Streams
 //    init_stream0();
-//    init_stream1();
+    init_stream1();
     init_stream2();
+    init_stream3();
     
     //_Kernel
     kernel = new Kernel();
 //    kernel->add_stream(stream0, 0);
 //    kernel->add_stream(stream1, 0);
-    kernel->add_stream(stream2, 0);
+//    kernel->add_stream(stream2, 1);
+    kernel->add_stream(stream3, 0);
 
     //_OSC
     server = new OSC_Server(OSC_IN);
     set_listeners();
     
     //_supercollider
-    //run_supercollider();
+    run_supercollider();
+    
+    // Syphon
+	mainOutputSyphonServer.setName("Screen Output");
+	mClient.setup();
+    
+    //using Syphon app Simple Server, found at http://syphon.v002.info/
+    mClient.set("","Simple Server");
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    update_stream2();
+    if( status[0] ) { update_stream0(); }
+    else if( status[1] ) { update_stream1(); }
+    else if( status[2] ) { update_stream2(); }
+    else if( status[3] ) { update_stream3(); }
+   
     kernel->update();
     server->update();
 }
@@ -64,6 +78,10 @@ void ofApp::draw(){
     ofSetWindowTitle("FPS: " + ofToString(ofGetFrameRate()));
 
     kernel->draw();
+    
+    // Syphon
+    mClient.draw(50, 50);    
+	mainOutputSyphonServer.publishScreen();
 }
 
 //--------------------------------------------------------------
@@ -138,6 +156,25 @@ void ofApp::update_stream2(){
     stream2->evaluate();
 }
 
+void ofApp::init_stream3(){
+    smear3a = new Smear(img2, 0, 0, 0, -1);
+    smear3a->set_mod(8);
+    smear3b = new Smear(img0, 0, 0, 0, -1);
+    smear3b->set_mod(16);
+    
+    stream3 = new Stream();
+    stream3->add_transform(smear3b);
+    stream3->add_transform(smear3a);
+    
+    stream3->set_init_img(img3);
+}
+
+void ofApp::update_stream3(){
+//    smear3a->update_delta(0, (-1) * vol);
+//    smear3b->update_delta(0, (-1) * vol * 2);
+    stream3->evaluate();
+}
+
 //--------------------------------------------------------------
 void ofApp::load_media(){
     
@@ -167,20 +204,20 @@ void ofApp::load_media(){
     sources.push_back(vid0);
     
     vector<const char *> fnames = {
-        "img/IMG_0639.jpg",
+        "textures/IMG_0668.jpg",
         "img/stone.jpg",
-        "img/IMG_3006.jpg",
-        "img/emory.jpg",
+        "textures/IMG_6012.jpg",
+        "textures/IMG_0613.jpg",
         "img/rock.jpg",
         "img/IMG_0644.jpg",
         "img/sludge.jpg",
         "img/IMG_1734.png",
-        "img/IMG_6140.jpg",
+        "textures/IMG_4783.jpg",
         "lapses/pano_lapse.mov",
     };
     
     //_multithreaded loading
-    #pragma omp parallel for
+//    #pragma omp parallel for
     for(int i = 0; i < sources.size(); i++) {
         sources[i]->load_media(fnames[i]);
     }

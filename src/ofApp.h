@@ -26,6 +26,7 @@
 #include "transform.h"
 #include "kernel.h"
 #include "osc_server.h"
+#include "ofxSyphon.h"
 
 class ofApp : public ofBaseApp {
 public:
@@ -49,7 +50,6 @@ public:
 
     //========================================================================
     //media
-    // TODO: put this stuff in a list and parallelize loading
     Still *img0, *img1, *img2, *img3, *img4, *img5, *img6, *img7, *img7mask, *img8;
     Video *vid0, *vid1;
     ofImage img;
@@ -61,18 +61,26 @@ public:
     //transforms
     NoiseMask *noise_mask;
     DisplayImage *transform;
-    SmearInner *smearIn;
     Smear *smear;
     Swarm *swarm;
     Invert *invert;
     Grayscale *grayscale;
     Twirl *twirl;
-    Mirror *mirror;
     ofxBlur *blur;
     DisplayImage *pass_image;
     HeatDistort *heat;
+    
+    // scene 1 transforms
     Pan *pan;
-    FrameMover* fm;
+    Mirror *mirror;
+    SmearInner *smearIn;
+    
+    // scene 2 transforms
+    FrameMover *fm;
+    
+    // scene 3 transforms
+    Smear *smear3a;
+    Smear *smear3b;
     
     //========================================================================
     //Specific scenes
@@ -84,6 +92,9 @@ public:
     
     void init_stream2(void);
     void update_stream2(void);
+    
+    void init_stream3(void);
+    void update_stream3(void);
     
     int mode;
     float macro;
@@ -98,8 +109,13 @@ public:
     //========================================================================
     //control
     Kernel *kernel;
-    Stream *stream0, *stream1, *stream2;
+    Stream *stream0, *stream1, *stream2, *stream3;
     OSC_Server *server;
+    
+    //========================================================================
+    // Syphon
+	ofxSyphonServer mainOutputSyphonServer;
+	ofxSyphonClient mClient;
     
     //========================================================================
     //_event functions

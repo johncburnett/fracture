@@ -128,12 +128,14 @@ public:
     float x_scale, y_scale;
     float dx, dy;
     BaseImage * fcn;
+    int skip, mod; // for cutting resolution
 
     Smear(BaseImage *, float, float, float, float);
     ~Smear(void);
 
     void set_scale(float _x, float _y);
     void update_delta(float,float);
+    void set_mod(int);
 
     // virtual methods
     void update(void);

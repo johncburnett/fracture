@@ -133,6 +133,8 @@ Smear::Smear(BaseImage *_fcn, float xi, float yi, float init_dx, float init_dy) 
     y_scale = yi;
     dx = init_dx;
     dy = init_dy;
+    skip = 0;
+    mod = 1;
 }
 
 void Smear::set_scale(float _x, float _y) {
@@ -141,13 +143,20 @@ void Smear::set_scale(float _x, float _y) {
 }
 
 void Smear::update_delta(float new_dx, float new_dy){
-    dx = new_dx;
-    dy = new_dy;
+    dx += new_dx;
+    dy += new_dy;
+}
+
+void Smear::set_mod(int _mod) {
+    mod = _mod;
 }
 
 void Smear::update(void) {
-    x_scale += dx;
-    y_scale += dy;
+    if( skip == 0 ) {
+        x_scale += dx;
+        y_scale += dy;
+    }
+    skip = (skip + 1) % mod;
 
     process_image();
 }
