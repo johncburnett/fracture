@@ -230,6 +230,7 @@ FrameMover::FrameMover(Video* _video){
     aggregate = new Still();
     aggregate->overwrite_fbo(&current_frame->fbo);
     counter = 0;
+    scale = 1.0;
 }
 
 
@@ -256,7 +257,7 @@ void FrameMover::process_image(){
 
             shader.setUniformTexture("tex0", tex0, 0);
             shader.setUniformTexture("tex1", tex1, 1);
-            shader.setUniform1f("time", counter);
+            shader.setUniform1f("time", counter * scale);
             shader.setUniform1i("w", WIDTH);
             shader.setUniform1i("h", HEIGHT);
 

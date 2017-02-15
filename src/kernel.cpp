@@ -103,22 +103,26 @@ void Kernel::toggle_loop(bool val) {
     loop = val;
 }
 
-void Kernel::update(void) {
-    float time = ofGetElapsedTimef();
+void Kernel::to_frame(int i) {
+    current_frame = i;
+}
 
-    if(loop) {
-        if(time - start_time >= target_time) {
-            current_frame = (current_frame + 1) % num_frames;
-            start_time = time;
-            target_time = frames[current_frame].t;
-        }
-    } else {
-        if((time - start_time >= target_time) && current_frame < num_frames-1) {
-            current_frame++;
-            start_time = time;
-            target_time = frames[current_frame].t;
-        }
-    }
+void Kernel::update(void) {
+//    float time = ofGetElapsedTimef();
+//
+//    if(loop) {
+//        if(time - start_time >= target_time) {
+//            current_frame = (current_frame + 1) % num_frames;
+//            start_time = time;
+//            target_time = frames[current_frame].t;
+//        }
+//    } else {
+//        if((time - start_time >= target_time) && current_frame < num_frames-1) {
+//            current_frame++;
+//            start_time = time;
+//            target_time = frames[current_frame].t;
+//        }
+//    }
 
     for(int i = 0; i < frames[current_frame].n; i++) {
         frames[current_frame].streams[i]->evaluate();

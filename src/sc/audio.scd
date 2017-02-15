@@ -462,6 +462,15 @@ s.waitForBoot({
 	//--------------------------------------------------------------
 	//_Utilities
 
+	// bookkeeping
+	~eventStreams = [];
+	~player = { |routine| ~eventStreams = ~eventStreams + routine.play };
+	~stopStreams = {
+		~eventStreams.do{ |x| x.stop.reset };
+		~eventStreams = [];
+	};
+	~activity = false!4;
+
 	~routines = [
 		~r1, ~r2, ~r3, ~r4, ~r5, ~r6, // patterns
 		~mod_melt,					  // modulations
@@ -470,48 +479,47 @@ s.waitForBoot({
 	];
 
 	~reset = {
-		for(0, ~routines.size-1, { |i|
+		~stopStreams.();
+		~activity = false!4;
+/*		for(0, ~routines.size-1, { |i|
 			~routines[i]
 			.stop
 			.reset;
-		});
+		});*/
+		~resetAmp.();
 	};
 
-	~reset_amp = {
-		~melt.set([\amp, 0.0]);
-		~machine.set([\amp, 0.0, \send, 0.0]);
-		~perc.set([\amp, 0.0, \send, 0.0]);
-		~grains.set([\amp, 0.0]);
-	};
+	~resetAmp = { ~synths.do{ |x| x.set(\amp, 0.0, \send, 0.0) } };
+	~resetWorlds = { ~world1.stop.reset; ~world2.stop.reset; ~world3.stop.reset; };
 
 	~fadein = { |synth, amp=0.8, len=10.0, res=1000|
-		Routine({
+		~player.(Routine({
 			res.do({ |i|
 				synth.set(\amp, i/res*amp);
 				(len/res).wait;
 			});
-		}).play;
+		}));
 	};
 
 	~fadeout = { |synth, amp=0.8, len=10.0, res=1000|
-		Routine({
+		~player.(Routine({
 			res.do({ |i|
 				synth.set(\amp, amp - (i/res*amp));
 				(len/res).wait;
 			});
-		}).play;
+		}));
 	};
 
-	~interp = { |synth, param, start, end, len=10.0, res=10000, modString="/mod0"|
-		Routine({
+	~interp = { |synth, param, start, end, len=10.0, res=10000, modString=""|
+		~player.(Routine({
 			var spec = ControlSpec(start, end, \lin, 0.00001);
 			res.do({ |i|
 				var v1 = spec.map(i/res);
 				synth.set(param, v1);
-				~osc.sendMsg(modString, i/res);
+				if(modString != "", ~osc.sendMsg(modString, i/res));
 				(len/res).wait;
 			});
-		}).play;
+		}));
 	};
 
 	//--------------------------------------------------------------
@@ -519,10 +527,12 @@ s.waitForBoot({
 
 	// granulated machine
 	~world1 = Routine({
-		~reset.();
+		~reset.(); ~world2.stop.reset; ~world3.stop.reset;
+		~activity[0] = true;
+		~osc.sendMsg("/scene", 0);
 
-		~fadein.(~machine, amp:0.8, len:30);
-		~interp.(~machine, \send, 0, 0.7, len:240);
+		~fadein.(~machine, amp:0.4, len:30);
+		~interp.(~machine, \send, 0, 0.7, len:240, modString:"/mod0");
 		~liveGrains1.set(\amp, 0.45, \speed, 0.5, \overlap, 7);
 		~liveGrains2.set(\amp, 0.90, \speed, 2.0, \overlap, 7);
 
@@ -530,10 +540,12 @@ s.waitForBoot({
 	});
 
 	~world2 = Routine({
-		~reset.();
+		~reset.(); ~world1.stop.reset; ~world3.stop.reset;
+		~activity[1] = true;
+		~osc.sendMsg("/scene", 1);
 
 		~fadein.(~machine, amp:0.3, len:30);
-		~interp.(~machine, \send, 0, 0.7, len:60);
+		~interp.(~machine, \send, 0.0, 0.7, len:60, modString:"/mod0");
 		~machine.set(\rate, 0.5);
 
 		~fadein.(~res, amp:0.8, len:30);
@@ -543,29 +555,36 @@ s.waitForBoot({
 	});
 
 	~world3 = Routine({
-		~reset.();
+		~reset.(); ~world1.stop.reset; ~world2.stop.reset;
+		~activity[2] = true;
+		~osc.sendMsg("/scene", 2);
 
 		~fadein.(~machine, amp:0.3, len:15);
-		~interp.(~machine, \send, 0, 0.7, len:30);
+		~interp.(~machine, \send, 0, 0.7, len:30, modString:"/mod0");
 		~machine.set(\rate, 0.5);
 
 		~fadein.(~res, amp:0.8, len:30);
 
+		~fadein.(~perc, amp:0.5, len:10.0);
+        ~interp.(~perc, \send, 0.0, 0.8, len:10.0, modString:"/mod1");
+		~fadein.(~liveGrains1, amp:0.5, len:10.0);
+		~liveGrains1.set(\speed, -4, \overlap, 0.7);
+
 		Routine.run({
-			inf.do{
+			while({~activity[2]}, {
 				Synth(\grainFlurry, [\bufnum, ~b1.bufnum, \dur, 0.5, \vary, rrand(0, 100), \amp, 0.03]);
 				~res.setn(\freqs, Array.exprand(6, 200, 1500));
 				~res.setn(\amps, Array.exprand(6, 0.01, 0.8));
 				rrand(10, 40).wait;
-			};
+			});
 		});
 
 		Routine.run({
-			inf.do{
+			while({~activity[2]}, {
 				~res.setn(\freqs, Array.exprand(6, 200, 1500));
 				~res.setn(\amps, Array.exprand(6, 0.01, 1));
 				rrand(2, 10).wait;
-			};
+			});
 		});
 
 		"entering world 3".postln;
@@ -573,14 +592,14 @@ s.waitForBoot({
 
 	// granulated percussion
 	~world4 = Routine({
-		~reset.();
+/*		~reset.();
 
 		~fadein.(~perc, amp:0.5, len:10.0);
         ~interp.(~perc, \send, 0.0, 0.8, len:10.0);
 		~fadein.(~liveGrains1, amp:0.5, len:10.0);
 		~liveGrains.set(\speed, -4, \overlap, 0.7);
 
-		"entering world 4".postln;
+		"entering world 4".postln;*/
 	});
 
 	/**************************************************************************************************/
@@ -603,6 +622,8 @@ s.waitForBoot({
 	~perc = Synth(\looper_2ch, [\bufnum, ~b7.bufnum, \amp, 0.0]);
 	~grains = Synth(\vGrain, [\bufnum, ~b5.bufnum, \dur, 0.2, \vary, 0.5, \rate, 0.25, \amp, 0.0]);
 
+	~synths = [~melt, ~liveGrains1, ~liveGrains2, ~res, ~machine, ~perc, ~grains];
+
 	//--------------------------------------------------------------
 	//_OSC
 
@@ -622,7 +643,7 @@ s.waitForBoot({
 		Window.screenBounds.width - 200,
 		Window.screenBounds.height,
 		200,
-		400
+		350
 	))
 	.background_(Color(0.1, 0.1, 0.1));
 
@@ -643,6 +664,9 @@ s.waitForBoot({
 	])
 	.action_({ |state|
 		"exiting fracture audio\n".postln;
+		~stopStreams.();
+		~reset.();
+		~resetWorlds.();
 		s.quit;
 		~osc.disconnect;
 		w.close;
@@ -664,7 +688,7 @@ s.waitForBoot({
 			~world1.play;
 			~toggle_w2.value_(0);
 			~toggle_w3.value_(0);
-			~toggle_w4.value_(0);
+			// ~toggle_w4.value_(0);
 		});
 	});
 
@@ -679,7 +703,7 @@ s.waitForBoot({
 			~world2.play;
 			~toggle_w1.value_(0);
 			~toggle_w3.value_(0);
-			~toggle_w4.value_(0);
+			// ~toggle_w4.value_(0);
 		});
 	});
 
@@ -694,11 +718,11 @@ s.waitForBoot({
 			~world3.play;
 			~toggle_w1.value_(0);
 			~toggle_w2.value_(0);
-			~toggle_w4.value_(0);
+			// ~toggle_w4.value_(0);
 		});
 	});
 
-	~toggle_w4 = Button(w, Rect(10, 340, 180, 40))
+/*	~toggle_w4 = Button(w, Rect(10, 340, 180, 40))
 	.states_([
 		[" world 4: inactive", Color.black, Color.white],
 		[" world 4: active  ", Color.black, Color.cyan]
@@ -711,7 +735,7 @@ s.waitForBoot({
 			~toggle_w2.value_(0);
 			~toggle_w3.value_(0);
 		});
-	});
+	});*/
 
 	// display gui
 	if( (~display_gui), { w.front });

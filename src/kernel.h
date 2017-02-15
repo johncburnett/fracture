@@ -69,6 +69,8 @@ public:
     void get_frame_image(int frame_index);
     void set_frame_length(int frame_index, float l);
     void toggle_loop(bool);
+    
+    void to_frame(int i);
 
     void update(void);
     void draw(void);

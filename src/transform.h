@@ -182,6 +182,7 @@ public:
     Video* current_frame;
     Still* aggregate;
     int counter;
+    float scale;
     
     FrameMover(Video* _video);
     ~FrameMover(void);

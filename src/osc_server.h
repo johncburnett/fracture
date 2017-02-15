@@ -45,9 +45,11 @@ public:
     float click, sines, bass, noise;
     float mod0, mod1;
     float rms;
+    int frame;
     
     vector< ofEvent<float>* > pulses;
     vector< ofEvent<float>* > mods;
+    ofEvent<int> *scene;
 };
 
 #endif /* osc_server_h */

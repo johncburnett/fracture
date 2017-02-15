@@ -59,7 +59,6 @@ public:
     
     //========================================================================
     //transforms
-    NoiseMask *noise_mask;
     DisplayImage *transform;
     Smear *smear;
     Swarm *swarm;
@@ -69,6 +68,7 @@ public:
     ofxBlur *blur;
     DisplayImage *pass_image;
     HeatDistort *heat;
+    NoiseMask *noise_mask;
     
     // scene 1 transforms
     Pan *pan;
@@ -77,6 +77,7 @@ public:
     
     // scene 2 transforms
     FrameMover *fm;
+    ShadowMask *shadow_mask;
     
     // scene 3 transforms
     Smear *smear3a;
@@ -101,7 +102,6 @@ public:
     
     //========================================================================
     // status
-    bool status[4];
     float m0;
     float m1;
     float vol;
@@ -111,6 +111,7 @@ public:
     Kernel *kernel;
     Stream *stream0, *stream1, *stream2, *stream3;
     OSC_Server *server;
+    int current_frame;
     
     //========================================================================
     // Syphon
@@ -127,4 +128,5 @@ public:
     void mod0(float &f);
     void mod1(float &f);
     void rms(float &f);
+    void scene(int &i);
 };

@@ -24,9 +24,8 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    // init status
-    for(int i = 0; i < 4; i++) { status[i] = false; }
-    status[3] = true;
+    // init starting scene
+    current_frame = 0;
     
     //_OpenGL init
     ofSetFrameRate(FRAMERATE);
@@ -42,10 +41,13 @@ void ofApp::setup(){
     
     //_Kernel
     kernel = new Kernel();
+    kernel->add_frame(10);
+    kernel->add_frame(10);
+    
 //    kernel->add_stream(stream0, 0);
-//    kernel->add_stream(stream1, 0);
-//    kernel->add_stream(stream2, 1);
-    kernel->add_stream(stream3, 0);
+    kernel->add_stream(stream1, 0);
+    kernel->add_stream(stream2, 1);
+    kernel->add_stream(stream3, 2);
 
     //_OSC
     server = new OSC_Server(OSC_IN);
@@ -57,17 +59,14 @@ void ofApp::setup(){
     // Syphon
 	mainOutputSyphonServer.setName("Screen Output");
 	mClient.setup();
-    
-    //using Syphon app Simple Server, found at http://syphon.v002.info/
     mClient.set("","Simple Server");
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    if( status[0] ) { update_stream0(); }
-    else if( status[1] ) { update_stream1(); }
-    else if( status[2] ) { update_stream2(); }
-    else if( status[3] ) { update_stream3(); }
+    if( current_frame == 0 ) { update_stream1(); kernel->to_frame(0); }
+    else if( current_frame == 1 ) { update_stream2(); kernel->to_frame(1); }
+    else if( current_frame == 2 ) { update_stream3(); kernel->to_frame(2); }
    
     kernel->update();
     server->update();
@@ -127,22 +126,16 @@ void ofApp::init_stream1(){
     mirror = new Mirror();
     mirror->set_mode(2);
     smearIn = new SmearInner(img6);
-//    smear = new Smear(img8, 9, 9, 0, 0);
     
     stream1 = new Stream();
     stream1->add_transform(pan);
     stream1->add_transform(mirror);
     stream1->add_transform(smearIn);
-//    stream1->add_transform(smear);
 }
 
 void ofApp::update_stream1(){
-//    pan->set_corners(0, -1000-(.1*ofGetFrameNum()));
-//    pan->set_corners(0, -800-(m0* 50));
     pan->set_corners(0, -600-(m0 * 2000));
     smearIn->set_scale(vol * 16000);
-//    smear->set_scale(0, -1 * vol * 4000);
-    stream1->evaluate();
 }
 
 void ofApp::init_stream2(){
@@ -153,14 +146,14 @@ void ofApp::init_stream2(){
 }
 
 void ofApp::update_stream2(){
-    stream2->evaluate();
+    fm->scale = m0 + (vol*3.0f);
 }
 
 void ofApp::init_stream3(){
-    smear3a = new Smear(img2, 0, 0, 0, -1);
+    smear3a = new Smear(img2, 0, 0, 0, 0);
     smear3a->set_mod(8);
-    smear3b = new Smear(img0, 0, 0, 0, -1);
-    smear3b->set_mod(16);
+    smear3b = new Smear(img0, 0, 0, 0, 0);
+    smear3b->set_mod(8);
     
     stream3 = new Stream();
     stream3->add_transform(smear3b);
@@ -170,9 +163,8 @@ void ofApp::init_stream3(){
 }
 
 void ofApp::update_stream3(){
-//    smear3a->update_delta(0, (-1) * vol);
-//    smear3b->update_delta(0, (-1) * vol * 2);
-    stream3->evaluate();
+    smear3a->update_delta(0, (-1) * vol * m0 * 0.01);
+    smear3b->update_delta(0, (-1) * vol * 2 * m0 * 0.01);
 }
 
 //--------------------------------------------------------------
@@ -232,16 +224,15 @@ void ofApp::set_listeners(void) {
 	ofAddListener(*server->mods[0], this, &ofApp::mod0);
 	ofAddListener(*server->mods[1], this, &ofApp::mod1);
 	ofAddListener(*server->mods[2], this, &ofApp::rms);
+	ofAddListener(*server->scene, this, &ofApp::scene);
 }
 
 //--------------------------------------------------------------
-void ofApp::sines(float &f) {
-    //mirror->set_mode((mirror->mode + 1) % 2);
-}
+// OSC callbacks
 
-void ofApp::noise(float &f) {
-    ;
-}
+void ofApp::sines(float &f) { }
+
+void ofApp::noise(float &f) { }
 
 void ofApp::click(float &f) {
     smearIn->set_scale(ofMap(ofGetFrameNum() % 1000 / 1000.f, 0.0, 1.0, 0, 1000));
@@ -251,9 +242,7 @@ void ofApp::click(float &f) {
     mirror->set_mode(mode);
 }
 
-void ofApp::bass(float &f) {
-    ;
-}
+void ofApp::bass(float &f) { }
 
 void ofApp::mod0(float &f) {
     //macro = ofMap(f, 0.0, 1.0, 0.0, 10000);
@@ -265,9 +254,12 @@ void ofApp::mod1(float &f) {
 }
 
 void ofApp::rms(float &f) {
-    macro = ofMap(f, 0.0, 1.0, 0, 4000);
+//    macro = ofMap(f, 0.0, 1.0, 0, 4000);
     vol = f * 10.0;
-//    cout << f << endl;
+}
+
+void ofApp::scene(int &i) {
+    current_frame = i;
 }
 
 //--------------------------------------------------------------

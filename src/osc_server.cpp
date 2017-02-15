@@ -35,6 +35,7 @@ OSC_Server::OSC_Server(int osc_port) {
     for(int i = 0; i < 3; i++) {
         mods.push_back(new ofEvent<float>());
     }
+    scene = new ofEvent<int>();
 }
 
 //--------------------------------------------------------------
@@ -72,6 +73,10 @@ void OSC_Server::update(void) {
         else if(m.getAddress() == "/rms") {
             rms = m.getArgAsFloat(0);
             ofNotifyEvent(*mods[2], rms, this);
+        }
+        else if(m.getAddress() == "/scene") {
+            frame = m.getArgAsInt(0);
+            ofNotifyEvent(*scene, frame, this);
         }
     }
 }
