@@ -50,7 +50,7 @@ s.waitForBoot({
 	//_Init
 
 	//_Buffers
-	~cwd = thisProcess.nowExecutingPath.dirname +/+ "samples";
+	~cwd = thisProcess.nowExecutingPath.dirname +/+ "../../bin/data/samples";
 	~b1 = Buffer.read(s, ~cwd +/+ "1.wav");
 	~b2 = Buffer.read(s, ~cwd +/+ "2.wav");
 	~b3 = Buffer.read(s, ~cwd +/+ "3.wav");
@@ -531,7 +531,7 @@ s.waitForBoot({
 		~activity[0] = true;
 		~osc.sendMsg("/scene", 0);
 
-		~fadein.(~machine, amp:0.4, len:30);
+		~fadein.(~machine, amp:0.2, len:30);
 		~interp.(~machine, \send, 0, 0.7, len:240, modString:"/mod0");
 		~liveGrains1.set(\amp, 0.45, \speed, 0.5, \overlap, 7);
 		~liveGrains2.set(\amp, 0.90, \speed, 2.0, \overlap, 7);
@@ -544,8 +544,8 @@ s.waitForBoot({
 		~activity[1] = true;
 		~osc.sendMsg("/scene", 1);
 
-		~fadein.(~machine, amp:0.3, len:30);
-		~interp.(~machine, \send, 0.0, 0.7, len:60, modString:"/mod0");
+		~fadein.(~machine, amp:0.2, len:30);
+		~interp.(~machine, \send, 0.2, 0.7, len:60, modString:"/mod0");
 		~machine.set(\rate, 0.5);
 
 		~fadein.(~res, amp:0.8, len:30);
@@ -567,12 +567,12 @@ s.waitForBoot({
 
 		~fadein.(~perc, amp:0.5, len:10.0);
         ~interp.(~perc, \send, 0.0, 0.8, len:10.0, modString:"/mod1");
-		~fadein.(~liveGrains1, amp:0.5, len:10.0);
+		~fadein.(~liveGrains1, amp:0.4, len:10.0);
 		~liveGrains1.set(\speed, -4, \overlap, 0.7);
 
 		Routine.run({
 			while({~activity[2]}, {
-				Synth(\grainFlurry, [\bufnum, ~b1.bufnum, \dur, 0.5, \vary, rrand(0, 100), \amp, 0.03]);
+				Synth(\grainFlurry, [\bufnum, ~b1.bufnum, \dur, 0.5, \vary, rrand(0, 100), \amp, 0.02]);
 				~res.setn(\freqs, Array.exprand(6, 200, 1500));
 				~res.setn(\amps, Array.exprand(6, 0.01, 0.8));
 				rrand(10, 40).wait;
@@ -582,7 +582,7 @@ s.waitForBoot({
 		Routine.run({
 			while({~activity[2]}, {
 				~res.setn(\freqs, Array.exprand(6, 200, 1500));
-				~res.setn(\amps, Array.exprand(6, 0.01, 1));
+				~res.setn(\amps, Array.exprand(6, 0.01, 0.7));
 				rrand(2, 10).wait;
 			});
 		});
